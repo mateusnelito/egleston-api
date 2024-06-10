@@ -1,0 +1,40 @@
+{
+  "name": "egleston-sge",
+  "version": "1.0.0",
+  "description": "A SGE REST API.",
+  "main": "server.ts",
+  "scripts": {
+    "dev": "tsx watch --env-file .env src/server.ts",
+    "format": "prettier --write src/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mateusvalecelestino/egleston-sge.git"
+  },
+  "keywords": [
+    "SGE",
+    "REST",
+    "API"
+  ],
+  "author": "Mateus Vale",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.12.9",
+    "prettier": "3.2.5",
+    "tsx": "^4.9.3",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@fastify/swagger": "^8.14.0",
+    "@fastify/swagger-ui": "^3.0.0",
+    "@prisma/client": "^5.13.0",
+    "fastify": "^4.26.2",
+    "fastify-type-provider-zod": "^1.1.9",
+    "prisma": "^5.13.0",
+    "zod": "^3.23.8"
+  },
+  "bugs": {
+    "url": "https://github.com/mateusvalecelestino/egleston-sge/issues"
+  },
+  "homepage": "https://github.com/mateusvalecelestino/egleston-sge#readme"
+}
