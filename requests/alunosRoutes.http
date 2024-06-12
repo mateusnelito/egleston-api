@@ -1,0 +1,17 @@
+### GET all alunos 
+
+GET http://localhost:8000/alunos
+Content-Type: application/json
+
+### Create a aluno
+POST http://localhost:8000/alunos/create
+Content-Type: application/json
+
+{
+    "nomeCompleto": "Aluno Primeiro Ponto",
+    "nomeCompletoPai": "Pai Primeiro Ponto",
+    "nomeCompletoMae": "Mão Primeiro Ponto",
+    "numeroBi": "009688131LA041",
+    "dataNascimento": "2022-06-13",
+    "genero": "M"
+}
