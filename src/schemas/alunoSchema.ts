@@ -94,7 +94,7 @@ export const updateAlunoSchema = {
     alunoId: z.coerce
       .number({
         required_error: 'O id do aluno é obrigatório.',
-        invalid_type_error: 'O id do aluno deve ser inteiro.',
+        invalid_type_error: 'O id do aluno deve ser número.',
       })
       .int({ message: 'O id do aluno deve ser inteiro.' })
       .positive({ message: 'O id do aluno deve ser positivo.' }),
@@ -177,7 +177,57 @@ export const updateAlunoSchema = {
   },
 };
 
-// Extract the TS type from createAlunoSchema
+export const getAlunosSchema = {
+  summary: 'Retorna todos os alunos',
+  tags: ['alunos'],
+  querystring: z.object({
+    page: z.coerce
+      .number({
+        invalid_type_error: 'A página deve ser número.',
+      })
+      .int({ message: 'O número da página deve ser inteiro.' })
+      .positive({ message: 'O número da página deve ser positivo.' })
+      .default(1),
+    pageSize: z.coerce
+      .number({
+        invalid_type_error: 'O tamanho da página deve ser número.',
+      })
+      .int({ message: 'O tamanho da página deve ser inteiro.' })
+      .positive({ message: 'O tamanho da página deve ser positivo.' })
+      .default(10),
+  }),
+};
+
+export const getAlunoSchema = {
+  summary: 'Busca aluno pelo Id',
+  tags: ['alunos'],
+  params: z.object({
+    alunoId: z.coerce
+      .number({
+        required_error: 'O id do aluno é obrigatório.',
+        invalid_type_error: 'O id do aluno deve ser número.',
+      })
+      .int({ message: 'O id do aluno deve ser inteiro.' })
+      .positive({ message: 'O id do aluno deve ser positivo.' }),
+  }),
+  response: {
+    200: z.object({
+      nomeCompleto: z.string(),
+      nomeCompletoPai: z.string(),
+      nomeCompletoMae: z.string(),
+      numeroBi: z.string(),
+      dataNascimento: z.date(),
+      genero: z.enum(['M', 'F']),
+    }),
+  },
+};
+
+// Extract the TS types from Schemas
 export type CreateAlunoBodyType = z.infer<typeof createAlunoSchema.body>;
 export type updateAlunoBodyType = z.infer<typeof updateAlunoSchema.body>;
-export type updateAlunoParamsType = z.infer<typeof updateAlunoSchema.params>;
+export type uniqueAlunoResourceParamsType = z.infer<
+  typeof updateAlunoSchema.params
+>;
+export type getAlunosQueryStringType = z.infer<
+  typeof getAlunosSchema.querystring
+>;

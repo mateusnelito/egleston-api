@@ -22,14 +22,6 @@ export async function getAlunoByNumeroBi(numeroBi: string) {
 export async function getAlunoById(alunoId: number) {
   return await prisma.aluno.findUnique({
     where: { id: alunoId },
-    select: {
-      id: true,
-      nomeCompleto: true,
-      nomeCompletoPai: true,
-      nomeCompletoMae: true,
-      dataNascimento: true,
-      genero: true,
-    },
   });
 }
 
@@ -37,5 +29,20 @@ export async function changeAluno(alunoId: number, aluno: updateAlunoBodyType) {
   return await prisma.aluno.update({
     where: { id: alunoId },
     data: aluno,
+  });
+}
+
+export async function getAlunos(offset: number, limit: number) {
+  return await prisma.aluno.findMany({
+    where: {
+      id: {
+        // Load only alunos where id is greater than offset
+        gt: offset,
+      },
+    },
+    take: limit,
+    orderBy: {
+      id: 'desc',
+    },
   });
 }

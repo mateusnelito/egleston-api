@@ -1,6 +1,11 @@
 ### GET all alunos 
 
-GET http://localhost:8000/alunos
+GET http://localhost:8000/alunos?pageSize=1&page=2
+
+### GET aluno
+
+GET http://localhost:8000/alunos/3
+
 
 ### Create a aluno
 POST http://localhost:8000/alunos/create
@@ -10,7 +15,7 @@ Content-Type: application/json
     "nomeCompleto": "Nome de exemplo",
     "nomeCompletoPai": "Nome do pai exemplo",
     "nomeCompletoMae": "Nome da mãe exemplo",
-    "numeroBi": "000000000CA000",
+    "numeroBi": "000000001CA000",
     "dataNascimento": "2001-01-19",
     "genero": "M"
 }
@@ -24,5 +29,5 @@ Content-Type: application/json
     "nomeCompletoPai": "Teste UPDATED",
     "nomeCompletoMae": "Teste UPDATED",
     "dataNascimento": "2001-01-19",
-    "genero": "M"
+    "genero": "F"
 }

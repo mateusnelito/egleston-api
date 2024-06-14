@@ -4,11 +4,13 @@ import {
   getAlunoById,
   getAlunoByNumeroBi,
   saveAluno,
+  getAlunos as getAllAlunos,
 } from '../services/alunoServices';
 import {
   CreateAlunoBodyType,
+  getAlunosQueryStringType,
   updateAlunoBodyType,
-  updateAlunoParamsType,
+  uniqueAlunoResourceParamsType,
 } from '../schemas/alunoSchema';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import BadRequest from '../utils/BadRequest';
@@ -35,7 +37,7 @@ export async function createAluno(
 export async function updateAluno(
   // Define that the Generic Type of Body is CreateAlunoBodyType and Params is updateAlunoParamsType
   request: FastifyRequest<{
-    Params: updateAlunoParamsType;
+    Params: uniqueAlunoResourceParamsType;
     Body: updateAlunoBodyType;
   }>,
   reply: FastifyReply
@@ -46,11 +48,45 @@ export async function updateAluno(
     throw new NotFoundRequest('Id de aluno não existe.');
   }
   const aluno = await changeAluno(alunoId, request.body);
-  return reply.status(HttpStatusCodes.CREATED).send({
+  return reply.send({
     nomeCompleto: aluno.nomeCompleto,
     nomeCompletoPai: aluno.nomeCompletoPai,
     nomeCompletoMae: aluno.nomeCompletoMae,
     dataNascimento: aluno.dataNascimento,
     genero: aluno.genero,
   });
+}
+
+export async function getAlunos(
+  request: FastifyRequest<{ Querystring: getAlunosQueryStringType }>,
+  reply: FastifyReply
+) {
+  const { page, pageSize } = request.query;
+
+  const offset = page * pageSize;
+  // return reply.send({
+  //   page,
+  //   offset,
+  //   pageSize,
+  // });
+
+  const alunos = await getAllAlunos(offset, pageSize);
+
+  return reply.send(alunos);
+}
+
+export async function getAluno(
+  request: FastifyRequest<{
+    Params: uniqueAlunoResourceParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { alunoId } = request.params;
+
+  if (!(await getAlunoById(alunoId))) {
+    throw new NotFoundRequest('Id de aluno não existe.');
+  }
+
+  const aluno = await getAlunoById(alunoId);
+  return reply.send(aluno);
 }
