@@ -1,5 +1,8 @@
 import { prisma } from '../lib/prisma';
-import { CreateAlunoBodyType } from '../schemas/alunoSchema';
+import {
+  CreateAlunoBodyType,
+  updateAlunoBodyType,
+} from '../schemas/alunoSchema';
 
 export async function saveAluno(aluno: CreateAlunoBodyType) {
   return await prisma.aluno.create({
@@ -13,5 +16,26 @@ export async function getAlunoByNumeroBi(numeroBi: string) {
     select: {
       id: true,
     },
+  });
+}
+
+export async function getAlunoById(alunoId: number) {
+  return await prisma.aluno.findUnique({
+    where: { id: alunoId },
+    select: {
+      id: true,
+      nomeCompleto: true,
+      nomeCompletoPai: true,
+      nomeCompletoMae: true,
+      dataNascimento: true,
+      genero: true,
+    },
+  });
+}
+
+export async function changeAluno(alunoId: number, aluno: updateAlunoBodyType) {
+  return await prisma.aluno.update({
+    where: { id: alunoId },
+    data: aluno,
   });
 }

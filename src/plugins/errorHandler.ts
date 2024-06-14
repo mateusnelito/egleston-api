@@ -3,6 +3,7 @@ import { fastifyPlugin } from 'fastify-plugin';
 import { ZodError } from 'zod';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import BadRequest from '../utils/BadRequest';
+import NotFoundRequest from '../utils/NotFoundRequest';
 
 // Create a plugin to handle global errors
 async function errorHandlerPlugin(server: FastifyInstance) {
@@ -18,8 +19,14 @@ async function errorHandlerPlugin(server: FastifyInstance) {
 
     // Check if is a BadRequest Class error
     if (err instanceof BadRequest) {
-      // use the sendResponse method of BadRequest Class Error
+      // use the Errors method of BadRequest Class Error
       return err.sendErrors(reply);
+    }
+
+    // Check if is a NotFoundRequest Class error
+    if (err instanceof NotFoundRequest) {
+      // use the sendError method of NotFoundRequest Class Error
+      return err.sendError(reply);
     }
 
     console.error(err); // Show debug error

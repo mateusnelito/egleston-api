@@ -1,7 +1,6 @@
 ### GET all alunos 
 
 GET http://localhost:8000/alunos
-Content-Type: application/json
 
 ### Create a aluno
 POST http://localhost:8000/alunos/create
@@ -12,6 +11,18 @@ Content-Type: application/json
     "nomeCompletoPai": "Nome do pai exemplo",
     "nomeCompletoMae": "Nome da mãe exemplo",
     "numeroBi": "000000000CA000",
+    "dataNascimento": "2001-01-19",
+    "genero": "M"
+}
+
+### Update an existent aluno
+PUT http://localhost:8000/alunos/2
+Content-Type: application/json
+
+{
+    "nomeCompleto": "Teste UPDATED",
+    "nomeCompletoPai": "Teste UPDATED",
+    "nomeCompletoMae": "Teste UPDATED",
     "dataNascimento": "2001-01-19",
     "genero": "M"
 }
