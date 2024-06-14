@@ -3,6 +3,8 @@ import { z } from 'zod';
 const FULL_NAME_REGEX = /^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]+$/;
 
 export const createAlunoSchema = {
+  summary: 'Cria um aluno',
+  tags: ['alunos'],
   body: z.object({
     nomeCompleto: z
       .string({
@@ -68,14 +70,22 @@ export const createAlunoSchema = {
         'A data de nascimento deve ser uma data válida no formato AAAA-MM-DD.'
       )
       .transform((date) => new Date(date))
-      // Custom validation to check if date is greater than actual date or is less than 1900
-      // FIXME: Change the base date to a dynamic logic
+      // FIXME: Change the bases date to a dynamic logic
       .refine((date) => date >= new Date('1900-01-01'), {
         message:
           'A data de nascimento não pode ser anterior a 1 de janeiro de 1900.',
       })
       .refine((date) => date <= new Date(), {
-        message: 'A data de nascimento não pode ser no futuro.',
+        message: 'A data de nascimento não pode estar no futuro.',
       }),
+    genero: z.enum(['M', 'F'], { message: 'O género deve ser "M" ou "F".' }),
   }),
+  response: {
+    201: z.object({
+      id: z.number().int().positive(),
+    }),
+  },
 };
+
+// Extract the TS type from createAlunoSchema
+export type CreateAlunoBodyType = z.infer<typeof createAlunoSchema.body>;

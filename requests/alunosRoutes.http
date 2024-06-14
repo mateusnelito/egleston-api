@@ -8,10 +8,10 @@ POST http://localhost:8000/alunos/create
 Content-Type: application/json
 
 {
-    "nomeCompleto": "Aluno Primeiro Ponto",
-    "nomeCompletoPai": "Pai Primeiro Ponto",
-    "nomeCompletoMae": "Mão Primeiro Ponto",
-    "numeroBi": "009688131LA041",
-    "dataNascimento": "2022-06-13",
+    "nomeCompleto": "Nome de exemplo",
+    "nomeCompletoPai": "Nome do pai exemplo",
+    "nomeCompletoMae": "Nome da mãe exemplo",
+    "numeroBi": "000000000CA000",
+    "dataNascimento": "2001-01-19",
     "genero": "M"
 }

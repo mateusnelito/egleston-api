@@ -15,6 +15,9 @@ async function swaggerDocs(server: FastifyInstance) {
         description: 'CRUD API para um SGE.',
         version: '1.0.0',
       },
+      tags: [
+        { name: 'alunos', description: 'Endpoints relacionados a alunos' },
+      ],
     },
     transform: jsonSchemaTransform,
   });
