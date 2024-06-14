@@ -1,29 +1,16 @@
 import fastify from 'fastify';
-import {
-  serializerCompiler,
-  validatorCompiler,
-} from 'fastify-type-provider-zod';
 import routes from './routes'; // Import all registered routes
 import HttpStatusCodes from './utils/HttpStatusCodes';
 import errorHandlerPlugin from './plugins/errorHandler';
+import swaggerDocs from './plugins/swagger';
+import zodTypeProvider from './plugins/zod';
 
 // Instantiate the server
 const server = fastify();
-server.register(errorHandlerPlugin);
-
-// Add zod-type-provider validator compiler and serializer compiler
-// as default schema validator and serializer
-server.setValidatorCompiler(validatorCompiler);
-server.setSerializerCompiler(serializerCompiler);
-
-// Route to test the server status (health)
-server.get('/healthcheck', async (req, res) => {
-  res.send({
-    message: 'API Working...',
-  });
-});
-
+server.register(swaggerDocs);
+server.register(zodTypeProvider);
 server.register(routes); // Register all the routes to API
+server.register(errorHandlerPlugin);
 
 // Define the 404 route
 server.setNotFoundHandler((request, reply) => {
