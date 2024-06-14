@@ -1,6 +1,6 @@
 ### GET all alunos 
 
-GET http://localhost:8000/alunos?pageSize=1&page=2
+GET http://localhost:8000/alunos?page_size=2&cursor=2
 
 ### GET aluno
 

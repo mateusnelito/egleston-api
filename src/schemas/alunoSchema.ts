@@ -181,21 +181,38 @@ export const getAlunosSchema = {
   summary: 'Retorna todos os alunos',
   tags: ['alunos'],
   querystring: z.object({
-    page: z.coerce
-      .number({
-        invalid_type_error: 'A página deve ser número.',
-      })
-      .int({ message: 'O número da página deve ser inteiro.' })
-      .positive({ message: 'O número da página deve ser positivo.' })
-      .default(1),
-    pageSize: z.coerce
+    page_size: z.coerce
       .number({
         invalid_type_error: 'O tamanho da página deve ser número.',
       })
       .int({ message: 'O tamanho da página deve ser inteiro.' })
       .positive({ message: 'O tamanho da página deve ser positivo.' })
       .default(10),
+    cursor: z.coerce
+      .number({
+        invalid_type_error: 'O cursor deve ser número.',
+      })
+      .int({ message: 'O cursor deve ser inteiro.' })
+      .positive({ message: 'O cursor deve ser positivo.' })
+      .min(2, { message: 'O valor do cursor dever ser no minimo 2.' })
+      .nullish(),
   }),
+  response: {
+    200: z.object({
+      data: z.array(
+        z.object({
+          id: z.number().int().positive(),
+          nomeCompleto: z.string(),
+          nomeCompletoPai: z.string(),
+          nomeCompletoMae: z.string(),
+          numeroBi: z.string(),
+          dataNascimento: z.date(),
+          genero: z.enum(['M', 'F']),
+        })
+      ),
+      next_cursor: z.number().int().min(2).optional(),
+    }),
+  },
 };
 
 export const getAlunoSchema = {

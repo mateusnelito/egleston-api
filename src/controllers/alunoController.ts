@@ -57,22 +57,22 @@ export async function updateAluno(
   });
 }
 
+// Determine the next cursor
 export async function getAlunos(
   request: FastifyRequest<{ Querystring: getAlunosQueryStringType }>,
   reply: FastifyReply
 ) {
-  const { page, pageSize } = request.query;
+  const { cursor, page_size } = request.query;
 
-  const offset = page * pageSize;
-  // return reply.send({
-  //   page,
-  //   offset,
-  //   pageSize,
-  // });
+  const alunos = await getAllAlunos(page_size, cursor);
 
-  const alunos = await getAllAlunos(offset, pageSize);
+  let next_cursor =
+    alunos.length === page_size ? alunos[alunos.length - 1].id : undefined;
 
-  return reply.send(alunos);
+  return reply.send({
+    data: alunos,
+    next_cursor,
+  });
 }
 
 export async function getAluno(

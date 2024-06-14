@@ -32,14 +32,28 @@ export async function changeAluno(alunoId: number, aluno: updateAlunoBodyType) {
   });
 }
 
-export async function getAlunos(offset: number, limit: number) {
-  return await prisma.aluno.findMany({
-    where: {
-      id: {
-        // Load only alunos where id is greater than offset
-        gt: offset,
+export async function getAlunos(
+  limit: number,
+  cursor: number | null | undefined
+) {
+  // Applying cursor-based pagination
+  if (cursor) {
+    return await prisma.aluno.findMany({
+      where: {
+        id: {
+          // Load only alunos where id is less than offset
+          // Because the list start on last registry to first
+          lt: cursor,
+        },
       },
-    },
+      take: limit,
+      orderBy: {
+        id: 'desc',
+      },
+    });
+  }
+
+  return await prisma.aluno.findMany({
     take: limit,
     orderBy: {
       id: 'desc',
