@@ -19,7 +19,7 @@ async function errorHandlerPlugin(server: FastifyInstance) {
     // Check if is a BadRequest Class error
     if (err instanceof BadRequest) {
       // use the sendResponse method of BadRequest Class Error
-      return err.sendResponse(reply);
+      return err.sendErrors(reply);
     }
 
     console.error(err); // Show debug error

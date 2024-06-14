@@ -9,12 +9,17 @@ import zodTypeProvider from './plugins/zod';
 const server = fastify();
 server.register(swaggerDocs);
 server.register(zodTypeProvider);
-server.register(routes); // Register all the routes to API
 server.register(errorHandlerPlugin);
+server.register(routes); // Register all the routes to API
 
 // Define the 404 route
 server.setNotFoundHandler((request, reply) => {
-  reply.code(HttpStatusCodes.NOT_FOUND).send({ message: 'Route not found' });
+  reply
+    .code(HttpStatusCodes.NOT_FOUND)
+    .send({
+      statusCode: HttpStatusCodes.NOT_FOUND,
+      message: 'Route not found',
+    });
 });
 
 const SERVER_PORT = Number(process.env.SERVER_PORT || 8000);

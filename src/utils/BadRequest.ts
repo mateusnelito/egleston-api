@@ -26,7 +26,7 @@ class BadRequest extends Error {
   }
 
   // Method to format the response with the BadRequest error details
-  sendResponse(reply: FastifyReply) {
+  sendErrors(reply: FastifyReply) {
     // Return the formatted response object
     return reply.status(this.statusCode).send({
       statusCode: this.statusCode,
