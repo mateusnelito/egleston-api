@@ -5,6 +5,6 @@ import alunosRoutes from './alunoRoutes';
 // Remember FastifyPlugin equals JS object
 const routes: FastifyPluginAsync = async (server: FastifyInstance) => {
   // Define the prefix "/alunos" refers to alunosRoutes plugin
-  server.register(alunosRoutes, { prefix: '/alunos' });
+  server.register(alunosRoutes, { prefix: '/api/alunos' });
 };
 export default routes; // Export the all routes

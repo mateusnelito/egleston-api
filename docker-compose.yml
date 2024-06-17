@@ -3,17 +3,17 @@ version: '3.8' # Compose version
 services:
   postgres:
     image: bitnami/postgresql:latest # Bitnami PostgreSQL image
-    container_name: egleston_postgres_db # Container name
+    container_name: egleston_db # Container name
     environment:
-      - POSTGRESQL_USERNAME=sge_main_user # PostgreSQL username
-      - POSTGRESQL_PASSWORD=1234 # PostgreSQL user password
-      - POSTGRESQL_DATABASE=egleston_sge # Database name
+      - POSTGRESQL_USERNAME=user # PostgreSQL username
+      - POSTGRESQL_PASSWORD=password # PostgreSQL user password
+      - POSTGRESQL_DATABASE=egleston # Database name
       - ALLOW_EMPTY_PASSWORD=no # Don't allow empty password
     ports:
       - '5432:5432' # Ports mapping (host:container)
     volumes:
-      - egleston_sge_data:/bitnami/postgresql # Data persistence
+      - egleston_data:/bitnami/postgresql # Data persistence
       - ./initdb:/docker-entrypoint-initdb.d # Mount the directory with the services
 
 volumes:
-  egleston_sge_data: # Volume for data persistence
+  egleston_data: # Volume for data persistence

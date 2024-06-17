@@ -1,14 +1,14 @@
 ### GET all alunos 
 
-GET http://localhost:8000/alunos?page_size=2&cursor=2
+GET http://localhost:8000/api/alunos?page_size=2&cursor=2
 
 ### GET aluno
 
-GET http://localhost:8000/alunos/3
+GET http://localhost:8000/api/alunos/1
 
 
 ### Create a aluno
-POST http://localhost:8000/alunos/create
+POST http://localhost:8000/api/alunos/create
 Content-Type: application/json
 
 {
@@ -21,7 +21,7 @@ Content-Type: application/json
 }
 
 ### Update an existent aluno
-PUT http://localhost:8000/alunos/2
+PUT http://localhost:8000/api/alunos/1
 Content-Type: application/json
 
 {
