@@ -182,12 +182,17 @@ Adiciona um novo estudante.
 - **Corpo da Requisição**:
   ```json
   {
-    "nomeCompleto": "Nome de exemplo",
-    "nomeCompletoPai": "Nome do pai exemplo",
-    "nomeCompletoMae": "Nome da mãe exemplo",
-    "numeroBi": "000000001CA000",
-    "dataNascimento": "2001-01-19",
-    "genero": "M"
+    "nomeCompleto": "Mateus Vale",
+    "nomeCompletoPai": "Nelito Toquessa",
+    "nomeCompletoMae": "Ana João",
+    "numeroBi": "000000001LA000",
+    "dataNascimento": "2005-06-01",
+    "genero": "M",
+    "bairro": "Simeone",
+    "rua": "4 de Abril",
+    "numeroCasa": 73,
+    "telefone": "954454120",
+    "email": "mateus@mateus.com"
   }
   ```
 - **Respostas**:
