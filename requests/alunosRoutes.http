@@ -12,12 +12,17 @@ POST http://localhost:8000/api/alunos/create
 Content-Type: application/json
 
 {
-    "nomeCompleto": "Nome de exemplo",
-    "nomeCompletoPai": "Nome do pai exemplo",
-    "nomeCompletoMae": "Nome da mãe exemplo",
-    "numeroBi": "000000001CA000",
+    "nomeCompleto": "",
+    "nomeCompletoPai": "",
+    "nomeCompletoMae": "",
+    "numeroBi": "000000001MA000",
     "dataNascimento": "2001-01-19",
-    "genero": "M"
+    "genero": "M",
+    "bairro": "",
+    "rua": "",
+    "numeroCasa": 0,
+    "telefone": "9xxxxxxxx",
+    "email": "email@example.com"
 }
 
 ### Update an existent aluno
@@ -29,5 +34,4 @@ Content-Type: application/json
     "nomeCompletoPai": "Teste UPDATED",
     "nomeCompletoMae": "Teste UPDATED",
     "dataNascimento": "2001-01-19",
-    "genero": "F"
 }

@@ -15,23 +15,41 @@ import {
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import BadRequest from '../utils/BadRequest';
 import NotFoundRequest from '../utils/NotFoundRequest';
+import { getEmail, getTelefone } from '../services/alunoContactoServices';
 
 export async function createAluno(
   // Define that the Generic Type of Body is CreateAlunoBodyType
   request: FastifyRequest<{ Body: CreateAlunoBodyType }>,
   reply: FastifyReply
 ) {
-  const { numeroBi } = request.body;
-  const aluno = await getAlunoByNumeroBi(numeroBi);
+  const { numeroBi, telefone, email } = request.body;
+  const isNumeroBi = await getAlunoByNumeroBi(numeroBi);
 
-  if (aluno) {
+  if (isNumeroBi) {
     throw new BadRequest('Número de BI inválido.', {
-      numeroBi: ['Já existe um aluno com o mesmo número de BI'],
+      numeroBi: ['O número de BI já sendo usado.'],
     });
   }
 
-  const { id } = await saveAluno(request.body);
-  return reply.status(HttpStatusCodes.CREATED).send({ id });
+  const [isTelefone, isEmail] = await Promise.all([
+    await getTelefone(telefone),
+    await getEmail(email),
+  ]);
+
+  if (isTelefone) {
+    throw new BadRequest('Número de telefone inválido.', {
+      numeroBi: ['O número de telefone já está sendo usado.'],
+    });
+  }
+
+  if (isEmail) {
+    throw new BadRequest('Email inválido.', {
+      numeroBi: ['O endereço de email já sendo usado.'],
+    });
+  }
+
+  const aluno = await saveAluno(request.body);
+  return reply.status(HttpStatusCodes.CREATED).send(aluno);
 }
 
 export async function updateAluno(

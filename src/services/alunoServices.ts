@@ -1,12 +1,34 @@
+import { string } from 'zod';
 import { prisma } from '../lib/prisma';
 import {
   CreateAlunoBodyType,
   updateAlunoBodyType,
 } from '../schemas/alunoSchema';
 
+// Save aluno, endereco and contactos
 export async function saveAluno(aluno: CreateAlunoBodyType) {
   return await prisma.aluno.create({
-    data: aluno,
+    data: {
+      nomeCompleto: aluno.nomeCompleto,
+      nomeCompletoPai: aluno.nomeCompletoPai,
+      nomeCompletoMae: aluno.nomeCompletoMae,
+      numeroBi: aluno.numeroBi,
+      dataNascimento: aluno.dataNascimento,
+      genero: aluno.genero,
+      AlunoEndereco: {
+        create: {
+          bairro: aluno.bairro,
+          rua: aluno.rua,
+          numeroCasa: aluno.numeroCasa,
+        },
+      },
+      AlunoContacto: {
+        create: {
+          telefone: aluno.telefone,
+          email: aluno.email,
+        },
+      },
+    },
   });
 }
 

@@ -79,10 +79,57 @@ export const createAlunoSchema = {
         message: 'A data de nascimento não pode estar no futuro.',
       }),
     genero: z.enum(['M', 'F'], { message: 'O género deve ser "M" ou "F".' }),
+    bairro: z
+      .string({
+        required_error: 'O nome do bairro é obrigatório.',
+        invalid_type_error: 'O nome do bairro deve ser uma string.',
+      })
+      .regex(/^[a-zA-ZÀ-ÿ][a-zA-ZÀ-ÿ0-9.,;'"-\s]{2,29}$/, {
+        message:
+          'O nome do bairro deve possuir entre 3 e 30 caracteres, começar com uma letra e incluir apenas caracteres especiais necessários.',
+      }),
+    rua: z
+      .string({
+        required_error: 'O nome da rua é obrigatório.',
+        invalid_type_error: 'O nome da rua deve ser uma string.',
+      })
+      .regex(/^[a-zA-ZÀ-ÿ0-9][a-zA-ZÀ-ÿ0-9.,;'"()\s-]{2,49}$/, {
+        message:
+          'O nome da rua deve ter entre 3 e 50 caracteres, começar com uma letra ou número, e pode incluir apenas letras, números, espaços e os caracteres especiais permitidos (,.;\'"-()).',
+      }),
+    numeroCasa: z
+      .number({
+        required_error: 'O número da casa é obrigatório.',
+        invalid_type_error: 'O número da casa deve ser um número.',
+      })
+      .int({ message: 'O número da casa deve ser inteiro.' })
+      .positive({ message: 'O número da casa deve ser positivo.' })
+      .max(99999, { message: 'O número da casa máximo valido é 99999.' })
+      .transform(String),
+    telefone: z
+      .string({
+        required_error: 'O número de telefone é obrigatório.',
+        invalid_type_error: 'O número de telefone deve ser uma string.',
+      })
+      .regex(/99|9[1-5]\d{7}$/gm, {
+        message: 'O número de telefone é inválido.',
+      }),
+    email: z
+      .string({
+        required_error: 'O endereço de email é obrigatório.',
+        invalid_type_error: 'O endereço de email deve ser uma string.',
+      })
+      .email({ message: 'O endereço de email é inválido.' }),
   }),
   response: {
     201: z.object({
       id: z.number().int().positive(),
+      nomeCompleto: z.string(),
+      nomeCompletoPai: z.string(),
+      nomeCompletoMae: z.string(),
+      numeroBi: z.string(),
+      dataNascimento: z.date(),
+      genero: z.enum(['M', 'F']),
     }),
   },
 };
@@ -165,6 +212,47 @@ export const updateAlunoSchema = {
         message: 'A data de nascimento não pode estar no futuro.',
       }),
     genero: z.enum(['M', 'F'], { message: 'O género deve ser "M" ou "F".' }),
+    bairro: z
+      .string({
+        required_error: 'O nome do bairro é obrigatório.',
+        invalid_type_error: 'O nome do bairro deve ser uma string.',
+      })
+      .regex(/^[a-zA-ZÀ-ÿ][a-zA-ZÀ-ÿ0-9.,;'"-\s]{2,29}$/, {
+        message:
+          'O nome do bairro deve possuir entre 3 e 30 caracteres, começar com uma letra e incluir apenas caracteres especiais necessários.',
+      }),
+    rua: z
+      .string({
+        required_error: 'O nome da rua é obrigatório.',
+        invalid_type_error: 'O nome da rua deve ser uma string.',
+      })
+      .regex(/^[a-zA-ZÀ-ÿ0-9][a-zA-ZÀ-ÿ0-9.,;'"()\s-]{2,49}$/, {
+        message:
+          'O nome da rua deve ter entre 3 e 50 caracteres, começar com uma letra ou número, e pode incluir apenas letras, números, espaços e os caracteres especiais permitidos (,.;\'"-()).',
+      }),
+    numeroCasa: z
+      .number({
+        required_error: 'O número da casa é obrigatório.',
+        invalid_type_error: 'O número da casa deve ser um número.',
+      })
+      .int({ message: 'O número da casa deve ser inteiro.' })
+      .positive({ message: 'O número da casa deve ser positivo.' })
+      .max(99999, { message: 'O número da casa máximo valido é 99999.' })
+      .transform(String),
+    telefone: z
+      .string({
+        required_error: 'O número de telefone é obrigatório.',
+        invalid_type_error: 'O número de telefone deve ser uma string.',
+      })
+      .regex(/99|9[1-5]\d{7}$/gm, {
+        message: 'O número de telefone é inválido.',
+      }),
+    email: z
+      .string({
+        required_error: 'O endereço de email é obrigatório.',
+        invalid_type_error: 'O endereço de email deve ser uma string.',
+      })
+      .email({ message: 'O endereço de email é inválido.' }),
   }),
   response: {
     200: z.object({
