@@ -291,8 +291,6 @@ export const getAlunosSchema = {
         z.object({
           id: z.number().int().positive(),
           nomeCompleto: z.string(),
-          nomeCompletoPai: z.string(),
-          nomeCompletoMae: z.string(),
           numeroBi: z.string(),
           dataNascimento: z.date(),
           genero: z.enum(['M', 'F']),
@@ -317,12 +315,18 @@ export const getAlunoSchema = {
   }),
   response: {
     200: z.object({
+      id: z.number().int().positive(),
       nomeCompleto: z.string(),
       nomeCompletoPai: z.string(),
       nomeCompletoMae: z.string(),
       numeroBi: z.string(),
       dataNascimento: z.date(),
       genero: z.enum(['M', 'F']),
+      bairro: z.string(),
+      rua: z.string(),
+      numeroCasa: z.string(),
+      telefone: z.string(),
+      email: z.string(),
     }),
   },
 };

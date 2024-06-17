@@ -120,11 +120,24 @@ export async function getAluno(
   reply: FastifyReply
 ) {
   const { alunoId } = request.params;
-
-  if (!(await getAlunoById(alunoId))) {
+  const isAluno = await getAlunoById(alunoId);
+  if (!isAluno) {
     throw new NotFoundRequest('Id de aluno não existe.');
   }
 
   const aluno = await getAlunoById(alunoId);
-  return reply.send(aluno);
+  return reply.send({
+    id: aluno?.id,
+    nomeCompleto: aluno?.nomeCompleto,
+    nomeCompletoPai: aluno?.nomeCompletoPai,
+    nomeCompletoMae: aluno?.nomeCompletoMae,
+    numeroBi: aluno?.numeroBi,
+    dataNascimento: aluno?.dataNascimento,
+    genero: aluno?.genero,
+    bairro: aluno?.Endereco?.bairro,
+    rua: aluno?.Endereco?.rua,
+    numeroCasa: aluno?.Endereco?.numeroCasa,
+    telefone: aluno?.Contacto?.telefone,
+    email: aluno?.Contacto?.email,
+  });
 }

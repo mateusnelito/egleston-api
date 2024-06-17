@@ -1,11 +1,10 @@
 ### GET all alunos 
 
-GET http://localhost:8000/api/alunos?page_size=2&cursor=2
+GET http://localhost:8000/api/alunos?page_size=2
 
 ### GET aluno
 
-GET http://localhost:8000/api/alunos/1
-
+GET http://localhost:8000/api/alunos/2
 
 ### Create a aluno
 POST http://localhost:8000/api/alunos/create

@@ -15,14 +15,14 @@ export async function saveAluno(aluno: CreateAlunoBodyType) {
       numeroBi: aluno.numeroBi,
       dataNascimento: aluno.dataNascimento,
       genero: aluno.genero,
-      AlunoEndereco: {
+      Endereco: {
         create: {
           bairro: aluno.bairro,
           rua: aluno.rua,
           numeroCasa: aluno.numeroCasa,
         },
       },
-      AlunoContacto: {
+      Contacto: {
         create: {
           telefone: aluno.telefone,
           email: aluno.email,
@@ -44,6 +44,21 @@ export async function getAlunoByNumeroBi(numeroBi: string) {
 export async function getAlunoById(alunoId: number) {
   return await prisma.aluno.findUnique({
     where: { id: alunoId },
+    include: {
+      Endereco: {
+        select: {
+          bairro: true,
+          rua: true,
+          numeroCasa: true,
+        },
+      },
+      Contacto: {
+        select: {
+          telefone: true,
+          email: true,
+        },
+      },
+    },
   });
 }
 
@@ -58,14 +73,14 @@ export async function changeAluno(alunoId: number, aluno: updateAlunoBodyType) {
       nomeCompletoMae: aluno.nomeCompletoMae,
       dataNascimento: aluno.dataNascimento,
       genero: aluno.genero,
-      AlunoEndereco: {
+      Endereco: {
         update: {
           bairro: aluno.bairro,
           rua: aluno.rua,
           numeroCasa: aluno.numeroCasa,
         },
       },
-      AlunoContacto: {
+      Contacto: {
         update: {
           telefone: aluno.telefone,
           email: aluno.email,
@@ -79,6 +94,14 @@ export async function getAlunos(
   limit: number,
   cursor: number | null | undefined
 ) {
+  const SELECT_FIELDS = {
+    id: true,
+    nomeCompleto: true,
+    numeroBi: true,
+    dataNascimento: true,
+    genero: true,
+  };
+
   // Applying cursor-based pagination
   if (cursor) {
     return await prisma.aluno.findMany({
@@ -89,6 +112,7 @@ export async function getAlunos(
           lt: cursor,
         },
       },
+      select: SELECT_FIELDS,
       take: limit,
       orderBy: {
         id: 'desc',
@@ -101,5 +125,6 @@ export async function getAlunos(
     orderBy: {
       id: 'desc',
     },
+    select: SELECT_FIELDS,
   });
 }
