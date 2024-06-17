@@ -26,12 +26,18 @@ Content-Type: application/json
 }
 
 ### Update an existent aluno
-PUT http://localhost:8000/api/alunos/1
+PUT http://localhost:8000/api/alunos/2
 Content-Type: application/json
 
 {
-    "nomeCompleto": "Teste UPDATED",
-    "nomeCompletoPai": "Teste UPDATED",
-    "nomeCompletoMae": "Teste UPDATED",
+    "nomeCompleto": "UPDATED FIRST",
+    "nomeCompletoPai": "UPDATED FIRST",
+    "nomeCompletoMae": "UPDATED FIRST",
     "dataNascimento": "2001-01-19",
+    "genero": "M",
+    "bairro": "Camama",
+    "rua": "3 Bancadas",
+    "numeroCasa": 10,
+    "telefone": "932623102",
+    "email": "aswss@exmle.co"
 }

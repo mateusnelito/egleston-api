@@ -61,10 +61,30 @@ export async function updateAluno(
   reply: FastifyReply
 ) {
   const { alunoId } = request.params;
+  const { telefone, email } = request.body;
+  const isAluno = await getAlunoById(alunoId);
 
-  if (!(await getAlunoById(alunoId))) {
+  if (!isAluno) {
     throw new NotFoundRequest('Id de aluno não existe.');
   }
+
+  const [isTelefone, isEmail] = await Promise.all([
+    await getTelefone(telefone, alunoId),
+    await getEmail(email, alunoId),
+  ]);
+
+  if (isTelefone) {
+    throw new BadRequest('Número de telefone inválido.', {
+      numeroBi: ['O número de telefone já está sendo usado.'],
+    });
+  }
+
+  if (isEmail) {
+    throw new BadRequest('Email inválido.', {
+      numeroBi: ['O endereço de email já sendo usado.'],
+    });
+  }
+
   const aluno = await changeAluno(alunoId, request.body);
   return reply.send({
     nomeCompleto: aluno.nomeCompleto,

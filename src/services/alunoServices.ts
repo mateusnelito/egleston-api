@@ -49,8 +49,29 @@ export async function getAlunoById(alunoId: number) {
 
 export async function changeAluno(alunoId: number, aluno: updateAlunoBodyType) {
   return await prisma.aluno.update({
-    where: { id: alunoId },
-    data: aluno,
+    where: {
+      id: alunoId,
+    },
+    data: {
+      nomeCompleto: aluno.nomeCompleto,
+      nomeCompletoPai: aluno.nomeCompletoPai,
+      nomeCompletoMae: aluno.nomeCompletoMae,
+      dataNascimento: aluno.dataNascimento,
+      genero: aluno.genero,
+      AlunoEndereco: {
+        update: {
+          bairro: aluno.bairro,
+          rua: aluno.rua,
+          numeroCasa: aluno.numeroCasa,
+        },
+      },
+      AlunoContacto: {
+        update: {
+          telefone: aluno.telefone,
+          email: aluno.email,
+        },
+      },
+    },
   });
 }
 
