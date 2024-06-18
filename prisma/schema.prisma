@@ -78,7 +78,7 @@ model Parentesco {
   nome        String        @unique @db.VarChar(30)
   Responsavel Responsavel[]
 
-  @@map("parentesco")
+  @@map("parentescos")
   @@schema("cadastro")
 }
 
