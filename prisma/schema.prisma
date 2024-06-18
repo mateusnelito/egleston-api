@@ -1,0 +1,108 @@
+generator client {
+  provider        = "prisma-client-js"
+  // Ative the multiSchema preview feature
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["cadastro", "academico", "financeiro"]
+}
+
+// Enum definition
+enum Genero {
+  M
+  F
+
+  @@schema("cadastro")
+}
+
+model Aluno {
+  id              Int            @id @default(autoincrement())
+  nomeCompleto    String         @map("nome_completo") @db.VarChar(100)
+  nomeCompletoPai String         @map("nome_completo_pai") @db.VarChar(100)
+  nomeCompletoMae String         @map("nome_completo_mae") @db.VarChar(100)
+  numeroBi        String         @unique @map("numero_bi") @db.VarChar(14)
+  dataNascimento  DateTime       @map("data_nascimento") @db.Date
+  genero          Genero
+  Endereco        AlunoEndereco?
+  Contacto        AlunoContacto?
+  Responsaveis    Responsavel[]
+
+  @@map("alunos")
+  @@schema("cadastro")
+}
+
+model AlunoEndereco {
+  id         Int    @id @default(autoincrement())
+  alunoId    Int    @unique @map("aluno_id")
+  bairro     String @db.VarChar(30)
+  rua        String @db.VarChar(50)
+  numeroCasa String @map("numero_casa") @db.VarChar(5)
+  Aluno      Aluno  @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+
+  @@index([bairro])
+  @@map("alunos_enderecos")
+  @@schema("cadastro")
+}
+
+model AlunoContacto {
+  id       Int    @id @default(autoincrement())
+  alunoId  Int    @unique @map("aluno_id")
+  telefone String @unique @db.VarChar(9)
+  email    String @unique @db.VarChar(255)
+  Aluno    Aluno  @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+
+  @@map("alunos_contactos")
+  @@schema("cadastro")
+}
+
+model Responsavel {
+  id           Int                  @id @default(autoincrement())
+  Aluno        Aluno                @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  alunoId      Int                  @map("aluno_id")
+  nomeCompleto String               @map("nome_completo") @db.VarChar(100)
+  Parentesco   Parentesco           @relation(fields: [parentescoId], references: [id], onDelete: Cascade)
+  parentescoId Int                  @map("parentesco_id") @db.SmallInt
+  Endereco     ResponsavelEndereco?
+  Contacto     ResponsavelContacto?
+
+  @@index([alunoId, nomeCompleto])
+  @@map("responsaveis")
+  @@schema("cadastro")
+}
+
+model Parentesco {
+  id          Int           @id @default(autoincrement()) @db.SmallInt
+  nome        String        @db.VarChar(30)
+  Responsavel Responsavel[]
+
+  @@map("parentesco")
+  @@schema("cadastro")
+}
+
+model ResponsavelEndereco {
+  id            Int         @id @default(autoincrement())
+  Responsavel   Responsavel @relation(fields: [responsavelId], references: [id], onDelete: Cascade)
+  responsavelId Int         @unique @map("responsavel_id")
+  bairro        String      @db.VarChar(30)
+  rua           String      @db.VarChar(50)
+  numeroCasa    String      @map("numero_casa") @db.VarChar(5)
+
+  @@index([bairro])
+  @@map("responsaveis_enderecos")
+  @@schema("cadastro")
+}
+
+model ResponsavelContacto {
+  id            Int         @id @default(autoincrement())
+  Responsavel   Responsavel @relation(fields: [responsavelId], references: [id], onDelete: Cascade)
+  responsavelId Int         @unique @map("responsavel_id")
+  telefone      String      @unique @db.VarChar(9)
+  email         String      @unique @db.VarChar(255)
+  outros        String?     @db.VarChar(255)
+
+  @@map("responsaveis_contactos")
+  @@schema("cadastro")
+}
