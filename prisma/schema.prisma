@@ -100,7 +100,7 @@ model ResponsavelContacto {
   Responsavel   Responsavel @relation(fields: [responsavelId], references: [id], onDelete: Cascade)
   responsavelId Int         @unique @map("responsavel_id")
   telefone      String      @unique @db.VarChar(9)
-  email         String      @unique @db.VarChar(255)
+  email         String?     @unique @db.VarChar(255)
   outros        String?     @db.VarChar(255)
 
   @@map("responsaveis_contactos")
