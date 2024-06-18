@@ -95,7 +95,6 @@ export async function updateAluno(
   });
 }
 
-// Determine the next cursor
 export async function getAlunos(
   request: FastifyRequest<{ Querystring: getAlunosQueryStringType }>,
   reply: FastifyReply
@@ -104,6 +103,7 @@ export async function getAlunos(
 
   const alunos = await getAllAlunos(page_size, cursor);
 
+  // Determine the next cursor
   let next_cursor =
     alunos.length === page_size ? alunos[alunos.length - 1].id : undefined;
 

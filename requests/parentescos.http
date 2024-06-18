@@ -1,0 +1,23 @@
+### GET all parentescos 
+
+GET http://localhost:8000/api/parentescos?page_size=2
+
+### GET parentesco
+
+GET http://localhost:8000/api/parentescos/1
+
+### Create a parentesco
+POST http://localhost:8000/api/parentescos/create
+Content-Type: application/json
+
+{
+    "nome": "Tia Avó"
+}
+
+### Update an existent parentesco
+PUT http://localhost:8000/api/parentescos/2
+Content-Type: application/json
+
+{
+    "nome": "Mãe"
+}

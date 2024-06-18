@@ -306,7 +306,7 @@ export const getAlunosSchema = {
           genero: z.enum(['M', 'F']),
         })
       ),
-      next_cursor: z.number().int().min(2).optional(),
+      next_cursor: z.number().int().optional(),
     }),
   },
 };

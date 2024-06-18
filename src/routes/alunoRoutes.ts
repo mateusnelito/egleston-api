@@ -27,12 +27,13 @@ const alunosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
     handler: updateAluno,
   });
 
-  // GET
+  // GET ALL RESOURCE
   server.withTypeProvider<ZodTypeProvider>().get('/', {
     schema: getAlunosSchema,
     handler: getAlunos,
   });
-  // PUT
+
+  // GET UNIQUE RESOURCE
   server.withTypeProvider<ZodTypeProvider>().get('/:alunoId', {
     schema: getAlunoSchema,
     handler: getAluno,
