@@ -75,7 +75,7 @@ model Responsavel {
 
 model Parentesco {
   id          Int           @id @default(autoincrement()) @db.SmallInt
-  nome        String        @db.VarChar(30)
+  nome        String        @unique @db.VarChar(30)
   Responsavel Responsavel[]
 
   @@map("parentesco")
