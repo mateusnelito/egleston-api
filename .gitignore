@@ -5,8 +5,8 @@ node_modules/
 dist/
 
 # Prisma generated files
-prisma/schema.prisma
-prisma/.prisma/
+# prisma/schema.prisma
+# prisma/.prisma/
 
 # TypeScript build output
 *.tsbuildinfo
