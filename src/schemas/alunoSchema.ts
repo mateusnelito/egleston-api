@@ -66,6 +66,7 @@ export const createAlunoSchema = {
       .regex(/^\d{9}[A-Z]{2}\d{3}$/, { message: 'O número de BI é inválido.' }),
     dataNascimento: z
       .string()
+      .trim()
       .date(
         'A data de nascimento deve ser uma data válida no formato AAAA-MM-DD.'
       )
@@ -84,6 +85,7 @@ export const createAlunoSchema = {
         required_error: 'O nome do bairro é obrigatório.',
         invalid_type_error: 'O nome do bairro deve ser uma string.',
       })
+      .trim()
       .regex(/^[a-zA-ZÀ-ÿ][a-zA-ZÀ-ÿ0-9.,;'"-\s]{2,29}$/, {
         message:
           'O nome do bairro deve possuir entre 3 e 30 caracteres, começar com uma letra e incluir apenas caracteres especiais necessários.',
@@ -93,6 +95,7 @@ export const createAlunoSchema = {
         required_error: 'O nome da rua é obrigatório.',
         invalid_type_error: 'O nome da rua deve ser uma string.',
       })
+      .trim()
       .regex(/^[a-zA-ZÀ-ÿ0-9][a-zA-ZÀ-ÿ0-9.,;'"()\s-]{2,49}$/, {
         message:
           'O nome da rua deve ter entre 3 e 50 caracteres, começar com uma letra ou número, e pode incluir apenas letras, números, espaços e os caracteres especiais permitidos (,.;\'"-()).',
@@ -111,6 +114,7 @@ export const createAlunoSchema = {
         required_error: 'O número de telefone é obrigatório.',
         invalid_type_error: 'O número de telefone deve ser uma string.',
       })
+      .trim()
       .regex(/99|9[1-5]\d{7}$/gm, {
         message: 'O número de telefone é inválido.',
       }),
@@ -119,6 +123,7 @@ export const createAlunoSchema = {
         required_error: 'O endereço de email é obrigatório.',
         invalid_type_error: 'O endereço de email deve ser uma string.',
       })
+      .trim()
       .email({ message: 'O endereço de email é inválido.' }),
   }),
   response: {
@@ -199,6 +204,7 @@ export const updateAlunoSchema = {
       }),
     dataNascimento: z
       .string()
+      .trim()
       .date(
         'A data de nascimento deve ser uma data válida no formato AAAA-MM-DD.'
       )
@@ -217,6 +223,7 @@ export const updateAlunoSchema = {
         required_error: 'O nome do bairro é obrigatório.',
         invalid_type_error: 'O nome do bairro deve ser uma string.',
       })
+      .trim()
       .regex(/^[a-zA-ZÀ-ÿ][a-zA-ZÀ-ÿ0-9.,;'"-\s]{2,29}$/, {
         message:
           'O nome do bairro deve possuir entre 3 e 30 caracteres, começar com uma letra e incluir apenas caracteres especiais necessários.',
@@ -226,6 +233,7 @@ export const updateAlunoSchema = {
         required_error: 'O nome da rua é obrigatório.',
         invalid_type_error: 'O nome da rua deve ser uma string.',
       })
+      .trim()
       .regex(/^[a-zA-ZÀ-ÿ0-9][a-zA-ZÀ-ÿ0-9.,;'"()\s-]{2,49}$/, {
         message:
           'O nome da rua deve ter entre 3 e 50 caracteres, começar com uma letra ou número, e pode incluir apenas letras, números, espaços e os caracteres especiais permitidos (,.;\'"-()).',
@@ -244,6 +252,7 @@ export const updateAlunoSchema = {
         required_error: 'O número de telefone é obrigatório.',
         invalid_type_error: 'O número de telefone deve ser uma string.',
       })
+      .trim()
       .regex(/99|9[1-5]\d{7}$/gm, {
         message: 'O número de telefone é inválido.',
       }),
@@ -252,6 +261,7 @@ export const updateAlunoSchema = {
         required_error: 'O endereço de email é obrigatório.',
         invalid_type_error: 'O endereço de email deve ser uma string.',
       })
+      .trim()
       .email({ message: 'O endereço de email é inválido.' }),
   }),
   response: {
