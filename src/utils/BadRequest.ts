@@ -6,23 +6,23 @@ interface ErrorObject {
   [key: string]: string[];
 }
 
+// Interface type for ErrorArrayObject
+interface ErrorArrayObject {
+  [key: string]: { [key: number]: { [key: string]: string[] } };
+}
+
 // Custom error class representing a BadRequest
 class BadRequest extends Error {
-  private errors: ErrorObject;
+  private errors: ErrorObject | ErrorArrayObject;
   public statusCode = HttpStatusCodes.BAD_REQUEST;
 
-  constructor(
-    message: string,
-    errors: ErrorObject,
-    statusCode = HttpStatusCodes.BAD_REQUEST
-  ) {
+  constructor(message: string, errors: ErrorObject | ErrorArrayObject) {
     // Call the parent class constructor (Error) with the provided message
     super(message);
     // Set the name of the error class to 'BadRequest'
     this.name = 'BadRequest';
     // Assign the errors object to the 'errors' property of the instance
     this.errors = errors;
-    this.statusCode = statusCode;
   }
 
   // Method to format the response with the BadRequest error details
