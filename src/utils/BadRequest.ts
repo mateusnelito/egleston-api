@@ -1,24 +1,14 @@
 import { FastifyReply } from 'fastify';
 import HttpStatusCodes from './HttpStatusCodes';
-
-// Interface for ErrorObject
-interface ErrorObject {
-  [key: string]: string[];
-}
-
-// Interface type for ErrorArrayObject
-interface ErrorArrayObject {
-  [key: string]: { [key: number]: { [key: string]: string[] } };
-}
+import { complexBadRequestResponseType } from '../schemas/globalSchema';
 
 // Custom error class representing a BadRequest
 class BadRequest extends Error {
-  private errors: ErrorObject | ErrorArrayObject;
-  public statusCode = HttpStatusCodes.BAD_REQUEST;
+  private errors: complexBadRequestResponseType;
 
-  constructor(message: string, errors: ErrorObject | ErrorArrayObject) {
+  constructor(errors: complexBadRequestResponseType) {
     // Call the parent class constructor (Error) with the provided message
-    super(message);
+    super(errors.message);
     // Set the name of the error class to 'BadRequest'
     this.name = 'BadRequest';
     // Assign the errors object to the 'errors' property of the instance
@@ -28,11 +18,7 @@ class BadRequest extends Error {
   // Method to format the response with the BadRequest error details
   sendErrors(reply: FastifyReply) {
     // Return the formatted response object
-    return reply.status(this.statusCode).send({
-      statusCode: this.statusCode,
-      message: this.message,
-      errors: this.errors,
-    });
+    return reply.status(this.errors.statusCode).send(this.errors);
   }
 }
 

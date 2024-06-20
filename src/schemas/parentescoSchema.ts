@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
 export const createParentescoSchema = {
   summary: 'Adiciona um novo parentesco',
   tags: ['parentescos'],
@@ -25,6 +26,7 @@ export const createParentescoSchema = {
       id: z.number().int().positive(),
       nome: z.string(),
     }),
+    400: simpleBadRequestSchema,
   },
 };
 
@@ -62,6 +64,8 @@ export const updateParentescoSchema = {
     200: z.object({
       nome: z.string(),
     }),
+    400: simpleBadRequestSchema,
+    404: notFoundRequestSchema,
   },
 };
 
@@ -115,6 +119,7 @@ export const getParentescoSchema = {
       id: z.number().int().positive(),
       nome: z.string(),
     }),
+    404: notFoundRequestSchema,
   },
 };
 

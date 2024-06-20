@@ -1,6 +1,12 @@
 import { z } from 'zod';
+import {
+  complexBadRequestSchema,
+  notFoundRequestSchema,
+  simpleBadRequestSchema,
+} from './globalSchema';
 
 const FULL_NAME_REGEX = /^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]+$/;
+const OUTROS_CONTACTOS_REGEX = /^[a-zA-ZÀ-ÿ0-9.,;:'"\-\(\)\s]{5,255}$/;
 
 export const createAlunoSchema = {
   summary: 'Adiciona um novo aluno',
@@ -125,17 +131,106 @@ export const createAlunoSchema = {
       })
       .trim()
       .email({ message: 'O endereço de email é inválido.' }),
+    responsaveis: z.array(
+      z.object({
+        nomeCompleto: z
+          .string({
+            required_error: 'O nome completo é obrigatório.',
+            invalid_type_error: 'O nome completo deve ser uma string.',
+          })
+          .trim()
+          .min(10, {
+            message: 'O nome completo deve possuir no mínimo 10 caracteres.',
+          })
+          .max(100, {
+            message: 'O nome completo deve possuir no máximo 100 caracteres.',
+          })
+          .regex(FULL_NAME_REGEX, {
+            message:
+              'O nome completo deve possuir apenas caracteres alfabéticos e espaços.',
+          }),
+        parentescoId: z.coerce
+          .number({
+            required_error: 'O id de parentesco é obrigatório.',
+            invalid_type_error: 'O id do parentesco deve ser número.',
+          })
+          .int({ message: 'O id do parentesco deve ser inteiro.' })
+          .positive({ message: 'O id do parentesco deve ser positivo.' }),
+        bairro: z
+          .string({
+            required_error: 'O nome do bairro é obrigatório.',
+            invalid_type_error: 'O nome do bairro deve ser uma string.',
+          })
+          .trim()
+          .regex(/^[a-zA-ZÀ-ÿ][a-zA-ZÀ-ÿ0-9.,;'"-\s]{2,29}$/, {
+            message:
+              'O nome do bairro deve possuir entre 3 e 30 caracteres, começar com uma letra e incluir apenas caracteres especiais necessários.',
+          }),
+        rua: z
+          .string({
+            required_error: 'O nome da rua é obrigatório.',
+            invalid_type_error: 'O nome da rua deve ser uma string.',
+          })
+          .trim()
+          .regex(/^[a-zA-ZÀ-ÿ0-9][a-zA-ZÀ-ÿ0-9.,;'"()\s-]{2,49}$/, {
+            message:
+              'O nome da rua deve ter entre 3 e 50 caracteres, começar com uma letra ou número, e pode incluir apenas letras, números, espaços e os caracteres especiais permitidos (,.;\'"-()).',
+          }),
+        numeroCasa: z
+          .number({
+            required_error: 'O número da casa é obrigatório.',
+            invalid_type_error: 'O número da casa deve ser um número.',
+          })
+          .int({ message: 'O número da casa deve ser inteiro.' })
+          .positive({ message: 'O número da casa deve ser positivo.' })
+          .max(99999, { message: 'O número da casa máximo valido é 99999.' })
+          .transform(String),
+        telefone: z
+          .string({
+            required_error: 'O número de telefone é obrigatório.',
+            invalid_type_error: 'O número de telefone deve ser uma string.',
+          })
+          .trim()
+          .regex(/99|9[1-5]\d{7}$/gm, {
+            message: 'O número de telefone é inválido.',
+          }),
+        email: z
+          .string({
+            invalid_type_error: 'O endereço de email deve ser uma string.',
+          })
+          .trim()
+          .email({ message: 'O endereço de email é inválido.' })
+          .optional(),
+        outros: z
+          .string({
+            invalid_type_error:
+              'Outros contactos devem estar em formato de string.',
+          })
+          .trim()
+          .regex(OUTROS_CONTACTOS_REGEX, {
+            message:
+              'Outros contactos deve possuir entre 5 e 255 caracteres e conter apenas letras, números, espaços, e os caracteres especiais comuns (.,;:\'"-())',
+          })
+          .optional(),
+      }),
+      {
+        invalid_type_error: 'O array de responsáveis é inválido.',
+        required_error: 'Os responsaveis são obrigatórios.',
+      }
+    ),
   }),
   response: {
-    201: z.object({
-      id: z.number().int().positive(),
-      nomeCompleto: z.string(),
-      nomeCompletoPai: z.string(),
-      nomeCompletoMae: z.string(),
-      numeroBi: z.string(),
-      dataNascimento: z.date(),
-      genero: z.enum(['M', 'F']),
-    }),
+    // 201: z.object({
+    //   id: z.number().int().positive(),
+    //   nomeCompleto: z.string(),
+    //   nomeCompletoPai: z.string(),
+    //   nomeCompletoMae: z.string(),
+    //   numeroBi: z.string(),
+    //   dataNascimento: z.date(),
+    //   genero: z.enum(['M', 'F']),
+    // }),
+    400: complexBadRequestSchema,
+    404: complexBadRequestSchema,
   },
 };
 
@@ -272,6 +367,8 @@ export const updateAlunoSchema = {
       dataNascimento: z.date(),
       genero: z.enum(['M', 'F']),
     }),
+    400: simpleBadRequestSchema,
+    404: notFoundRequestSchema,
   },
 };
 
@@ -338,6 +435,7 @@ export const getAlunoSchema = {
       telefone: z.string(),
       email: z.string(),
     }),
+    404: notFoundRequestSchema,
   },
 };
 
@@ -349,4 +447,8 @@ export type uniqueAlunoResourceParamsType = z.infer<
 >;
 export type getAlunosQueryStringType = z.infer<
   typeof getAlunosSchema.querystring
+>;
+
+export type badRequestErrorsResponse = z.infer<
+  (typeof createAlunoSchema.response)[400]
 >;
