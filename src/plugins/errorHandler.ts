@@ -4,16 +4,17 @@ import { ZodError } from 'zod';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import BadRequest from '../utils/BadRequest';
 import NotFoundRequest from '../utils/NotFoundRequest';
+import formatZodErrors from '../utils/formatZodErrors';
 
 // Create a plugin to handle global errors
 async function errorHandlerPlugin(server: FastifyInstance) {
   server.setErrorHandler((err, _request, reply) => {
-    // Checks if it is a zod validation error
+    // Verifica se é um erro de validação do Zod
     if (err instanceof ZodError) {
       return reply.status(HttpStatusCodes.BAD_REQUEST).send({
         statusCode: HttpStatusCodes.BAD_REQUEST,
         message: 'Erro durante a validação da request',
-        errors: err.flatten().fieldErrors, // Grab all the invalid fields
+        errors: formatZodErrors(err), // Chama a função para formatar os erros
       });
     }
 
