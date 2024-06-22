@@ -1,34 +1,76 @@
-import { string } from 'zod';
 import { prisma } from '../lib/prisma';
 import {
   CreateAlunoBodyType,
   updateAlunoBodyType,
 } from '../schemas/alunoSchema';
 
-// Save aluno, endereco and contactos
-export async function saveAluno(aluno: CreateAlunoBodyType) {
-  return await prisma.aluno.create({
-    data: {
-      nomeCompleto: aluno.nomeCompleto,
-      nomeCompletoPai: aluno.nomeCompletoPai,
-      nomeCompletoMae: aluno.nomeCompletoMae,
-      numeroBi: aluno.numeroBi,
-      dataNascimento: aluno.dataNascimento,
-      genero: aluno.genero,
-      Endereco: {
-        create: {
-          bairro: aluno.bairro,
-          rua: aluno.rua,
-          numeroCasa: aluno.numeroCasa,
+// Fn utils
+function createEnderecoData(bairro: string, rua: string, numeroCasa: string) {
+  return {
+    bairro,
+    rua,
+    numeroCasa,
+  };
+}
+
+function createContactoData(telefone: string, email?: string, outros?: string) {
+  return {
+    telefone,
+    email,
+    outros,
+  };
+}
+
+// Save aluno, responsaveis and related records (endereco, contacto)
+export async function saveAluno(alunoData: CreateAlunoBodyType) {
+  return prisma.$transaction(async (transaction) => {
+    // Save the aluno on database
+    const aluno = await transaction.aluno.create({
+      data: {
+        nomeCompleto: alunoData.nomeCompleto,
+        nomeCompletoPai: alunoData.nomeCompletoPai,
+        nomeCompletoMae: alunoData.nomeCompletoMae,
+        numeroBi: alunoData.numeroBi,
+        dataNascimento: alunoData.dataNascimento,
+        genero: alunoData.genero,
+        Endereco: {
+          create: createEnderecoData(
+            alunoData.bairro,
+            alunoData.rua,
+            alunoData.numeroCasa
+          ),
+        },
+        Contacto: {
+          create: createContactoData(alunoData.telefone, alunoData.email),
         },
       },
-      Contacto: {
-        create: {
-          telefone: aluno.telefone,
-          email: aluno.email,
+    });
+
+    // Save the responsaveis, related with aluno
+    for (const responsavel of alunoData.responsaveis) {
+      await transaction.responsavel.create({
+        data: {
+          alunoId: aluno.id,
+          nomeCompleto: responsavel.nomeCompleto,
+          parentescoId: responsavel.parentescoId,
+          Endereco: {
+            create: createEnderecoData(
+              responsavel.bairro,
+              responsavel.rua,
+              responsavel.numeroCasa
+            ),
+          },
+          Contacto: {
+            create: createContactoData(
+              responsavel.telefone,
+              responsavel.email,
+              responsavel.outros
+            ),
+          },
         },
-      },
-    },
+      });
+    }
+    return aluno;
   });
 }
 
