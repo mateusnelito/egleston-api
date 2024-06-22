@@ -48,11 +48,11 @@ model AlunoEndereco {
 }
 
 model AlunoContacto {
-  id       Int    @id @default(autoincrement())
-  alunoId  Int    @unique @map("aluno_id")
-  telefone String @unique @db.VarChar(9)
-  email    String @unique @db.VarChar(255)
-  Aluno    Aluno  @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  id       Int     @id @default(autoincrement())
+  alunoId  Int     @unique @map("aluno_id")
+  telefone String  @unique @db.VarChar(9)
+  email    String? @unique @db.VarChar(255)
+  Aluno    Aluno   @relation(fields: [alunoId], references: [id], onDelete: Cascade)
 
   @@map("alunos_contactos")
   @@schema("cadastro")
