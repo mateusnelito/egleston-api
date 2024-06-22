@@ -142,24 +142,22 @@ export async function updateAluno(
     });
   }
 
-  const [isTelefone, isEmail] = await Promise.all([
-    await getTelefone(telefone, alunoId),
-    await getEmail(email, alunoId),
-  ]);
-
+  if (email) {
+    const isEmail = await getEmail(email, alunoId);
+    if (isEmail) {
+      throw new BadRequest({
+        statusCode: HttpStatusCodes.BAD_REQUEST,
+        message: 'Endereço de email inválido.',
+        errors: { email: ['O endereço de email já está sendo usado.'] },
+      });
+    }
+  }
+  const isTelefone = await getTelefone(telefone, alunoId);
   if (isTelefone) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
       message: 'Número de telefone inválido.',
       errors: { telefone: ['O número de telefone já está sendo usado.'] },
-    });
-  }
-
-  if (isEmail) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Endereço de email inválido.',
-      errors: { email: ['O endereço de email já está sendo usado.'] },
     });
   }
 
