@@ -130,7 +130,8 @@ export const createAlunoSchema = {
         invalid_type_error: 'O endereço de email deve ser uma string.',
       })
       .trim()
-      .email({ message: 'O endereço de email é inválido.' }),
+      .email({ message: 'O endereço de email é inválido.' })
+      .optional(),
     responsaveis: z.array(
       z.object({
         nomeCompleto: z

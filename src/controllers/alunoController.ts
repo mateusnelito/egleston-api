@@ -34,11 +34,21 @@ export async function createAluno(
   // -> Aluno
   const { numeroBi, telefone, email } = body;
 
-  const [isNumeroBi, isTelefone, isEmail] = await Promise.all([
+  const [isNumeroBi, isTelefone] = await Promise.all([
     await getAlunoByNumeroBi(numeroBi),
     await getTelefone(telefone),
-    await getEmail(email),
   ]);
+
+  if (email) {
+    const isEmail = await getEmail(email);
+    if (isEmail) {
+      throw new BadRequest({
+        statusCode: HttpStatusCodes.BAD_REQUEST,
+        message: 'Endereço de email inválido.',
+        errors: { email: ['O endereço de email já está sendo usado.'] },
+      });
+    }
+  }
 
   if (isNumeroBi) {
     throw new BadRequest({
@@ -53,14 +63,6 @@ export async function createAluno(
       statusCode: HttpStatusCodes.BAD_REQUEST,
       message: 'Número de telefone inválido.',
       errors: { telefone: ['O número de telefone já está sendo usado.'] },
-    });
-  }
-
-  if (isEmail) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Endereço de email inválido.',
-      errors: { email: ['O endereço de email já está sendo usado.'] },
     });
   }
 
