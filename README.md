@@ -182,17 +182,35 @@ Adiciona um novo estudante.
 - **Corpo da Requisição**:
   ```json
   {
-    "nomeCompleto": "Mateus Vale",
-    "nomeCompletoPai": "Nelito Toquessa",
-    "nomeCompletoMae": "Ana João",
-    "numeroBi": "000000001LA000",
+    "nomeCompleto": "Mateus Vale Celestino Nelito",
+    "nomeCompletoPai": "Nelito Cassule Toquessa",
+    "nomeCompletoMae": "Ana Vale João",
+    "numeroBi": "000000000LA000",
     "dataNascimento": "2005-06-01",
     "genero": "M",
-    "bairro": "Simeone",
+    "bairro": "Simeone Mucune",
     "rua": "4 de Abril",
-    "numeroCasa": 73,
-    "telefone": "954454120",
-    "email": "mateus@mateus.com"
+    "numeroCasa": 15,
+    "telefone": "955555500",
+    "email": "email@example.com",
+    "responsaveis": [
+      {
+        "nomeCompleto": "Nelito Cassule Toquessa",
+        "parentescoId": 1,
+        "bairro": "Rocha",
+        "rua": "Desconhecida",
+        "numeroCasa": 105,
+        "telefone": "932879871"
+      },
+      {
+        "nomeCompleto": "Ana Vale João",
+        "parentescoId": 2,
+        "bairro": "Simeone Mucune",
+        "rua": "4 de Abril",
+        "numeroCasa": 15,
+        "telefone": "936666123"
+      }
+    ]
   }
   ```
 - **Respostas**:
