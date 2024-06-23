@@ -5,12 +5,12 @@ import {
   notFoundRequestSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
-import { FULL_NAME_REGEX } from '../utils/regexPatterns';
+import { FULL_NAME_REGEX, NUMERO_BI_REGEX } from '../utils/regexPatterns';
 import { enderecoSchema } from './enderecoSchema';
 import { contactoSchema } from './contactoSchema';
 import { createResponsavelBodySchema } from './responsavelSchema';
 
-const ALUNO_BODY_SCHEMA = z
+const alunoBodySchema = z
   .object({
     nomeCompleto: z
       .string({
@@ -82,10 +82,20 @@ const ALUNO_BODY_SCHEMA = z
   .merge(enderecoSchema)
   .merge(contactoSchema);
 
+const alunoParamsSchema = z.object({
+  alunoId: z.coerce
+    .number({
+      required_error: 'O id do aluno é obrigatório.',
+      invalid_type_error: 'O id do aluno deve ser número.',
+    })
+    .int({ message: 'O id do aluno deve ser inteiro.' })
+    .positive({ message: 'O id do aluno deve ser positivo.' }),
+});
+
 export const createAlunoSchema = {
   summary: 'Adiciona um novo aluno',
   tags: ['alunos'],
-  body: ALUNO_BODY_SCHEMA.merge(
+  body: alunoBodySchema.merge(
     z.object({
       numeroBi: z
         .string({
@@ -94,7 +104,7 @@ export const createAlunoSchema = {
         })
         .trim()
         .length(14, { message: 'O número de BI deve possuir 14 caracteres.' })
-        .regex(/^\d{9}[A-Z]{2}\d{3}$/, {
+        .regex(NUMERO_BI_REGEX, {
           message: 'O número de BI é inválido.',
         }),
       responsaveis: z.array(createResponsavelBodySchema, {
@@ -121,16 +131,8 @@ export const createAlunoSchema = {
 export const updateAlunoSchema = {
   summary: 'Atualiza um aluno existente',
   tags: ['alunos'],
-  params: z.object({
-    alunoId: z.coerce
-      .number({
-        required_error: 'O id do aluno é obrigatório.',
-        invalid_type_error: 'O id do aluno deve ser número.',
-      })
-      .int({ message: 'O id do aluno deve ser inteiro.' })
-      .positive({ message: 'O id do aluno deve ser positivo.' }),
-  }),
-  body: ALUNO_BODY_SCHEMA,
+  params: alunoParamsSchema,
+  body: alunoBodySchema,
   response: {
     200: z.object({
       nomeCompleto: z.string(),
@@ -167,15 +169,7 @@ export const getAlunosSchema = {
 export const getAlunoSchema = {
   summary: 'Busca aluno pelo Id',
   tags: ['alunos'],
-  params: z.object({
-    alunoId: z.coerce
-      .number({
-        required_error: 'O id do aluno é obrigatório.',
-        invalid_type_error: 'O id do aluno deve ser número.',
-      })
-      .int({ message: 'O id do aluno deve ser inteiro.' })
-      .positive({ message: 'O id do aluno deve ser positivo.' }),
-  }),
+  params: alunoParamsSchema,
   response: {
     200: z.object({
       id: z.number().int().positive(),
@@ -198,13 +192,7 @@ export const getAlunoSchema = {
 // Extract the TS types from Schemas
 export type CreateAlunoBodyType = z.infer<typeof createAlunoSchema.body>;
 export type updateAlunoBodyType = z.infer<typeof updateAlunoSchema.body>;
-export type uniqueAlunoResourceParamsType = z.infer<
-  typeof updateAlunoSchema.params
->;
+export type uniqueAlunoResourceParamsType = z.infer<typeof alunoParamsSchema>;
 export type getAlunosQueryStringType = z.infer<
   typeof getAlunosSchema.querystring
->;
-
-export type badRequestErrorsResponse = z.infer<
-  (typeof createAlunoSchema.response)[400]
 >;
