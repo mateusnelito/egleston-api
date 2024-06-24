@@ -5,6 +5,7 @@ import {
 } from '../utils/regexPatterns';
 import { enderecoSchema } from './enderecoSchema';
 import { contactoSchema } from './contactoSchema';
+import { notFoundRequestSchema } from './globalSchema';
 
 const responsavelBodySchema = z
   .object({
@@ -46,7 +47,7 @@ const responsavelBodySchema = z
   .merge(enderecoSchema)
   .merge(contactoSchema);
 
-const responsavelParamsSchema = z.object({
+export const responsavelParamsSchema = z.object({
   responsavelId: z.coerce
     .number({
       required_error: 'O id do responsavel é obrigatório.',
@@ -74,6 +75,7 @@ export const createResponsavelSchema = {
       id: z.number().int().positive(),
       nomeCompleto: z.string(),
     }),
+    404: notFoundRequestSchema,
   },
 };
 
@@ -87,6 +89,7 @@ export const updateResponsavelSchema = {
     //   id: z.number().int().positive(),
     //   nomeCompleto: z.string(),
     // }),
+    404: notFoundRequestSchema,
   },
 };
 
@@ -99,6 +102,31 @@ export const deleteResponsavelSchema = {
     //   id: z.number().int().positive(),
     //   nomeCompleto: z.string(),
     // }),
+    404: notFoundRequestSchema,
+  },
+};
+
+export const getResponsavelSchema = {
+  summary: 'Busca responsavel pelo id',
+  tags: ['responsaveis'],
+  params: responsavelParamsSchema,
+  response: {
+    200: z.object({
+      id: z.number().int().positive(),
+      nomeCompleto: z.string(),
+      parentesco: z.string(),
+      endereco: z.object({
+        bairro: z.string(),
+        rua: z.string(),
+        numeroCasa: z.string(),
+      }),
+      contacto: z.object({
+        telefone: z.string(),
+        email: z.string().email().nullable(),
+        outros: z.string().nullable(),
+      }),
+    }),
+    404: notFoundRequestSchema,
   },
 };
 

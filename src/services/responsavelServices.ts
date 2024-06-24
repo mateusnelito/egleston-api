@@ -28,6 +28,39 @@ export async function saveResponsavel(
   });
 }
 
+export async function getResponsavelDetails(id: number) {
+  return await prisma.responsavel.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      Parentesco: {
+        select: {
+          nome: true,
+        },
+      },
+      Endereco: {
+        select: {
+          bairro: true,
+          rua: true,
+          numeroCasa: true,
+        },
+      },
+      Contacto: {
+        select: {
+          telefone: true,
+          email: true,
+          outros: true,
+        },
+      },
+    },
+    // select: {
+    //   id: true,
+    //   nomeCompleto: true,
+    // },
+  });
+}
+
 export async function getResponsavelById(id: number) {
   return await prisma.responsavel.findUnique({
     where: {

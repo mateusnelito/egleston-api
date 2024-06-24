@@ -1,29 +1,19 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
-  createParentescoSchema,
-  getParentescoSchema,
-  getParentescosSchema,
-  updateParentescoSchema,
-} from '../schemas/parentescoSchema';
-import {
-  createParentesco,
-  getParentesco,
-  getParentescos,
-  updateParentesco,
-} from '../controllers/parentescoController';
-import {
   createResponsavelSchema,
   deleteResponsavelSchema,
+  getResponsavelSchema,
   updateResponsavelSchema,
 } from '../schemas/responsavelSchema';
 import {
   createResponsavel,
   destroyResponsavel,
+  getResponsavel,
   updateResponsavel,
 } from '../controllers/responsavelController';
 
-// Create all parentesco sub-routes
+// Create all responsavel sub-routes
 const responsaveisRoutes: FastifyPluginAsync = async (
   server: FastifyInstance
 ) => {
@@ -45,10 +35,10 @@ const responsaveisRoutes: FastifyPluginAsync = async (
     handler: destroyResponsavel,
   });
 
-  // // GET UNIQUE RESOURCE
-  // server.withTypeProvider<ZodTypeProvider>().get('/:responsavelId', {
-  //   schema: getParentescoSchema,
-  //   handler: getParentesco,
-  // });
+  // GET UNIQUE RESOURCE
+  server.withTypeProvider<ZodTypeProvider>().get('/:responsavelId', {
+    schema: getResponsavelSchema,
+    handler: getResponsavel,
+  });
 };
 export default responsaveisRoutes; // Export all alunos sub-routes
