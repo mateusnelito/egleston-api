@@ -92,37 +92,37 @@ const alunoParamsSchema = z.object({
     .positive({ message: 'O id do aluno deve ser positivo.' }),
 });
 
+const alunoOkResponseBody = z.object({
+  id: z.number().int().positive(),
+  nomeCompleto: z.string(),
+  nomeCompletoPai: z.string(),
+  nomeCompletoMae: z.string(),
+  numeroBi: z.string(),
+  dataNascimento: z.string().date(),
+  genero: z.enum(['M', 'F']),
+});
+
 export const createAlunoSchema = {
   summary: 'Adiciona um novo aluno',
   tags: ['alunos'],
-  body: alunoBodySchema.merge(
-    z.object({
-      numeroBi: z
-        .string({
-          required_error: 'O número de BI é obrigatório.',
-          invalid_type_error: 'O número de BI deve ser uma string.',
-        })
-        .trim()
-        .length(14, { message: 'O número de BI deve possuir 14 caracteres.' })
-        .regex(NUMERO_BI_REGEX, {
-          message: 'O número de BI é inválido.',
-        }),
-      responsaveis: z.array(createResponsavelBodySchema, {
-        invalid_type_error: 'O array de responsáveis é inválido.',
-        required_error: 'Os responsaveis são obrigatórios.',
+  body: alunoBodySchema.extend({
+    numeroBi: z
+      .string({
+        required_error: 'O número de BI é obrigatório.',
+        invalid_type_error: 'O número de BI deve ser uma string.',
+      })
+      .trim()
+      .length(14, { message: 'O número de BI deve possuir 14 caracteres.' })
+      .regex(NUMERO_BI_REGEX, {
+        message: 'O número de BI é inválido.',
       }),
-    })
-  ),
-  response: {
-    201: z.object({
-      id: z.number().int().positive(),
-      nomeCompleto: z.string(),
-      nomeCompletoPai: z.string(),
-      nomeCompletoMae: z.string(),
-      numeroBi: z.string(),
-      dataNascimento: z.string().date(),
-      genero: z.enum(['M', 'F']),
+    responsaveis: z.array(createResponsavelBodySchema, {
+      invalid_type_error: 'O array de responsáveis é inválido.',
+      required_error: 'Os responsaveis são obrigatórios.',
     }),
+  }),
+  response: {
+    201: alunoOkResponseBody,
     400: complexBadRequestSchema,
     404: complexBadRequestSchema,
   },
@@ -134,13 +134,7 @@ export const updateAlunoSchema = {
   params: alunoParamsSchema,
   body: alunoBodySchema,
   response: {
-    200: z.object({
-      nomeCompleto: z.string(),
-      nomeCompletoPai: z.string(),
-      nomeCompletoMae: z.string(),
-      dataNascimento: z.string().date(),
-      genero: z.enum(['M', 'F']),
-    }),
+    200: alunoOkResponseBody.omit({ id: true, numeroBi: true }),
     400: simpleBadRequestSchema,
     404: notFoundRequestSchema,
   },
@@ -153,12 +147,9 @@ export const getAlunosSchema = {
   response: {
     200: z.object({
       data: z.array(
-        z.object({
-          id: z.number().int().positive(),
-          nomeCompleto: z.string(),
-          numeroBi: z.string(),
-          dataNascimento: z.string().date(),
-          genero: z.enum(['M', 'F']),
+        alunoOkResponseBody.omit({
+          nomeCompletoPai: true,
+          nomeCompletoMae: true,
         })
       ),
       next_cursor: z.number().int().optional(),
@@ -171,14 +162,7 @@ export const getAlunoSchema = {
   tags: ['alunos'],
   params: alunoParamsSchema,
   response: {
-    200: z.object({
-      id: z.number().int().positive(),
-      nomeCompleto: z.string(),
-      nomeCompletoPai: z.string(),
-      nomeCompletoMae: z.string(),
-      numeroBi: z.string(),
-      dataNascimento: z.string().date(),
-      genero: z.enum(['M', 'F']),
+    200: alunoOkResponseBody.extend({
       bairro: z.string(),
       rua: z.string(),
       numeroCasa: z.string(),
