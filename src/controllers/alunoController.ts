@@ -121,7 +121,6 @@ export async function createAluno(
   }
 
   const aluno = await saveAluno(data);
-  console.log(typeof aluno);
 
   return reply.status(HttpStatusCodes.CREATED).send({
     id: aluno.id,

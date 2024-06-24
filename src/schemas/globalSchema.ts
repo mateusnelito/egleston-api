@@ -9,12 +9,10 @@ export const simpleBadRequestSchema = defaultBadRequestSkeleton.extend({
   errors: z.record(z.string(), z.array(z.string())),
 });
 
+// FIXME: Serialize the appropriate schema
 export const complexBadRequestSchema = simpleBadRequestSchema.or(
   defaultBadRequestSkeleton.extend({
-    errors: z.record(
-      z.string(),
-      z.record(z.string(), z.record(z.string(), z.string().array()))
-    ),
+    errors: z.record(z.any()),
   })
 );
 
