@@ -1,15 +1,16 @@
 import { z } from 'zod';
 
-export const simpleBadRequestSchema = z.object({
+const defaultBadRequestSkeleton = z.object({
   statusCode: z.number().default(400),
   message: z.string(),
+});
+
+export const simpleBadRequestSchema = defaultBadRequestSkeleton.extend({
   errors: z.record(z.string(), z.array(z.string())),
 });
 
 export const complexBadRequestSchema = simpleBadRequestSchema.or(
-  z.object({
-    statusCode: z.number().default(400),
-    message: z.string(),
+  defaultBadRequestSkeleton.extend({
     errors: z.record(
       z.string(),
       z.record(z.string(), z.record(z.string(), z.string().array()))
@@ -17,18 +18,11 @@ export const complexBadRequestSchema = simpleBadRequestSchema.or(
   })
 );
 
-export const notFoundRequestSchema = z
-  .object({
-    statusCode: z.number().default(404),
-    message: z.string(),
+export const notFoundRequestSchema = defaultBadRequestSkeleton.or(
+  defaultBadRequestSkeleton.extend({
+    errors: z.record(z.string(), z.string()),
   })
-  .or(
-    z.object({
-      statusCode: z.number().default(404),
-      message: z.string(),
-      errors: z.record(z.string(), z.string()),
-    })
-  );
+);
 
 export const getAllResourcesParamsSchema = z.object({
   page_size: z.coerce
