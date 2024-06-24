@@ -5,6 +5,7 @@ import {
   getAlunoByNumeroBi,
   saveAluno,
   getAlunos as getAllAlunos,
+  getResponsaveis as getAllResponsaveis,
 } from '../services/alunoServices';
 import {
   CreateAlunoBodyType,
@@ -238,4 +239,23 @@ export async function getAluno(
     telefone: aluno?.Contacto?.telefone,
     email: aluno?.Contacto?.email,
   });
+}
+
+export async function getResponsaveis(
+  request: FastifyRequest<{
+    Params: uniqueAlunoResourceParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { alunoId } = request.params;
+  const isAluno = await getAlunoById(alunoId);
+  if (!isAluno) {
+    throw new NotFoundRequest({
+      statusCode: HttpStatusCodes.NOT_FOUND,
+      message: 'Id de aluno não existe.',
+    });
+  }
+
+  const responsaveis = await getAllResponsaveis(alunoId);
+  return reply.send({ data: responsaveis });
 }

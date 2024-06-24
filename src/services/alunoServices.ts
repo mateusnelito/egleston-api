@@ -170,3 +170,13 @@ export async function getAlunos(
     select: SELECT_FIELDS,
   });
 }
+
+export async function getResponsaveis(id: number) {
+  return await prisma.responsavel.findMany({
+    where: { alunoId: id },
+    select: {
+      id: true,
+      nomeCompleto: true,
+    },
+  });
+}

@@ -58,3 +58,7 @@ Content-Type: application/json
     "telefone": "932623102",
     "email": "aswss@exmle.co"
 }
+
+### GET all responsaveis 
+
+GET http://localhost:8000/api/alunos/1/responsaveis

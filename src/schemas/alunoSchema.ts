@@ -173,6 +173,23 @@ export const getAlunoSchema = {
   },
 };
 
+export const getResponsaveisSchema = {
+  summary: 'Retorna todos os responsaveis do aluno',
+  tags: ['alunos'],
+  params: alunoParamsSchema,
+  response: {
+    200: z.object({
+      data: z.array(
+        z.object({
+          id: z.number().int().int().positive(),
+          nomeCompleto: z.string(),
+        })
+      ),
+    }),
+    404: notFoundRequestSchema,
+  },
+};
+
 // Extract the TS types from Schemas
 export type CreateAlunoBodyType = z.infer<typeof createAlunoSchema.body>;
 export type updateAlunoBodyType = z.infer<typeof updateAlunoSchema.body>;
