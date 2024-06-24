@@ -90,6 +90,18 @@ export const updateResponsavelSchema = {
   },
 };
 
+export const deleteResponsavelSchema = {
+  summary: 'Deleta um responsavel existente',
+  tags: ['responsaveis'],
+  params: responsavelParamsSchema,
+  response: {
+    // 201: z.object({
+    //   id: z.number().int().positive(),
+    //   nomeCompleto: z.string(),
+    // }),
+  },
+};
+
 export const createResponsavelBodySchema = createResponsavelSchema.body;
 export type responsavelBodyType = z.infer<typeof createResponsavelSchema.body>;
 export type createResponsavelParamsType = z.infer<

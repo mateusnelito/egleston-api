@@ -14,10 +14,12 @@ import {
 } from '../controllers/parentescoController';
 import {
   createResponsavelSchema,
+  deleteResponsavelSchema,
   updateResponsavelSchema,
 } from '../schemas/responsavelSchema';
 import {
   createResponsavel,
+  destroyResponsavel,
   updateResponsavel,
 } from '../controllers/responsavelController';
 
@@ -37,11 +39,11 @@ const responsaveisRoutes: FastifyPluginAsync = async (
     handler: updateResponsavel,
   });
 
-  // // GET ALL RESOURCES
-  // server.withTypeProvider<ZodTypeProvider>().get('/:alunoId', {
-  //   schema: getParentescosSchema,
-  //   handler: getParentescos,
-  // });
+  // // DELETE UNIQUE RESOURCE
+  server.withTypeProvider<ZodTypeProvider>().delete('/:responsavelId', {
+    schema: deleteResponsavelSchema,
+    handler: destroyResponsavel,
+  });
 
   // // GET UNIQUE RESOURCE
   // server.withTypeProvider<ZodTypeProvider>().get('/:responsavelId', {

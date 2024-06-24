@@ -24,6 +24,7 @@ import { getAlunoById } from '../services/alunoServices';
 import { getEmail, getTelefone } from '../services/responsavelContactoServices';
 import {
   changeResponsavel,
+  deleteResponsavel,
   getResponsavelById,
   saveResponsavel,
 } from '../services/responsavelServices';
@@ -154,6 +155,26 @@ export async function updateResponsavel(
   }
 
   const responsavel = await changeResponsavel(responsavelId, request.body);
+  return reply.status(HttpStatusCodes.OK).send(responsavel);
+}
+
+export async function destroyResponsavel(
+  request: FastifyRequest<{
+    Params: uniqueResponsavelResourceParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { responsavelId } = request.params;
+  const isResponsavel = await getResponsavelById(responsavelId);
+
+  if (!isResponsavel) {
+    throw new NotFoundRequest({
+      statusCode: HttpStatusCodes.NOT_FOUND,
+      message: 'Id de responsavel não existe.',
+    });
+  }
+
+  const responsavel = await deleteResponsavel(responsavelId);
   return reply.send(responsavel);
 }
 

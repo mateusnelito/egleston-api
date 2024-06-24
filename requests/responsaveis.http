@@ -1,0 +1,32 @@
+### GET responsavel
+
+GET http://localhost:8000/api/responsaveis/2
+
+### Create a responsavel for a especific aluno
+POST http://localhost:8000/api/responsaveis/1/create
+Content-Type: application/json
+
+{
+    "nomeCompleto": "Novo responsavel",
+    "parentescoId": 3,
+    "bairro": "Simeone Mucune",
+    "rua": "Última Canfora",
+    "numeroCasa": 20,
+    "telefone": "958557784"
+}
+
+### Update an existent responsavel
+PUT http://localhost:8000/api/responsaveis/1
+Content-Type: application/json
+
+{
+  "nomeCompleto": "UPDATED FIRST",
+  "parentescoId": 4,
+  "bairro": "Camama",
+  "rua": "Três Bancadas",
+  "numeroCasa": 50,
+  "telefone": "935555500"
+}
+
+### Delete an existent responsavel
+DELETE http://localhost:8000/api/responsaveis/1

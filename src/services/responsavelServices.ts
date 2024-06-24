@@ -64,3 +64,7 @@ export async function changeResponsavel(
     },
   });
 }
+
+export async function deleteResponsavel(id: number) {
+  return await prisma.responsavel.delete({ where: { id } });
+}
