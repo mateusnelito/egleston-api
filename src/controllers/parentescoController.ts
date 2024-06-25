@@ -16,20 +16,30 @@ import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
 
+function throwNotFoundRequest() {
+  throw new NotFoundRequest({
+    statusCode: HttpStatusCodes.NOT_FOUND,
+    message: 'Id de parentesco não existe.',
+  });
+}
+
+function throwNomeBadRequest() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Nome de parentesco inválido.',
+    errors: { nome: ['O nome de parentesco já existe.'] },
+  });
+}
+
 export async function createParentesco(
   request: FastifyRequest<{ Body: createParentescoBodyType }>,
   reply: FastifyReply
 ) {
   const { nome } = request.body;
-  const isParentesco = await getParentescoByNome(nome);
 
-  if (isParentesco) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Nome de parentesco inválido.',
-      errors: { nome: ['O nome de parentesco já existe.'] },
-    });
-  }
+  const isParentesco = await getParentescoByNome(nome);
+  if (isParentesco) throwNomeBadRequest();
+
   const parentesco = await saveParentesco(request.body);
   return reply.status(HttpStatusCodes.CREATED).send(parentesco);
 }
@@ -44,23 +54,14 @@ export async function updateParentesco(
   const { parentescoId } = request.params;
   const { nome } = request.body;
 
-  const isParentesco = await getParentescoById(parentescoId);
+  const [isParentesco, isParentescoNome] = await Promise.all([
+    await getParentescoById(parentescoId),
+    await getParentescoByNome(nome, parentescoId),
+  ]);
 
-  if (!isParentesco) {
-    throw new NotFoundRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Id de parentesco não existe.',
-    });
-  }
+  if (!isParentesco) throwNotFoundRequest();
+  if (isParentescoNome) throwNomeBadRequest();
 
-  const isNome = await getParentescoByNome(nome, parentescoId);
-  if (isNome) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Nome de parentesco inválido.',
-      errors: { nome: ['O nome de parentesco já existe.'] },
-    });
-  }
   const parentesco = await changeParentesco(parentescoId, request.body);
   return reply.send({ nome: parentesco.nome });
 }
@@ -91,14 +92,9 @@ export async function getParentesco(
   reply: FastifyReply
 ) {
   const { parentescoId } = request.params;
-  const isParentesco = await getParentescoById(parentescoId);
 
-  if (!isParentesco) {
-    throw new NotFoundRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Id de parentesco não existe.',
-    });
-  }
+  const isParentesco = await getParentescoById(parentescoId);
+  if (!isParentesco) throwNotFoundRequest();
 
   const parentesco = await getParentescoById(parentescoId);
   return reply.send(parentesco);
