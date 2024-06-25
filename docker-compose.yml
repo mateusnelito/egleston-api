@@ -13,7 +13,6 @@ services:
       - '5432:5432' # Ports mapping (host:container)
     volumes:
       - egleston_data:/bitnami/postgresql # Data persistence
-      - ./initdb:/docker-entrypoint-initdb.d # Mount the directory with the services
 
 volumes:
   egleston_data: # Volume for data persistence
