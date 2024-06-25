@@ -4,20 +4,11 @@ import {
   updateParentescoBodyType,
 } from '../schemas/parentescoSchema';
 
-export async function getParentescoByNome(nome: string, id?: number) {
-  if (id) {
-    return await prisma.parentesco.findFirst({
-      where: { id: { not: id }, nome },
-      select: {
-        id: true,
-      },
-    });
-  }
-  return await prisma.parentesco.findUnique({
-    where: { nome },
-    select: {
-      id: true,
-    },
+export async function getParentescoNome(nome: string, id?: number) {
+  const whereClause = id ? { id: { not: id }, nome } : { nome };
+  return await prisma.parentesco.findFirst({
+    where: whereClause,
+    select: { nome: true },
   });
 }
 
@@ -25,39 +16,24 @@ export async function getParentescoById(id: number) {
   return await prisma.parentesco.findUnique({ where: { id } });
 }
 
-export async function saveParentesco(parentesco: createParentescoBodyType) {
-  return await prisma.parentesco.create({ data: parentesco });
+export async function saveParentesco(data: createParentescoBodyType) {
+  return await prisma.parentesco.create({ data });
 }
 
 export async function changeParentesco(
   id: number,
-  parentesco: updateParentescoBodyType
+  data: updateParentescoBodyType
 ) {
-  return await prisma.parentesco.update({ where: { id }, data: parentesco });
+  return await prisma.parentesco.update({ where: { id }, data });
 }
 
 export async function getParentescos(
   limit: number,
   cursor: number | null | undefined
 ) {
-  // Applying cursor-based pagination
-  if (cursor) {
-    return await prisma.parentesco.findMany({
-      where: {
-        id: {
-          // Load only parentescos where id is less than offset
-          // Because the list start on last registry to first
-          lt: cursor,
-        },
-      },
-      take: limit,
-      orderBy: {
-        id: 'desc',
-      },
-    });
-  }
-
+  const whereClause = cursor ? { id: { lt: cursor } } : {};
   return await prisma.parentesco.findMany({
+    where: whereClause,
     take: limit,
     orderBy: {
       id: 'desc',

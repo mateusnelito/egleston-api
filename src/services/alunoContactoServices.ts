@@ -1,51 +1,39 @@
 import { prisma } from '../lib/prisma';
 
-export async function getTelefone(telefone: string, aluno?: number) {
-  if (aluno) {
-    return await prisma.alunoContacto.findFirst({
-      where: {
+export async function getTelefone(telefone: string, alunoId?: number) {
+  const whereClause = alunoId
+    ? {
         alunoId: {
-          not: aluno,
+          not: alunoId,
         },
         telefone,
-      },
-      select: {
-        telefone: true,
-      },
-    });
-  }
+      }
+    : {
+        telefone,
+      };
 
-  return await prisma.alunoContacto.findUnique({
-    where: {
-      telefone,
-    },
+  return await prisma.alunoContacto.findFirst({
+    where: whereClause,
     select: {
       telefone: true,
     },
   });
 }
 
-export async function getEmail(email: string, aluno?: number) {
-  if (aluno) {
-    return await prisma.alunoContacto.findFirst({
-      where: {
+export async function getEmail(email: string, alunoId?: number) {
+  const whereClause = alunoId
+    ? {
         alunoId: {
-          not: aluno,
+          not: alunoId,
         },
         email,
-      },
-      select: {
-        telefone: true,
-      },
-    });
-  }
+      }
+    : { email };
 
-  return await prisma.alunoContacto.findUnique({
-    where: {
-      email,
-    },
+  return await prisma.alunoContacto.findFirst({
+    where: whereClause,
     select: {
-      email: true,
+      telefone: true,
     },
   });
 }

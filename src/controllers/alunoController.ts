@@ -1,11 +1,12 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   changeAluno,
-  getAlunoById,
-  getAlunoByNumeroBi,
+  getAlunoDetails,
+  getAlunoNumeroBi,
   saveAluno,
   getAlunos as getAllAlunos,
-  getResponsaveis as getAllResponsaveis,
+  getAlunoResponsaveis as getAllResponsaveis,
+  getAlunoId,
 } from '../services/alunoServices';
 import {
   CreateAlunoBodyType,
@@ -59,7 +60,7 @@ export async function createAluno(
   // -> Aluno
   const { numeroBi, telefone, email } = data;
   const [isNumeroBi, isTelefone] = await Promise.all([
-    await getAlunoByNumeroBi(numeroBi),
+    await getAlunoNumeroBi(numeroBi),
     await getTelefone(telefone),
   ]);
 
@@ -157,7 +158,7 @@ export async function updateAluno(
   const { alunoId } = request.params;
   const { telefone, email } = request.body;
 
-  const isAluno = await getAlunoById(alunoId);
+  const isAluno = await getAlunoId(alunoId);
   if (!isAluno) throwNotFoundRequest();
 
   const isTelefone = await getTelefone(telefone, alunoId);
@@ -212,10 +213,9 @@ export async function getAluno(
 ) {
   const { alunoId } = request.params;
 
-  const isAluno = await getAlunoById(alunoId);
-  if (!isAluno) throwNotFoundRequest();
+  const aluno = await getAlunoDetails(alunoId);
+  if (!aluno) throwNotFoundRequest();
 
-  const aluno = await getAlunoById(alunoId);
   return reply.send({
     id: aluno?.id,
     nomeCompleto: aluno?.nomeCompleto,
@@ -240,7 +240,7 @@ export async function getResponsaveis(
 ) {
   const { alunoId } = request.params;
 
-  const isAluno = await getAlunoById(alunoId);
+  const isAluno = await getAlunoId(alunoId);
   if (!isAluno) throwNotFoundRequest();
 
   const responsaveis = await getAllResponsaveis(alunoId);

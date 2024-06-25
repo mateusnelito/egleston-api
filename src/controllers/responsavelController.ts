@@ -8,12 +8,12 @@ import {
   createResponsavelParamsType,
   uniqueResponsavelResourceParamsType,
 } from '../schemas/responsavelSchema';
-import { getAlunoById } from '../services/alunoServices';
+import { getAlunoDetails, getAlunoId } from '../services/alunoServices';
 import { getEmail, getTelefone } from '../services/responsavelContactoServices';
 import {
   changeResponsavel,
   deleteResponsavel,
-  getResponsavelById,
+  getResponsavelId,
   getResponsavelDetails,
   saveResponsavel,
 } from '../services/responsavelServices';
@@ -60,7 +60,7 @@ export async function createResponsavel(
   const { parentescoId, telefone, email } = request.body;
 
   const [isAluno, isParentesco, isTelefone] = await Promise.all([
-    await getAlunoById(alunoId),
+    await getAlunoId(alunoId),
     await getParentescoById(parentescoId),
     await getTelefone(telefone),
   ]);
@@ -101,7 +101,7 @@ export async function updateResponsavel(
   const { parentescoId, telefone, email } = request.body;
 
   const [isResponsavel, isParentesco, isTelefone] = await Promise.all([
-    await getResponsavelById(responsavelId),
+    await getResponsavelId(responsavelId),
     await getParentescoById(parentescoId),
     await getTelefone(telefone, responsavelId),
   ]);
@@ -133,7 +133,7 @@ export async function destroyResponsavel(
 ) {
   const { responsavelId } = request.params;
 
-  const isResponsavel = await getResponsavelById(responsavelId);
+  const isResponsavel = await getResponsavelId(responsavelId);
   if (!isResponsavel) throwNotFoundRequest();
 
   const responsavel = await deleteResponsavel(responsavelId);
@@ -148,10 +148,9 @@ export async function getResponsavel(
 ) {
   const { responsavelId } = request.params;
 
-  const isResponsavel = await getResponsavelById(responsavelId);
-  if (!isResponsavel) throwNotFoundRequest();
-
   const responsavel = await getResponsavelDetails(responsavelId);
+  if (!responsavel) throwNotFoundRequest();
+
   return reply.send({
     id: responsavel?.id,
     nomeCompleto: responsavel?.nomeCompleto,

@@ -6,48 +6,36 @@ import {
 
 // Fn utils
 function createEnderecoData(bairro: string, rua: string, numeroCasa: string) {
-  return {
-    bairro,
-    rua,
-    numeroCasa,
-  };
+  return { bairro, rua, numeroCasa };
 }
 
 function createContactoData(telefone: string, email?: string, outros?: string) {
-  return {
-    telefone,
-    email,
-    outros,
-  };
+  return { telefone, email, outros };
 }
 
 // Save aluno, responsaveis and related records (endereco, contacto)
-export async function saveAluno(alunoData: CreateAlunoBodyType) {
+export async function saveAluno(data: CreateAlunoBodyType) {
   return prisma.$transaction(async (transaction) => {
     // Save the aluno on database
     const aluno = await transaction.aluno.create({
       data: {
-        nomeCompleto: alunoData.nomeCompleto,
-        nomeCompletoPai: alunoData.nomeCompletoPai,
-        nomeCompletoMae: alunoData.nomeCompletoMae,
-        numeroBi: alunoData.numeroBi,
-        dataNascimento: alunoData.dataNascimento,
-        genero: alunoData.genero,
+        nomeCompleto: data.nomeCompleto,
+        nomeCompletoPai: data.nomeCompletoPai,
+        nomeCompletoMae: data.nomeCompletoMae,
+        numeroBi: data.numeroBi,
+        dataNascimento: data.dataNascimento,
+        genero: data.genero,
         Endereco: {
-          create: createEnderecoData(
-            alunoData.bairro,
-            alunoData.rua,
-            alunoData.numeroCasa
-          ),
+          create: createEnderecoData(data.bairro, data.rua, data.numeroCasa),
         },
         Contacto: {
-          create: createContactoData(alunoData.telefone, alunoData.email),
+          create: createContactoData(data.telefone, data.email),
         },
       },
     });
 
     // Save the responsaveis, related with aluno
-    for (const responsavel of alunoData.responsaveis) {
+    for (const responsavel of data.responsaveis) {
       await transaction.responsavel.create({
         data: {
           alunoId: aluno.id,
@@ -74,18 +62,16 @@ export async function saveAluno(alunoData: CreateAlunoBodyType) {
   });
 }
 
-export async function getAlunoByNumeroBi(numeroBi: string) {
+export async function getAlunoNumeroBi(numeroBi: string) {
   return await prisma.aluno.findUnique({
     where: { numeroBi },
-    select: {
-      id: true,
-    },
+    select: { id: true },
   });
 }
 
-export async function getAlunoById(alunoId: number) {
+export async function getAlunoDetails(id: number) {
   return await prisma.aluno.findUnique({
-    where: { id: alunoId },
+    where: { id },
     include: {
       Endereco: {
         select: {
@@ -95,37 +81,36 @@ export async function getAlunoById(alunoId: number) {
         },
       },
       Contacto: {
-        select: {
-          telefone: true,
-          email: true,
-        },
+        select: { telefone: true, email: true },
       },
     },
   });
 }
 
-export async function changeAluno(alunoId: number, aluno: updateAlunoBodyType) {
+export async function getAlunoId(id: number) {
+  return await prisma.aluno.findUnique({ where: { id }, select: { id: true } });
+}
+
+export async function changeAluno(id: number, data: updateAlunoBodyType) {
   return await prisma.aluno.update({
-    where: {
-      id: alunoId,
-    },
+    where: { id },
     data: {
-      nomeCompleto: aluno.nomeCompleto,
-      nomeCompletoPai: aluno.nomeCompletoPai,
-      nomeCompletoMae: aluno.nomeCompletoMae,
-      dataNascimento: aluno.dataNascimento,
-      genero: aluno.genero,
+      nomeCompleto: data.nomeCompleto,
+      nomeCompletoPai: data.nomeCompletoPai,
+      nomeCompletoMae: data.nomeCompletoMae,
+      dataNascimento: data.dataNascimento,
+      genero: data.genero,
       Endereco: {
         update: {
-          bairro: aluno.bairro,
-          rua: aluno.rua,
-          numeroCasa: aluno.numeroCasa,
+          bairro: data.bairro,
+          rua: data.rua,
+          numeroCasa: data.numeroCasa,
         },
       },
       Contacto: {
         update: {
-          telefone: aluno.telefone,
-          email: aluno.email,
+          telefone: data.telefone,
+          email: data.email,
         },
       },
     },
@@ -136,47 +121,33 @@ export async function getAlunos(
   limit: number,
   cursor: number | null | undefined
 ) {
-  const SELECT_FIELDS = {
-    id: true,
-    nomeCompleto: true,
-    numeroBi: true,
-    dataNascimento: true,
-    genero: true,
-  };
-
-  // Applying cursor-based pagination
-  if (cursor) {
-    return await prisma.aluno.findMany({
-      where: {
+  const whereClause = cursor
+    ? {
         id: {
           // Load only alunos where id is less than offset
           // Because the list start on last registry to first
           lt: cursor,
         },
-      },
-      select: SELECT_FIELDS,
-      take: limit,
-      orderBy: {
-        id: 'desc',
-      },
-    });
-  }
+      }
+    : {};
 
   return await prisma.aluno.findMany({
-    take: limit,
-    orderBy: {
-      id: 'desc',
-    },
-    select: SELECT_FIELDS,
-  });
-}
-
-export async function getResponsaveis(id: number) {
-  return await prisma.responsavel.findMany({
-    where: { alunoId: id },
+    where: whereClause,
     select: {
       id: true,
       nomeCompleto: true,
+      numeroBi: true,
+      dataNascimento: true,
+      genero: true,
     },
+    take: limit,
+    orderBy: { id: 'desc' },
+  });
+}
+
+export async function getAlunoResponsaveis(alunoId: number) {
+  return await prisma.responsavel.findMany({
+    where: { alunoId },
+    select: { id: true, nomeCompleto: true },
   });
 }

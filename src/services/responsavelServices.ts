@@ -2,26 +2,26 @@ import { prisma } from '../lib/prisma';
 import { responsavelBodyType } from '../schemas/responsavelSchema';
 
 export async function saveResponsavel(
-  aluno: number,
-  responsavelData: responsavelBodyType
+  alunoId: number,
+  data: responsavelBodyType
 ) {
   return await prisma.responsavel.create({
     data: {
-      alunoId: aluno,
-      nomeCompleto: responsavelData.nomeCompleto,
-      parentescoId: responsavelData.parentescoId,
+      alunoId,
+      nomeCompleto: data.nomeCompleto,
+      parentescoId: data.parentescoId,
       Endereco: {
         create: {
-          bairro: responsavelData.bairro,
-          rua: responsavelData.rua,
-          numeroCasa: responsavelData.numeroCasa,
+          bairro: data.bairro,
+          rua: data.rua,
+          numeroCasa: data.numeroCasa,
         },
       },
       Contacto: {
         create: {
-          telefone: responsavelData.telefone,
-          email: responsavelData.email,
-          outros: responsavelData.outros,
+          telefone: data.telefone,
+          email: data.email,
+          outros: data.outros,
         },
       },
     },
@@ -30,14 +30,10 @@ export async function saveResponsavel(
 
 export async function getResponsavelDetails(id: number) {
   return await prisma.responsavel.findUnique({
-    where: {
-      id,
-    },
+    where: { id },
     include: {
       Parentesco: {
-        select: {
-          nome: true,
-        },
+        select: { nome: true },
       },
       Endereco: {
         select: {
@@ -54,44 +50,34 @@ export async function getResponsavelDetails(id: number) {
         },
       },
     },
-    // select: {
-    //   id: true,
-    //   nomeCompleto: true,
-    // },
   });
 }
 
-export async function getResponsavelById(id: number) {
+export async function getResponsavelId(id: number) {
   return await prisma.responsavel.findUnique({
-    where: {
-      id,
-    },
+    where: { id },
+    select: { id: true },
   });
 }
 
-export async function changeResponsavel(
-  id: number,
-  responsavelData: responsavelBodyType
-) {
+export async function changeResponsavel(id: number, data: responsavelBodyType) {
   return await prisma.responsavel.update({
-    where: {
-      id,
-    },
+    where: { id },
     data: {
-      nomeCompleto: responsavelData.nomeCompleto,
-      parentescoId: responsavelData.parentescoId,
+      nomeCompleto: data.nomeCompleto,
+      parentescoId: data.parentescoId,
       Endereco: {
         update: {
-          bairro: responsavelData.bairro,
-          rua: responsavelData.rua,
-          numeroCasa: responsavelData.numeroCasa,
+          bairro: data.bairro,
+          rua: data.rua,
+          numeroCasa: data.numeroCasa,
         },
       },
       Contacto: {
         update: {
-          telefone: responsavelData.telefone,
-          email: responsavelData.email,
-          outros: responsavelData.outros,
+          telefone: data.telefone,
+          email: data.email,
+          outros: data.outros,
         },
       },
     },

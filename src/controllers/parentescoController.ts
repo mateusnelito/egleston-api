@@ -9,7 +9,7 @@ import {
   getParentescos as getAllParentescos,
   changeParentesco,
   getParentescoById,
-  getParentescoByNome,
+  getParentescoNome,
   saveParentesco,
 } from '../services/parentescoServices';
 import BadRequest from '../utils/BadRequest';
@@ -37,8 +37,8 @@ export async function createParentesco(
 ) {
   const { nome } = request.body;
 
-  const isParentesco = await getParentescoByNome(nome);
-  if (isParentesco) throwNomeBadRequest();
+  const isParentescoNome = await getParentescoNome(nome);
+  if (isParentescoNome) throwNomeBadRequest();
 
   const parentesco = await saveParentesco(request.body);
   return reply.status(HttpStatusCodes.CREATED).send(parentesco);
@@ -56,7 +56,7 @@ export async function updateParentesco(
 
   const [isParentesco, isParentescoNome] = await Promise.all([
     await getParentescoById(parentescoId),
-    await getParentescoByNome(nome, parentescoId),
+    await getParentescoNome(nome, parentescoId),
   ]);
 
   if (!isParentesco) throwNotFoundRequest();
@@ -93,9 +93,8 @@ export async function getParentesco(
 ) {
   const { parentescoId } = request.params;
 
-  const isParentesco = await getParentescoById(parentescoId);
-  if (!isParentesco) throwNotFoundRequest();
-
   const parentesco = await getParentescoById(parentescoId);
+  if (!parentesco) throwNotFoundRequest();
+
   return reply.send(parentesco);
 }
