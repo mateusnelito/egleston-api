@@ -24,6 +24,29 @@ import {
 } from '../services/responsavelContactoServices';
 import { formatDate } from '../utils/utils';
 
+function throwTelefoneBadRequest() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Número de telefone inválido.',
+    errors: { telefone: ['O número de telefone já está sendo usado.'] },
+  });
+}
+
+function throwEmailBadRequest() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Endereço de email inválido.',
+    errors: { email: ['O endereço de email já está sendo usado.'] },
+  });
+}
+
+function throwNotFoundRequest() {
+  throw new NotFoundRequest({
+    statusCode: HttpStatusCodes.NOT_FOUND,
+    message: 'Id de aluno não existe.',
+  });
+}
+
 export async function createAluno(
   // Define that the Generic Type of Body is CreateAlunoBodyType
   request: FastifyRequest<{ Body: CreateAlunoBodyType }>,
@@ -35,7 +58,6 @@ export async function createAluno(
   // Checking data integrity
   // -> Aluno
   const { numeroBi, telefone, email } = data;
-
   const [isNumeroBi, isTelefone] = await Promise.all([
     await getAlunoByNumeroBi(numeroBi),
     await getTelefone(telefone),
@@ -49,31 +71,23 @@ export async function createAluno(
     });
   }
 
-  if (isTelefone) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Número de telefone inválido.',
-      errors: { telefone: ['O número de telefone já está sendo usado.'] },
-    });
-  }
+  if (isTelefone) throwTelefoneBadRequest();
 
   if (email) {
     const isEmail = await getEmail(email);
-    if (isEmail) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.BAD_REQUEST,
-        message: 'Endereço de email inválido.',
-        errors: { email: ['O endereço de email já está sendo usado.'] },
-      });
-    }
+    if (isEmail) throwEmailBadRequest();
   }
 
   // -> Responsaveis
   for (let i = 0; i < responsaveis.length; i++) {
     const responsavel = responsaveis[i];
-    const { parentescoId, telefone, email } = responsavel;
 
-    const isParentesco = await getParentescoById(parentescoId);
+    const { parentescoId, telefone, email } = responsavel;
+    const [isParentesco, isTelefone] = await Promise.all([
+      await getParentescoById(parentescoId),
+      await getResponsavelTelefone(telefone),
+    ]);
+
     if (!isParentesco) {
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
@@ -88,7 +102,6 @@ export async function createAluno(
       });
     }
 
-    const isTelefone = await getResponsavelTelefone(telefone);
     if (isTelefone) {
       throw new BadRequest({
         statusCode: HttpStatusCodes.BAD_REQUEST,
@@ -122,7 +135,6 @@ export async function createAluno(
   }
 
   const aluno = await saveAluno(data);
-
   return reply.status(HttpStatusCodes.CREATED).send({
     id: aluno.id,
     nomeCompleto: aluno.nomeCompleto,
@@ -144,33 +156,16 @@ export async function updateAluno(
 ) {
   const { alunoId } = request.params;
   const { telefone, email } = request.body;
-  const isAluno = await getAlunoById(alunoId);
 
-  if (!isAluno) {
-    throw new NotFoundRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Id de aluno não existe.',
-    });
-  }
+  const isAluno = await getAlunoById(alunoId);
+  if (!isAluno) throwNotFoundRequest();
 
   const isTelefone = await getTelefone(telefone, alunoId);
-  if (isTelefone) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Número de telefone inválido.',
-      errors: { telefone: ['O número de telefone já está sendo usado.'] },
-    });
-  }
+  if (isTelefone) throwTelefoneBadRequest();
 
   if (email) {
     const isEmail = await getEmail(email, alunoId);
-    if (isEmail) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.BAD_REQUEST,
-        message: 'Endereço de email inválido.',
-        errors: { email: ['O endereço de email já está sendo usado.'] },
-      });
-    }
+    if (isEmail) throwEmailBadRequest();
   }
 
   const aluno = await changeAluno(alunoId, request.body);
@@ -216,13 +211,9 @@ export async function getAluno(
   reply: FastifyReply
 ) {
   const { alunoId } = request.params;
+
   const isAluno = await getAlunoById(alunoId);
-  if (!isAluno) {
-    throw new NotFoundRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Id de aluno não existe.',
-    });
-  }
+  if (!isAluno) throwNotFoundRequest();
 
   const aluno = await getAlunoById(alunoId);
   return reply.send({
@@ -248,13 +239,9 @@ export async function getResponsaveis(
   reply: FastifyReply
 ) {
   const { alunoId } = request.params;
+
   const isAluno = await getAlunoById(alunoId);
-  if (!isAluno) {
-    throw new NotFoundRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Id de aluno não existe.',
-    });
-  }
+  if (!isAluno) throwNotFoundRequest();
 
   const responsaveis = await getAllResponsaveis(alunoId);
   return reply.send({ data: responsaveis });
