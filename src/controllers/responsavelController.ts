@@ -1,17 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import {
-  createParentescoBodyType,
-  getParentescosQueryStringType,
-  uniqueParentescoResourceParamsType,
-  updateParentescoBodyType,
-} from '../schemas/parentescoSchema';
-import {
-  getParentescos as getAllParentescos,
-  changeParentesco,
-  getParentescoById,
-  getParentescoByNome,
-  saveParentesco,
-} from '../services/parentescoServices';
+import { getParentescoById } from '../services/parentescoServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
@@ -29,6 +17,37 @@ import {
   getResponsavelDetails,
   saveResponsavel,
 } from '../services/responsavelServices';
+
+function throwNotFoundParentesco() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.NOT_FOUND,
+    message: 'Parentesco inválido.',
+    errors: { parentescoId: ['parentescoId não existe.'] },
+  });
+}
+
+function throwTelefoneBadRequest() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Número de telefone inválido.',
+    errors: { telefone: ['O número de telefone já está sendo usado.'] },
+  });
+}
+
+function throwEmailBadRequest() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Endereço de email inválido.',
+    errors: { email: ['O endereço de email já está sendo usado.'] },
+  });
+}
+
+function throwNotFoundRequest() {
+  throw new NotFoundRequest({
+    statusCode: HttpStatusCodes.NOT_FOUND,
+    message: 'Id de responsavel não existe.',
+  });
+}
 
 export async function createResponsavel(
   request: FastifyRequest<{
@@ -56,37 +75,12 @@ export async function createResponsavel(
   // TODO: Verify if already exist a father or mother in db for the current aluno
   // TODO: 'Cause nobody has 2 fathers or mothers
   // TODO: search for better way to validate parentesco and avoid duplication
-  if (!isParentesco) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Parentesco inválido.',
-      errors: {
-        parentescoId: ['parentescoId não existe.'],
-      },
-    });
-  }
-
-  if (isTelefone) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Número de telefone inválido.',
-      errors: {
-        telefone: ['O número de telefone já está sendo usado.'],
-      },
-    });
-  }
+  if (!isParentesco) throwNotFoundParentesco();
+  if (isTelefone) throwTelefoneBadRequest();
 
   if (email) {
     const isEmail = await getEmail(email);
-    if (isEmail) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.BAD_REQUEST,
-        message: 'Endereço de email inválido.',
-        errors: {
-          email: ['O endereço de email já está sendo usado.'],
-        },
-      });
-    }
+    if (isEmail) throwEmailBadRequest();
   }
 
   const responsavel = await saveResponsavel(alunoId, request.body);
@@ -112,51 +106,23 @@ export async function updateResponsavel(
     await getTelefone(telefone, responsavelId),
   ]);
 
-  if (!isResponsavel) {
-    throw new NotFoundRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Id de responsavel não existe.',
-    });
-  }
+  if (!isResponsavel) throwNotFoundRequest();
 
   // TODO: Verify if already exist a father or mother in db for the current aluno
   // TODO: 'Cause nobody has 2 fathers or mothers
   // TODO: search for better way to validate parentesco and avoid duplication
-  if (!isParentesco) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Parentesco inválido.',
-      errors: {
-        parentescoId: ['parentescoId não existe.'],
-      },
-    });
-  }
-
-  if (isTelefone) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Número de telefone inválido.',
-      errors: {
-        telefone: ['O número de telefone já está sendo usado.'],
-      },
-    });
-  }
+  if (!isParentesco) throwNotFoundParentesco();
+  if (isTelefone) throwTelefoneBadRequest();
 
   if (email) {
     const isEmail = await getEmail(email, responsavelId);
-    if (isEmail) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.BAD_REQUEST,
-        message: 'Endereço de email inválido.',
-        errors: {
-          email: ['O endereço de email já está sendo usado.'],
-        },
-      });
-    }
+    if (isEmail) throwEmailBadRequest();
   }
 
   const responsavel = await changeResponsavel(responsavelId, request.body);
-  return reply.status(HttpStatusCodes.OK).send(responsavel);
+  return reply
+    .status(HttpStatusCodes.OK)
+    .send({ nomeCompleto: responsavel.nomeCompleto });
 }
 
 export async function destroyResponsavel(
@@ -166,14 +132,9 @@ export async function destroyResponsavel(
   reply: FastifyReply
 ) {
   const { responsavelId } = request.params;
-  const isResponsavel = await getResponsavelById(responsavelId);
 
-  if (!isResponsavel) {
-    throw new NotFoundRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Id de responsavel não existe.',
-    });
-  }
+  const isResponsavel = await getResponsavelById(responsavelId);
+  if (!isResponsavel) throwNotFoundRequest();
 
   const responsavel = await deleteResponsavel(responsavelId);
   return reply.send(responsavel);
@@ -186,14 +147,9 @@ export async function getResponsavel(
   reply: FastifyReply
 ) {
   const { responsavelId } = request.params;
-  const isResponsavel = await getResponsavelById(responsavelId);
 
-  if (!isResponsavel) {
-    throw new NotFoundRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Id de responsavel não existe.',
-    });
-  }
+  const isResponsavel = await getResponsavelById(responsavelId);
+  if (!isResponsavel) throwNotFoundRequest();
 
   const responsavel = await getResponsavelDetails(responsavelId);
   return reply.send({

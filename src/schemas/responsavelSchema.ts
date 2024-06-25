@@ -5,7 +5,7 @@ import {
 } from '../utils/regexPatterns';
 import { enderecoSchema } from './enderecoSchema';
 import { contactoSchema } from './contactoSchema';
-import { notFoundRequestSchema } from './globalSchema';
+import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
 
 const responsavelBodySchema = z
   .object({
@@ -75,6 +75,7 @@ export const createResponsavelSchema = {
       id: z.number().int().positive(),
       nomeCompleto: z.string(),
     }),
+    400: simpleBadRequestSchema,
     404: notFoundRequestSchema,
   },
 };
@@ -85,10 +86,10 @@ export const updateResponsavelSchema = {
   params: responsavelParamsSchema,
   body: responsavelBodySchema,
   response: {
-    // 201: z.object({
-    //   id: z.number().int().positive(),
-    //   nomeCompleto: z.string(),
-    // }),
+    200: z.object({
+      nomeCompleto: z.string(),
+    }),
+    400: simpleBadRequestSchema,
     404: notFoundRequestSchema,
   },
 };
@@ -98,10 +99,12 @@ export const deleteResponsavelSchema = {
   tags: ['responsaveis'],
   params: responsavelParamsSchema,
   response: {
-    // 201: z.object({
-    //   id: z.number().int().positive(),
-    //   nomeCompleto: z.string(),
-    // }),
+    200: z.object({
+      id: z.number().int().positive(),
+      alunoId: z.number().int().positive(),
+      nomeCompleto: z.string(),
+      parentescoId: z.number().int().positive(),
+    }),
     404: notFoundRequestSchema,
   },
 };
