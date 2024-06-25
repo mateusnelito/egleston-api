@@ -11,7 +11,7 @@ async function swaggerDocs(server: FastifyInstance) {
       consumes: ['application/json'],
       produces: ['application/json'],
       info: {
-        title: 'Egleston-SGE',
+        title: 'Egleston-API',
         description: 'CRUD API para um SGE.',
         version: '1.0.0',
       },
