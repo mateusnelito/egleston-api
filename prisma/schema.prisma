@@ -130,3 +130,13 @@ model ProfessorContacto {
   @@map("professores_contactos")
   @@schema("cadastro")
 }
+
+model curso {
+  id        Int    @id @default(autoincrement()) @db.SmallInt
+  nome      String @unique @db.VarChar(50)
+  descricao String @db.Text
+  duracao   Int    @db.SmallInt
+
+  @@map("cursos")
+  @@schema("cadastro")
+}
