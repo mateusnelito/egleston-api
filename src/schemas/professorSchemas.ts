@@ -5,6 +5,7 @@ import {
 } from '../utils/regexPatterns';
 import { contactoSchema } from './contactoSchema';
 import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
+
 const professorBodySchema = z
   .object({
     nomeCompleto: z
@@ -54,6 +55,16 @@ const professorBodySchema = z
       .optional(),
   });
 
+const professorParamsSchema = z.object({
+  professorId: z.coerce
+    .number({
+      required_error: 'O id do responsavel é obrigatório.',
+      invalid_type_error: 'O id do responsavel deve ser número.',
+    })
+    .int({ message: 'O id do responsavel deve ser inteiro.' })
+    .positive({ message: 'O id do responsavel deve ser positivo.' }),
+});
+
 export const createProfessorSchema = {
   summary: 'Adiciona um novo professor',
   tags: ['professores'],
@@ -62,10 +73,28 @@ export const createProfessorSchema = {
     201: z.object({
       id: z.number().int().positive(),
       nomeCompleto: z.string(),
+      dataNascimento: z.string().date(),
+    }),
+    400: simpleBadRequestSchema,
+  },
+};
+
+export const updateProfessorSchema = {
+  summary: 'Atualiza um professor existente',
+  tags: ['professores'],
+  params: professorParamsSchema,
+  body: professorBodySchema,
+  response: {
+    200: z.object({
+      nomeCompleto: z.string(),
+      dataNascimento: z.string().date(),
     }),
     400: simpleBadRequestSchema,
     404: notFoundRequestSchema,
   },
 };
 
+export type uniqueProfessorResourceParamsType = z.infer<
+  typeof professorParamsSchema
+>;
 export type professorBodyType = z.infer<typeof professorBodySchema>;

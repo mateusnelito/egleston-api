@@ -43,26 +43,18 @@ export async function getResponsavelDetails(id: number) {
   });
 }
 
-export async function getResponsavelId(id: number) {
-  return await prisma.responsavel.findUnique({
+export async function getProfessorId(id: number) {
+  return await prisma.professor.findUnique({
     where: { id },
     select: { id: true },
   });
 }
 
-export async function changeResponsavel(id: number, data: responsavelBodyType) {
-  return await prisma.responsavel.update({
+export async function changeProfessor(id: number, data: professorBodyType) {
+  return await prisma.professor.update({
     where: { id },
     data: {
       nomeCompleto: data.nomeCompleto,
-      parentescoId: data.parentescoId,
-      Endereco: {
-        update: {
-          bairro: data.bairro,
-          rua: data.rua,
-          numeroCasa: data.numeroCasa,
-        },
-      },
       Contacto: {
         update: {
           telefone: data.telefone,

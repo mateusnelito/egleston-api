@@ -5,9 +5,9 @@ Content-Type: application/json
 {
     "nomeCompleto": "Nome Completo",
     "dataNascimento": "2005-09-10",
-    "telefone": "923123123",
-    "email": "email@example.com",
-    "outros": "tel. alternativo: 998000123"
+    "telefone": "923923123",
+    "email": "emil@exampe.com",
+    "outros": "tel. alternativo: 99800123"
 }
 
 ### Update an existent professor
@@ -15,7 +15,11 @@ PUT http://localhost:8000/api/professores/1
 Content-Type: application/json
 
 {
-
+    "nomeCompleto": "Nome Completo",
+    "dataNascimento": "2005-09-10",
+    "telefone": "933123123",
+    "email": "emal@example.com",
+    "outros": "tel. alternativo: 998000123"
 }
 
 ### GET a professor by id
