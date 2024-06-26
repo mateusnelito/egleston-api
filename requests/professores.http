@@ -1,0 +1,25 @@
+### Create a professor
+POST http://localhost:8000/api/professores/create
+Content-Type: application/json
+
+{
+    "nomeCompleto": "Nome Completo",
+    "dataNascimento": "2005-09-10",
+    "telefone": "923123123",
+    "email": "email@example.com",
+    "outros": "tel. alternativo: 998000123"
+}
+
+### Update an existent professor
+PUT http://localhost:8000/api/professores/1
+Content-Type: application/json
+
+{
+
+}
+
+### GET a professor by id
+GET http://localhost:8000/api/professores/1
+
+### GET all professores
+GET http://localhost:8000/api/professores

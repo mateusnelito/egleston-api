@@ -63,7 +63,7 @@ const alunoBodySchema = z
           'O nome completo da mãe deve possuir apenas caracteres alfabéticos e espaços.',
       }),
     dataNascimento: z
-      .string()
+      .string({ required_error: 'A data de nascimento é obrigatória.' })
       .trim()
       .date(
         'A data de nascimento deve ser uma data válida no formato AAAA-MM-DD.'
