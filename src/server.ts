@@ -8,14 +8,21 @@ import NotFoundRequest from './utils/NotFoundRequest';
 
 // Instantiate the server
 const server = fastify();
+
+// Register the plugins
 server.register(swaggerDocs);
 server.register(zodTypeProvider);
 server.register(errorHandlerPlugin);
-server.register(routes); // Register all the routes to API
+
+// Register all the routes to API
+server.register(routes);
 
 // Define the 404 route
 server.setNotFoundHandler(() => {
-  throw new NotFoundRequest('Route not found');
+  throw new NotFoundRequest({
+    statusCode: HttpStatusCodes.NOT_FOUND,
+    message: 'Route not found',
+  });
 });
 
 const SERVER_PORT = Number(process.env.SERVER_PORT || 8000);
