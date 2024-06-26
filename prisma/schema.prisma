@@ -109,10 +109,10 @@ model ResponsavelContacto {
 
 // FIXME: add more details and unique field
 model Professor {
-  id                Int                @id @default(autoincrement())
-  nomeCompleto      String             @map("nome_completo") @db.VarChar(100)
-  dataNascimento    DateTime           @map("data_nascimento") @db.Date
-  ProfessorContacto ProfessorContacto?
+  id             Int                @id @default(autoincrement())
+  nomeCompleto   String             @map("nome_completo") @db.VarChar(100)
+  dataNascimento DateTime           @map("data_nascimento") @db.Date
+  Contacto       ProfessorContacto?
 
   @@index([nomeCompleto])
   @@map("professores")
