@@ -94,6 +94,25 @@ export const updateProfessorSchema = {
   },
 };
 
+export const getProfessorSchema = {
+  summary: 'Busca um professor pelo id',
+  tags: ['professores'],
+  params: professorParamsSchema,
+  response: {
+    200: z.object({
+      id: z.number().int().positive(),
+      nomeCompleto: z.string(),
+      dataNascimento: z.string().date(),
+      contacto: z.object({
+        telefone: z.string(),
+        email: z.string().email().nullable(),
+        outros: z.string().nullable(),
+      }),
+    }),
+    404: notFoundRequestSchema,
+  },
+};
+
 export type uniqueProfessorResourceParamsType = z.infer<
   typeof professorParamsSchema
 >;

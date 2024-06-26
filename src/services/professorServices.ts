@@ -18,20 +18,10 @@ export async function saveProfessor(data: professorBodyType) {
   });
 }
 
-export async function getResponsavelDetails(id: number) {
-  return await prisma.responsavel.findUnique({
+export async function getProfessorDetails(id: number) {
+  return await prisma.professor.findUnique({
     where: { id },
     include: {
-      Parentesco: {
-        select: { nome: true },
-      },
-      Endereco: {
-        select: {
-          bairro: true,
-          rua: true,
-          numeroCasa: true,
-        },
-      },
       Contacto: {
         select: {
           telefone: true,

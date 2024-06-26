@@ -8,10 +8,12 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import {
   createProfessorSchema,
+  getProfessorSchema,
   updateProfessorSchema,
 } from '../schemas/professorSchemas';
 import {
   createProfessor,
+  getProfessor,
   updateProfessor,
 } from '../controllers/professorController';
 
@@ -32,10 +34,8 @@ const professoresRoutes: FastifyPluginAsync = async (
 
   // GET UNIQUE RESOURCE
   server.withTypeProvider<ZodTypeProvider>().get('/:professorId', {
-    schema: z.object({}),
-    handler: (request: FastifyRequest, reply: FastifyReply) => {
-      return reply.send({ message: 'working...' });
-    },
+    schema: getProfessorSchema,
+    handler: getProfessor,
   });
 
   // GET ALL RESOURCES

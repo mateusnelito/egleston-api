@@ -5,6 +5,7 @@ import {
 } from '../schemas/professorSchemas';
 import {
   changeProfessor,
+  getProfessorDetails,
   getProfessorId,
   saveProfessor,
 } from '../services/professorServices';
@@ -86,5 +87,28 @@ export async function updateProfessor(
   return reply.status(HttpStatusCodes.CREATED).send({
     nomeCompleto: professor.nomeCompleto,
     dataNascimento: formatDate(professor.dataNascimento),
+  });
+}
+
+export async function getProfessor(
+  request: FastifyRequest<{
+    Params: uniqueProfessorResourceParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { professorId } = request.params;
+  const professor = await getProfessorDetails(professorId);
+
+  if (!professor) throw throwNotFoundRequest();
+
+  return reply.send({
+    id: professor.id,
+    nomeCompleto: professor.nomeCompleto,
+    dataNascimento: formatDate(professor.dataNascimento),
+    contacto: {
+      telefone: professor.Contacto?.telefone,
+      email: professor.Contacto?.email,
+      outros: professor.Contacto?.outros,
+    },
   });
 }
