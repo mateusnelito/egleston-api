@@ -107,6 +107,7 @@ model ResponsavelContacto {
   @@schema("cadastro")
 }
 
+// FIXME: add more details and unique field
 model Professor {
   id                Int                @id @default(autoincrement())
   nomeCompleto      String             @map("nome_completo") @db.VarChar(100)
