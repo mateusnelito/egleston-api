@@ -1,7 +1,7 @@
 {
-  "name": "egleston-sge",
+  "name": "egleston-api",
   "version": "1.0.0",
-  "description": "A SGE REST API.",
+  "description": "A REST API TO MANAGE A SGE.",
   "main": "server.ts",
   "scripts": {
     "dev": "tsx watch --env-file .env src/server.ts",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mateusvalecelestino/egleston-sge.git"
+    "url": "git+https://github.com/mateusvalecelestino/egleston-api.git"
   },
   "keywords": [
     "SGE",
@@ -36,7 +36,7 @@
     "zod": "^3.23.8"
   },
   "bugs": {
-    "url": "https://github.com/mateusvalecelestino/egleston-sge/issues"
+    "url": "https://github.com/mateusvalecelestino/egleston-api/issues"
   },
-  "homepage": "https://github.com/mateusvalecelestino/egleston-sge#readme"
+  "homepage": "https://github.com/mateusvalecelestino/egleston-api#readme"
 }
