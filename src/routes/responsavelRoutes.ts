@@ -41,4 +41,4 @@ const responsaveisRoutes: FastifyPluginAsync = async (
     handler: getResponsavel,
   });
 };
-export default responsaveisRoutes; // Export all alunos sub-routes
+export default responsaveisRoutes;

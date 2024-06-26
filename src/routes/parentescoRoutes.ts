@@ -41,4 +41,4 @@ const parentescosRoutes: FastifyPluginAsync = async (
     handler: getParentesco,
   });
 };
-export default parentescosRoutes; // Export all alunos sub-routes
+export default parentescosRoutes;
