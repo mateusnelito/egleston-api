@@ -106,3 +106,26 @@ model ResponsavelContacto {
   @@map("responsaveis_contactos")
   @@schema("cadastro")
 }
+
+model Professor {
+  id                Int                @id @default(autoincrement())
+  nomeCompleto      String             @map("nome_completo") @db.VarChar(100)
+  dataNascimento    DateTime           @map("data_nascimento") @db.Date
+  ProfessorContacto ProfessorContacto?
+
+  @@index([nomeCompleto])
+  @@map("professores")
+  @@schema("cadastro")
+}
+
+model ProfessorContacto {
+  id          Int       @id @default(autoincrement())
+  Professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professorId Int       @unique @map("professor_id")
+  telefone    String    @unique @db.VarChar(9)
+  email       String?   @unique @db.VarChar(255)
+  outros      String?   @db.VarChar(255)
+
+  @@map("professores_contactos")
+  @@schema("cadastro")
+}
