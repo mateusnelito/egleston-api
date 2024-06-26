@@ -9,11 +9,13 @@ import { z } from 'zod';
 import {
   createProfessorSchema,
   getProfessorSchema,
+  getProfessoresSchema,
   updateProfessorSchema,
 } from '../schemas/professorSchemas';
 import {
   createProfessor,
   getProfessor,
+  getProfessores,
   updateProfessor,
 } from '../controllers/professorController';
 
@@ -40,10 +42,8 @@ const professoresRoutes: FastifyPluginAsync = async (
 
   // GET ALL RESOURCES
   server.withTypeProvider<ZodTypeProvider>().get('/', {
-    schema: z.object({}),
-    handler: (request: FastifyRequest, reply: FastifyReply) => {
-      return reply.send({ message: 'working...' });
-    },
+    schema: getProfessoresSchema,
+    handler: getProfessores,
   });
 };
 

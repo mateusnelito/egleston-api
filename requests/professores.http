@@ -26,4 +26,4 @@ Content-Type: application/json
 GET http://localhost:8000/api/professores/1
 
 ### GET all professores
-GET http://localhost:8000/api/professores
+GET http://localhost:8000/api/professores?page_size=2

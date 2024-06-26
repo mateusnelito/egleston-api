@@ -1,5 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
+  getProfessoresQueryStringType,
   professorBodyType,
   uniqueProfessorResourceParamsType,
 } from '../schemas/professorSchemas';
@@ -8,6 +9,7 @@ import {
   getProfessorDetails,
   getProfessorId,
   saveProfessor,
+  getProfessores as getProfessoresService,
 } from '../services/professorServices';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import BadRequest from '../utils/BadRequest';
@@ -110,5 +112,32 @@ export async function getProfessor(
       email: professor.Contacto?.email,
       outros: professor.Contacto?.outros,
     },
+  });
+}
+
+export async function getProfessores(
+  request: FastifyRequest<{ Querystring: getProfessoresQueryStringType }>,
+  reply: FastifyReply
+) {
+  const { cursor, page_size } = request.query;
+
+  const professores = await getProfessoresService(page_size, cursor);
+
+  let next_cursor =
+    professores.length === page_size
+      ? professores[professores.length - 1].id
+      : undefined;
+
+  const data = professores.map((professor) => {
+    return {
+      id: professor.id,
+      nomeCompleto: professor.nomeCompleto,
+      dataNascimento: formatDate(professor.dataNascimento),
+    };
+  });
+
+  return reply.send({
+    data,
+    next_cursor,
   });
 }

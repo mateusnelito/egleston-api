@@ -4,7 +4,11 @@ import {
   OUTROS_CONTACTOS_REGEX,
 } from '../utils/regexPatterns';
 import { contactoSchema } from './contactoSchema';
-import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
+import {
+  getAllResourcesParamsSchema,
+  notFoundRequestSchema,
+  simpleBadRequestSchema,
+} from './globalSchema';
 
 const professorBodySchema = z
   .object({
@@ -65,16 +69,18 @@ const professorParamsSchema = z.object({
     .positive({ message: 'O id do responsavel deve ser positivo.' }),
 });
 
+const professorOkResponseSchema = z.object({
+  id: z.number().int().positive(),
+  nomeCompleto: z.string(),
+  dataNascimento: z.string().date(),
+});
+
 export const createProfessorSchema = {
   summary: 'Adiciona um novo professor',
   tags: ['professores'],
   body: professorBodySchema,
   response: {
-    201: z.object({
-      id: z.number().int().positive(),
-      nomeCompleto: z.string(),
-      dataNascimento: z.string().date(),
-    }),
+    201: professorOkResponseSchema,
     400: simpleBadRequestSchema,
   },
 };
@@ -85,10 +91,7 @@ export const updateProfessorSchema = {
   params: professorParamsSchema,
   body: professorBodySchema,
   response: {
-    200: z.object({
-      nomeCompleto: z.string(),
-      dataNascimento: z.string().date(),
-    }),
+    200: professorOkResponseSchema.omit({ id: true }),
     400: simpleBadRequestSchema,
     404: notFoundRequestSchema,
   },
@@ -99,10 +102,7 @@ export const getProfessorSchema = {
   tags: ['professores'],
   params: professorParamsSchema,
   response: {
-    200: z.object({
-      id: z.number().int().positive(),
-      nomeCompleto: z.string(),
-      dataNascimento: z.string().date(),
+    200: professorOkResponseSchema.extend({
       contacto: z.object({
         telefone: z.string(),
         email: z.string().email().nullable(),
@@ -113,7 +113,23 @@ export const getProfessorSchema = {
   },
 };
 
+export const getProfessoresSchema = {
+  summary: 'Retorna todos os professores',
+  tags: ['professores'],
+  querystring: getAllResourcesParamsSchema,
+  response: {
+    200: z.object({
+      data: z.array(professorOkResponseSchema),
+      next_cursor: z.number().optional(),
+    }),
+  },
+};
+
 export type uniqueProfessorResourceParamsType = z.infer<
   typeof professorParamsSchema
 >;
 export type professorBodyType = z.infer<typeof professorBodySchema>;
+
+export type getProfessoresQueryStringType = z.infer<
+  typeof getProfessoresSchema.querystring
+>;

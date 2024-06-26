@@ -56,6 +56,20 @@ export async function changeProfessor(id: number, data: professorBodyType) {
   });
 }
 
+export async function getProfessores(
+  limit: number,
+  cursor: number | null | undefined
+) {
+  const whereClause = cursor ? { id: { lt: cursor } } : {};
+  return await prisma.professor.findMany({
+    where: whereClause,
+    take: limit,
+    orderBy: {
+      id: 'desc',
+    },
+  });
+}
+
 export async function deleteResponsavel(id: number) {
   return await prisma.responsavel.delete({ where: { id } });
 }
