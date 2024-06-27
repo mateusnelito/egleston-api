@@ -12,7 +12,7 @@ PUT http://localhost:8000/api/disciplinas/1
 Content-Type: application/json
 
 {
-    "nome": "Lingua Portugues",
+    "nome": "Lingua Portugues 2",
     "descricao": "Estuda a língua nativa Angolana"
 }
 

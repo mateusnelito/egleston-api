@@ -1,6 +1,12 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { createDisciplinaBodyType } from '../schemas/disciplinaSchema';
 import {
+  createDisciplinaBodyType,
+  uniqueDisciplinaResourceParamsType,
+  updateDisciplinaBodyType,
+} from '../schemas/disciplinaSchema';
+import {
+  changeDisciplina,
+  getDisciplinaId,
   getDisciplinaNome,
   saveDisciplina,
 } from '../services/disciplinaServices';
@@ -34,4 +40,29 @@ export async function createDisciplina(
 
   const curso = await saveDisciplina(request.body);
   return reply.status(HttpStatusCodes.CREATED).send(curso);
+}
+
+export async function updateDisciplina(
+  request: FastifyRequest<{
+    Params: uniqueDisciplinaResourceParamsType;
+    Body: updateDisciplinaBodyType;
+  }>,
+  reply: FastifyReply
+) {
+  const { disciplinaId } = request.params;
+  const { nome } = request.body;
+
+  const [isDisciplina, isDisciplinaNome] = await Promise.all([
+    await getDisciplinaId(disciplinaId),
+    await getDisciplinaNome(nome, disciplinaId),
+  ]);
+
+  if (!isDisciplina) throwNotFoundRequest();
+  if (isDisciplinaNome) throwNomeBadRequest();
+
+  const disciplina = await changeDisciplina(disciplinaId, request.body);
+  return reply.send({
+    nome: disciplina.nome,
+    descricao: disciplina.descricao,
+  });
 }

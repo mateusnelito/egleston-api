@@ -11,7 +11,10 @@ import {
   getDisciplinasSchema,
   updateDisciplinaSchema,
 } from '../schemas/disciplinaSchema';
-import { createDisciplina } from '../controllers/disciplinaController';
+import {
+  createDisciplina,
+  updateDisciplina,
+} from '../controllers/disciplinaController';
 
 const disciplinaRoutes: FastifyPluginAsync = async (
   server: FastifyInstance
@@ -25,9 +28,7 @@ const disciplinaRoutes: FastifyPluginAsync = async (
   // PUT
   server.withTypeProvider<ZodTypeProvider>().put('/:disciplinaId', {
     schema: updateDisciplinaSchema,
-    handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      return reply.send({ message: 'PUT disciplina working...' });
-    },
+    handler: updateDisciplina,
   });
 
   // GET UNIQUE RESOURCE
