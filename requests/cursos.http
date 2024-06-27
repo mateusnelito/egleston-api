@@ -1,0 +1,25 @@
+### GET all cursos 
+GET http://localhost:8000/api/cursos
+
+### GET curso
+GET http://localhost:8000/api/cursos/1
+
+### Create a curso
+POST http://localhost:8000/api/cursos/create
+Content-Type: application/json
+
+{
+    "nome": "",
+    "descricao": "",
+    "duracao": 2
+}
+
+### Update an existent curso
+PUT http://localhost:8000/api/cursos/1
+Content-Type: application/json
+
+{
+    "nome": "",
+    "descricao": "",
+    "duracao": 2
+}
