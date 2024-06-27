@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   createDisciplinaBodyType,
+  getDisciplinasQueryStringType,
   uniqueDisciplinaResourceParamsType,
   updateDisciplinaBodyType,
 } from '../schemas/disciplinaSchema';
@@ -10,6 +11,7 @@ import {
   getDisciplinaId,
   getDisciplinaNome,
   saveDisciplina,
+  getDisciplinas as getDisciplinasService,
 } from '../services/disciplinaServices';
 import NotFoundRequest from '../utils/NotFoundRequest';
 import BadRequest from '../utils/BadRequest';
@@ -78,4 +80,22 @@ export async function getDisciplina(
   const disciplina = await getDisciplinaDetails(disciplinaId);
   if (!disciplina) throwNotFoundRequest();
   return reply.send(disciplina);
+}
+
+export async function getDisciplinas(
+  request: FastifyRequest<{
+    Querystring: getDisciplinasQueryStringType;
+  }>,
+  reply: FastifyReply
+) {
+  const { cursor, page_size } = request.query;
+  const cursos = await getDisciplinasService(page_size, cursor);
+
+  let next_cursor =
+    cursos.length === page_size ? cursos[cursos.length - 1].id : undefined;
+
+  return reply.send({
+    data: cursos,
+    next_cursor,
+  });
 }
