@@ -13,6 +13,7 @@ import {
 } from '../schemas/disciplinaSchema';
 import {
   createDisciplina,
+  getDisciplina,
   updateDisciplina,
 } from '../controllers/disciplinaController';
 
@@ -34,9 +35,7 @@ const disciplinaRoutes: FastifyPluginAsync = async (
   // GET UNIQUE RESOURCE
   server.withTypeProvider<ZodTypeProvider>().get('/:disciplinaId', {
     schema: getDisciplinaSchema,
-    handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      return reply.send({ message: 'GET UNIQUE disciplina working...' });
-    },
+    handler: getDisciplina,
   });
 
   // GET ALL RESOURCES

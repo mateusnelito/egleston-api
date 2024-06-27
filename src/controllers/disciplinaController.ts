@@ -6,6 +6,7 @@ import {
 } from '../schemas/disciplinaSchema';
 import {
   changeDisciplina,
+  getDisciplinaDetails,
   getDisciplinaId,
   getDisciplinaNome,
   saveDisciplina,
@@ -65,4 +66,16 @@ export async function updateDisciplina(
     nome: disciplina.nome,
     descricao: disciplina.descricao,
   });
+}
+
+export async function getDisciplina(
+  request: FastifyRequest<{
+    Params: uniqueDisciplinaResourceParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { disciplinaId } = request.params;
+  const disciplina = await getDisciplinaDetails(disciplinaId);
+  if (!disciplina) throwNotFoundRequest();
+  return reply.send(disciplina);
 }
