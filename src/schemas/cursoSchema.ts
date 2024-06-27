@@ -99,8 +99,8 @@ export const getCursosSchema = {
 };
 
 export const getCursoSchema = {
-  summary: 'Busca parentesco pelo id',
-  tags: ['parentescos'],
+  summary: 'Busca curso pelo id',
+  tags: ['cursos'],
   params: cursoParamsSchema,
   response: {
     200: cursoOkResponseSchema,
