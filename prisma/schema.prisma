@@ -132,11 +132,10 @@ model ProfessorContacto {
 }
 
 model Curso {
-  id         Int          @id @default(autoincrement()) @db.SmallInt
-  nome       String       @unique @db.VarChar(50)
-  descricao  String       @db.Text
-  duracao    Int          @db.SmallInt
-  Disciplina Disciplina[]
+  id        Int    @id @default(autoincrement()) @db.SmallInt
+  nome      String @unique @db.VarChar(50)
+  descricao String @db.Text
+  duracao   Int    @db.SmallInt
 
   @@map("cursos")
   @@schema("cadastro")
@@ -146,8 +145,6 @@ model Disciplina {
   id        Int    @id @default(autoincrement())
   nome      String @unique @db.VarChar(50)
   descricao String @db.Text
-  Curso     Curso  @relation(fields: [cursoId], references: [id], onDelete: Cascade)
-  cursoId   Int    @map("curso_id") @db.SmallInt
 
   @@map("disciplinas")
   @@schema("cadastro")
