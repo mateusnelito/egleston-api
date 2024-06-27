@@ -1,0 +1,20 @@
+### Create a disciplina for a especific curso
+POST http://localhost:8000/api/disciplinas/create
+Content-Type: application/json
+
+{
+    "nome": "Lingua Portugues",
+    "descricao": "Estuda a língua nativa Angolana"
+}
+
+### UPDATE an existent disciplina
+PUT http://localhost:8000/api/disciplinas/1
+Content-Type: application/json
+
+{
+    "nome": "Lingua Portugues",
+    "descricao": "Estuda a língua nativa Angolana"
+}
+
+### GET a disciplina details
+GET http://localhost:8000/api/disciplinas/1

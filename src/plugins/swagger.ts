@@ -33,6 +33,10 @@ async function swaggerDocs(server: FastifyInstance) {
           name: 'cursos',
           description: 'Endpoints relacionados a cursos',
         },
+        {
+          name: 'disciplinas',
+          description: 'Endpoints relacionados a disciplinas',
+        },
       ],
     },
     transform: jsonSchemaTransform,
