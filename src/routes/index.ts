@@ -1,10 +1,10 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import alunosRoutes from './alunoRoutes';
-import parentescosRoutes from './parentescoRoutes';
-import responsaveisRoutes from './responsavelRoutes';
-import professoresRoutes from './professorRoutes';
 import cursosRoutes from './cursoRoutes';
 import disciplinaRoutes from './disciplinaRoutes';
+import parentescosRoutes from './parentescoRoutes';
+import professoresRoutes from './professorRoutes';
+import responsaveisRoutes from './responsavelRoutes';
 
 // Create a plugin with all the routes as plugins
 // Remember FastifyPlugin equals JS object

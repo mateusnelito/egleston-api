@@ -1,5 +1,4 @@
 import { FastifyReply } from 'fastify';
-import HttpStatusCodes from './HttpStatusCodes';
 import { complexBadRequestResponseType } from '../schemas/globalSchema';
 
 // Custom error class representing a BadRequest

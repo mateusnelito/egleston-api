@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { fastifyPlugin } from 'fastify-plugin';
 import {
-  validatorCompiler,
   serializerCompiler,
+  validatorCompiler,
 } from 'fastify-type-provider-zod';
 
 async function zodTypeProvider(server: FastifyInstance) {

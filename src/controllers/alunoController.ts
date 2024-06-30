@@ -1,28 +1,28 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
-  changeAluno,
-  getAlunoDetails,
-  getAlunoNumeroBi,
-  saveAluno,
-  getAlunos as getAllAlunos,
-  getAlunoResponsaveis as getAllResponsaveis,
-  getAlunoId,
-} from '../services/alunoServices';
-import {
   CreateAlunoBodyType,
   getAlunosQueryStringType,
-  updateAlunoBodyType,
   uniqueAlunoResourceParamsType,
+  updateAlunoBodyType,
 } from '../schemas/alunoSchema';
-import HttpStatusCodes from '../utils/HttpStatusCodes';
-import BadRequest from '../utils/BadRequest';
-import NotFoundRequest from '../utils/NotFoundRequest';
 import { getEmail, getTelefone } from '../services/alunoContactoServices';
+import {
+  changeAluno,
+  getAlunos as getAllAlunos,
+  getAlunoResponsaveis as getAllResponsaveis,
+  getAlunoDetails,
+  getAlunoId,
+  getAlunoNumeroBi,
+  saveAluno,
+} from '../services/alunoServices';
 import { getParentescoById } from '../services/parentescoServices';
 import {
-  getTelefone as getResponsavelTelefone,
   getEmail as getResponsavelEmail,
+  getTelefone as getResponsavelTelefone,
 } from '../services/responsavelContactoServices';
+import BadRequest from '../utils/BadRequest';
+import HttpStatusCodes from '../utils/HttpStatusCodes';
+import NotFoundRequest from '../utils/NotFoundRequest';
 import { formatDate } from '../utils/utils';
 
 function throwTelefoneBadRequest() {

@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { fastifyPlugin } from 'fastify-plugin';
 import { ZodError } from 'zod';
-import HttpStatusCodes from '../utils/HttpStatusCodes';
 import BadRequest from '../utils/BadRequest';
+import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
 import formatZodErrors from '../utils/formatZodErrors';
 

@@ -1,7 +1,4 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import BadRequest from '../utils/BadRequest';
-import HttpStatusCodes from '../utils/HttpStatusCodes';
-import NotFoundRequest from '../utils/NotFoundRequest';
 import {
   createCursoBodyType,
   getCursosQueryStringType,
@@ -10,12 +7,15 @@ import {
 } from '../schemas/cursoSchema';
 import {
   changeCurso,
+  getCursoDetails,
   getCursoId,
   getCursoNome,
-  saveCurso,
   getCursos as getCursosService,
-  getCursoDetails,
+  saveCurso,
 } from '../services/cursoServices';
+import BadRequest from '../utils/BadRequest';
+import HttpStatusCodes from '../utils/HttpStatusCodes';
+import NotFoundRequest from '../utils/NotFoundRequest';
 
 function throwNotFoundRequest() {
   throw new NotFoundRequest({

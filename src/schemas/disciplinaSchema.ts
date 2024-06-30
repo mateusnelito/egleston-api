@@ -1,10 +1,10 @@
 import { z } from 'zod';
+import { CURSO_NOME_REGEX, DESCRICAO_REGEX } from '../utils/regexPatterns';
 import {
   getAllResourcesParamsSchema,
   notFoundRequestSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
-import { CURSO_NOME_REGEX, DESCRICAO_REGEX } from '../utils/regexPatterns';
 
 const disciplinaBodySchema = z.object({
   nome: z

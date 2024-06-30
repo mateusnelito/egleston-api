@@ -1,11 +1,11 @@
+import fastifyCors from '@fastify/cors';
 import fastify from 'fastify';
-import routes from './routes'; // Import all registered routes
-import HttpStatusCodes from './utils/HttpStatusCodes';
 import errorHandlerPlugin from './plugins/errorHandler';
 import swaggerDocs from './plugins/swagger';
 import zodTypeProvider from './plugins/zod';
+import routes from './routes'; // Import all registered routes
+import HttpStatusCodes from './utils/HttpStatusCodes';
 import NotFoundRequest from './utils/NotFoundRequest';
-import fastifyCors from '@fastify/cors';
 
 // Instantiate the server
 const server = fastify();

@@ -1,22 +1,17 @@
-import {
-  FastifyInstance,
-  FastifyPluginAsync,
-  FastifyReply,
-  FastifyRequest,
-} from 'fastify';
+import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
-import {
-  createDisciplinaSchema,
-  getDisciplinaSchema,
-  getDisciplinasSchema,
-  updateDisciplinaSchema,
-} from '../schemas/disciplinaSchema';
 import {
   createDisciplina,
   getDisciplina,
   getDisciplinas,
   updateDisciplina,
 } from '../controllers/disciplinaController';
+import {
+  createDisciplinaSchema,
+  getDisciplinaSchema,
+  getDisciplinasSchema,
+  updateDisciplinaSchema,
+} from '../schemas/disciplinaSchema';
 
 const disciplinaRoutes: FastifyPluginAsync = async (
   server: FastifyInstance

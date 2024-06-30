@@ -10,12 +10,12 @@ import {
   getDisciplinaDetails,
   getDisciplinaId,
   getDisciplinaNome,
-  saveDisciplina,
   getDisciplinas as getDisciplinasService,
+  saveDisciplina,
 } from '../services/disciplinaServices';
-import NotFoundRequest from '../utils/NotFoundRequest';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
+import NotFoundRequest from '../utils/NotFoundRequest';
 
 function throwNotFoundRequest() {
   throw new NotFoundRequest({

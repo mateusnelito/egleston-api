@@ -1,6 +1,5 @@
 import { prisma } from '../lib/prisma';
 import { professorBodyType } from '../schemas/professorSchemas';
-import { responsavelBodyType } from '../schemas/responsavelSchema';
 
 export async function saveProfessor(data: professorBodyType) {
   return await prisma.professor.create({

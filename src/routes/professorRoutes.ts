@@ -1,23 +1,17 @@
-import {
-  FastifyInstance,
-  FastifyPluginAsync,
-  FastifyReply,
-  FastifyRequest,
-} from 'fastify';
+import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { z } from 'zod';
-import {
-  createProfessorSchema,
-  getProfessorSchema,
-  getProfessoresSchema,
-  updateProfessorSchema,
-} from '../schemas/professorSchemas';
 import {
   createProfessor,
   getProfessor,
   getProfessores,
   updateProfessor,
 } from '../controllers/professorController';
+import {
+  createProfessorSchema,
+  getProfessorSchema,
+  getProfessoresSchema,
+  updateProfessorSchema,
+} from '../schemas/professorSchemas';
 
 const professoresRoutes: FastifyPluginAsync = async (
   server: FastifyInstance

@@ -1,23 +1,17 @@
-import {
-  FastifyInstance,
-  FastifyPluginAsync,
-  FastifyReply,
-  FastifyRequest,
-} from 'fastify';
+import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { z } from 'zod';
-import {
-  createCursoSchema,
-  getCursoSchema,
-  getCursosSchema,
-  updateCursoSchema,
-} from '../schemas/cursoSchema';
 import {
   createCurso,
   getCurso,
   getCursos,
   updateCurso,
 } from '../controllers/cursoController';
+import {
+  createCursoSchema,
+  getCursoSchema,
+  getCursosSchema,
+  updateCursoSchema,
+} from '../schemas/cursoSchema';
 
 const cursosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
   // POST

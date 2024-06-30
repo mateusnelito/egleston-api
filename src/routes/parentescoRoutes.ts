@@ -1,17 +1,17 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
-  createParentescoSchema,
-  getParentescoSchema,
-  getParentescosSchema,
-  updateParentescoSchema,
-} from '../schemas/parentescoSchema';
-import {
   createParentesco,
   getParentesco,
   getParentescos,
   updateParentesco,
 } from '../controllers/parentescoController';
+import {
+  createParentescoSchema,
+  getParentescoSchema,
+  getParentescosSchema,
+  updateParentescoSchema,
+} from '../schemas/parentescoSchema';
 
 // Create all parentesco sub-routes
 const parentescosRoutes: FastifyPluginAsync = async (

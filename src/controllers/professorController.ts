@@ -4,16 +4,16 @@ import {
   professorBodyType,
   uniqueProfessorResourceParamsType,
 } from '../schemas/professorSchemas';
+import { getEmail, getTelefone } from '../services/professorContactoServices';
 import {
   changeProfessor,
   getProfessorDetails,
   getProfessorId,
-  saveProfessor,
   getProfessores as getProfessoresService,
+  saveProfessor,
 } from '../services/professorServices';
-import HttpStatusCodes from '../utils/HttpStatusCodes';
 import BadRequest from '../utils/BadRequest';
-import { getEmail, getTelefone } from '../services/professorContactoServices';
+import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
 import { formatDate } from '../utils/utils';
 

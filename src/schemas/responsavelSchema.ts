@@ -3,8 +3,8 @@ import {
   FULL_NAME_REGEX,
   OUTROS_CONTACTOS_REGEX,
 } from '../utils/regexPatterns';
-import { enderecoSchema } from './enderecoSchema';
 import { contactoSchema } from './contactoSchema';
+import { enderecoSchema } from './enderecoSchema';
 import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
 
 const responsavelBodySchema = z

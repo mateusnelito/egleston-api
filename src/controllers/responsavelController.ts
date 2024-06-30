@@ -1,22 +1,22 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { getParentescoById } from '../services/parentescoServices';
-import BadRequest from '../utils/BadRequest';
-import HttpStatusCodes from '../utils/HttpStatusCodes';
-import NotFoundRequest from '../utils/NotFoundRequest';
 import {
-  responsavelBodyType,
   createResponsavelParamsType,
+  responsavelBodyType,
   uniqueResponsavelResourceParamsType,
 } from '../schemas/responsavelSchema';
-import { getAlunoDetails, getAlunoId } from '../services/alunoServices';
+import { getAlunoId } from '../services/alunoServices';
+import { getParentescoById } from '../services/parentescoServices';
 import { getEmail, getTelefone } from '../services/responsavelContactoServices';
 import {
   changeResponsavel,
   deleteResponsavel,
-  getResponsavelId,
   getResponsavelDetails,
+  getResponsavelId,
   saveResponsavel,
 } from '../services/responsavelServices';
+import BadRequest from '../utils/BadRequest';
+import HttpStatusCodes from '../utils/HttpStatusCodes';
+import NotFoundRequest from '../utils/NotFoundRequest';
 
 function throwNotFoundParentesco() {
   throw new BadRequest({

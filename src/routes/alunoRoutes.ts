@@ -1,4 +1,5 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
+import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
   createAluno,
   getAluno,
@@ -6,7 +7,6 @@ import {
   getResponsaveis,
   updateAluno,
 } from '../controllers/alunoController';
-import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
   createAlunoSchema,
   getAlunoSchema,

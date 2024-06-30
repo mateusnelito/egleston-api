@@ -1,13 +1,13 @@
 import { z } from 'zod';
+import { FULL_NAME_REGEX, NUMERO_BI_REGEX } from '../utils/regexPatterns';
+import { contactoSchema } from './contactoSchema';
+import { enderecoSchema } from './enderecoSchema';
 import {
   complexBadRequestSchema,
   getAllResourcesParamsSchema,
   notFoundRequestSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
-import { FULL_NAME_REGEX, NUMERO_BI_REGEX } from '../utils/regexPatterns';
-import { enderecoSchema } from './enderecoSchema';
-import { contactoSchema } from './contactoSchema';
 import { createResponsavelBodySchema } from './responsavelSchema';
 
 const alunoBodySchema = z

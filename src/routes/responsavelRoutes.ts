@@ -1,17 +1,17 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
-  createResponsavelSchema,
-  deleteResponsavelSchema,
-  getResponsavelSchema,
-  updateResponsavelSchema,
-} from '../schemas/responsavelSchema';
-import {
   createResponsavel,
   destroyResponsavel,
   getResponsavel,
   updateResponsavel,
 } from '../controllers/responsavelController';
+import {
+  createResponsavelSchema,
+  deleteResponsavelSchema,
+  getResponsavelSchema,
+  updateResponsavelSchema,
+} from '../schemas/responsavelSchema';
 
 // Create all responsavel sub-routes
 const responsaveisRoutes: FastifyPluginAsync = async (

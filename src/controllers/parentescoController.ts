@@ -6,8 +6,8 @@ import {
   updateParentescoBodyType,
 } from '../schemas/parentescoSchema';
 import {
-  getParentescos as getAllParentescos,
   changeParentesco,
+  getParentescos as getAllParentescos,
   getParentescoById,
   getParentescoNome,
   saveParentesco,
