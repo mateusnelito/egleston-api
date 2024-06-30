@@ -5,9 +5,15 @@ import errorHandlerPlugin from './plugins/errorHandler';
 import swaggerDocs from './plugins/swagger';
 import zodTypeProvider from './plugins/zod';
 import NotFoundRequest from './utils/NotFoundRequest';
+import fastifyCors from '@fastify/cors';
 
 // Instantiate the server
 const server = fastify();
+
+// Configure cors plugin
+server.register(fastifyCors, {
+  origin: '*', // allows any origin
+});
 
 // Register the plugins
 server.register(swaggerDocs);
