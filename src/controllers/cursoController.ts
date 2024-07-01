@@ -16,6 +16,7 @@ import {
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
+import { getDisciplinaId } from '../services/disciplinaServices';
 
 function throwNotFoundRequest() {
   throw new NotFoundRequest({
@@ -36,10 +37,39 @@ export async function createCurso(
   request: FastifyRequest<{ Body: createCursoBodyType }>,
   reply: FastifyReply
 ) {
-  const { nome } = request.body;
+  const { nome, disciplinas } = request.body;
 
   const isCursoNome = await getCursoNome(nome);
   if (isCursoNome) throwNomeBadRequest();
+
+  if (disciplinas) {
+    for (let i = 0; i < disciplinas.length; i++) {
+      const disciplina = disciplinas[i];
+      const isDisciplina = await getDisciplinaId(disciplina);
+
+      // TODO: Finish the verification before send the errors, to send all invalids disciplinas
+      if (!isDisciplina) {
+        // FIXME: Send the errors in simple format:
+        // errors: {
+        //   disciplinas: {
+        //     [i]: 'disciplinaId não existe.'
+        //   },
+        // },
+
+        throw new BadRequest({
+          statusCode: HttpStatusCodes.NOT_FOUND,
+          message: 'Disciplina inválida.',
+          errors: {
+            disciplinas: {
+              [i]: {
+                disciplinaId: ['disciplinaId não existe.'],
+              },
+            },
+          },
+        });
+      }
+    }
+  }
 
   const curso = await saveCurso(request.body);
   return reply.status(HttpStatusCodes.CREATED).send(curso);

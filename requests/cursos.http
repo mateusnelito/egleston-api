@@ -9,9 +9,9 @@ POST http://localhost:8000/api/cursos/create
 Content-Type: application/json
 
 {
-    "nome": "",
-    "descricao": "",
-    "duracao": 2
+    "nome": "Engenharia Informática",
+    "descricao": "Melhor curso do mundo.",
+    "duracao": 4
 }
 
 ### Update an existent curso
@@ -21,5 +21,5 @@ Content-Type: application/json
 {
     "nome": "",
     "descricao": "",
-    "duracao": 2
+    "duracao": 3
 }

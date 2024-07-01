@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { CURSO_NOME_REGEX, DESCRICAO_REGEX } from '../utils/regexPatterns';
 import {
+  complexBadRequestSchema,
   getAllResourcesParamsSchema,
   notFoundRequestSchema,
   simpleBadRequestSchema,
@@ -41,6 +42,14 @@ const cursoBodySchema = z.object({
     .max(10, {
       message: 'A duração do curso deve ser de no máximo 10 anos.',
     }),
+  disciplinas: z
+    .array(z.number().int().positive(), {
+      invalid_type_error:
+        'As disciplinas devem ser  enviadas no formato de array.',
+      message:
+        'O array de disciplinas deve conter apenas números inteiros positivos.',
+    })
+    .optional(),
 });
 
 const cursoParamsSchema = z.object({
@@ -66,7 +75,8 @@ export const createCursoSchema = {
   body: cursoBodySchema,
   response: {
     201: cursoOkResponseSchema,
-    400: simpleBadRequestSchema,
+    400: complexBadRequestSchema,
+    404: complexBadRequestSchema,
   },
 };
 
