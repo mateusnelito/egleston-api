@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
-  addDisciplinasToCursoBodyType,
+  associateDisciplinasWithCursoBodyType,
   createCursoBodyType,
   getCursosQueryStringType,
   uniqueCursoResourceParamsType,
@@ -138,7 +138,7 @@ export async function getCurso(
 
 export async function associateCursoWithDisciplinas(
   request: FastifyRequest<{
-    Body: addDisciplinasToCursoBodyType;
+    Body: associateDisciplinasWithCursoBodyType;
     Params: uniqueCursoResourceParamsType;
   }>,
   reply: FastifyReply

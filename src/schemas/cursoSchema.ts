@@ -81,7 +81,7 @@ export const createCursoSchema = {
 };
 
 export const associateDisciplinasWithCursoSchema = {
-  summary: 'Adiciona Múltiplas disciplinas à um curso',
+  summary: 'Associa Múltiplas disciplinas à um curso',
   tags: ['cursos'],
   params: cursoParamsSchema,
   body: z.object({
@@ -144,6 +144,6 @@ export type getCursosQueryStringType = z.infer<
   typeof getCursosSchema.querystring
 >;
 
-export type addDisciplinasToCursoBodyType = z.infer<
+export type associateDisciplinasWithCursoBodyType = z.infer<
   typeof associateDisciplinasWithCursoSchema.body
 >;
