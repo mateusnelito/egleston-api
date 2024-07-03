@@ -69,33 +69,44 @@ const cursoOkResponseSchema = z.object({
   duracao: z.number().int().positive(),
 });
 
+export const cursoDisciplinasAssociationSchema = {
+  tags: ['cursos'],
+  params: cursoParamsSchema,
+  body: z.object({
+    disciplinas: z
+      .array(
+        z
+          .number({
+            message: 'O array de disciplinas deve conter apenas números.',
+          })
+          .int({
+            message:
+              'O array de disciplinas deve conter apenas números inteiros.',
+          })
+          .positive({
+            message:
+              'O array de disciplinas deve conter apenas números inteiros positivos.',
+          }),
+        {
+          invalid_type_error:
+            'As disciplinas devem ser  enviadas no formato de array.',
+        }
+      )
+      .nonempty({ message: 'O array de disciplinas não deve estar vazio.' }),
+  }),
+  response: {
+    // 201: cursoOkResponseSchema,
+    400: complexBadRequestSchema,
+    404: complexBadRequestSchema,
+  },
+};
+
 export const createCursoSchema = {
   summary: 'Adiciona um novo curso',
   tags: ['cursos'],
   body: cursoBodySchema,
   response: {
     201: cursoOkResponseSchema,
-    400: complexBadRequestSchema,
-    404: complexBadRequestSchema,
-  },
-};
-
-export const cursoDisciplinasAssociationSchema = {
-  summary: 'Associa Múltiplas disciplinas à um curso',
-  tags: ['cursos'],
-  params: cursoParamsSchema,
-  body: z.object({
-    disciplinas: z
-      .array(z.number().int().positive(), {
-        invalid_type_error:
-          'As disciplinas devem ser  enviadas no formato de array.',
-        message:
-          'O array de disciplinas deve conter apenas números inteiros positivos.',
-      })
-      .nonempty({ message: 'O array de disciplinas não deve estar vazio.' }),
-  }),
-  response: {
-    // 201: cursoOkResponseSchema,
     400: complexBadRequestSchema,
     404: complexBadRequestSchema,
   },
@@ -135,6 +146,11 @@ export const getCursoSchema = {
   },
 };
 
+export const createCursoDisciplinasAssociationSchema = {
+  summary: 'Associa Múltiplas disciplinas à um curso',
+  ...cursoDisciplinasAssociationSchema,
+};
+
 export const deleteCursoDisciplinaAssociationSchema = {
   summary: 'Remove associação entre curso e disciplina',
   tags: ['cursos'],
@@ -152,6 +168,11 @@ export const deleteCursoDisciplinaAssociationSchema = {
   },
 };
 
+export const deleCursoDisciplinasAssociationSchema = {
+  summary: 'Deleta múltiplas disciplinas associadas à um curso',
+  ...cursoDisciplinasAssociationSchema,
+};
+
 export type createCursoBodyType = z.infer<typeof createCursoSchema.body>;
 export type updateCursoBodyType = z.infer<typeof updateCursoSchema.body>;
 
@@ -164,7 +185,7 @@ export type getCursosQueryStringType = z.infer<
 >;
 
 export type cursoDisciplinasAssociationBodyType = z.infer<
-  typeof cursoDisciplinasAssociationSchema.body
+  typeof createCursoDisciplinasAssociationSchema.body
 >;
 
 export type deleteCursoDisciplinaAssociationParamsType = z.infer<

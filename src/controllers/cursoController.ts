@@ -155,13 +155,13 @@ export async function associateCursoWithDisciplinas(
   for (let i = 0; i < disciplinas.length; i++) {
     const disciplinaId = disciplinas[i];
 
-    const [isDisciplina, isCursoDisciplinaAssociation] = await Promise.all([
+    const [isDisciplinaId, isCursoDisciplinaAssociation] = await Promise.all([
       await getDisciplinaId(disciplinaId),
       await checkCursoDisciplinaAssociation(cursoId, disciplinaId),
     ]);
 
     // TODO: Finish the verification before send the errors, to send all invalids disciplinas
-    if (!isDisciplina) {
+    if (!isDisciplinaId) {
       // FIXME: Send the errors in simple format:
       // errors: {
       //   disciplinas: {

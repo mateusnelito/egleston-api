@@ -10,8 +10,9 @@ import {
   updateCurso,
 } from '../controllers/cursoController';
 import {
-  cursoDisciplinasAssociationSchema,
+  createCursoDisciplinasAssociationSchema,
   createCursoSchema,
+  deleCursoDisciplinasAssociationSchema,
   deleteCursoDisciplinaAssociationSchema,
   getCursoSchema,
   getCursosSchema,
@@ -45,7 +46,7 @@ const cursosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
 
   // POST ASSOCIATION BETWEEN MULTIPLES DISCIPLINAS AND ONE CURSO
   server.withTypeProvider<ZodTypeProvider>().post('/:cursoId/disciplinas', {
-    schema: cursoDisciplinasAssociationSchema,
+    schema: createCursoDisciplinasAssociationSchema,
     handler: associateCursoWithDisciplinas,
   });
 
@@ -59,7 +60,7 @@ const cursosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
 
   // DELETE ASSOCIATIONS BETWEEN MULTIPLES DISCIPLINAS AND ONE CURSO
   server.withTypeProvider<ZodTypeProvider>().delete('/:cursoId/disciplinas', {
-    schema: cursoDisciplinasAssociationSchema,
+    schema: deleCursoDisciplinasAssociationSchema,
     handler: deleteCursoWithDisciplinasAssociation,
   });
 };
