@@ -9,9 +9,10 @@ POST http://localhost:8000/api/cursos/create
 Content-Type: application/json
 
 {
-    "nome": "Engenharia Eletrônica",
-    "descricao": "Apenas mais um curso técnico.",
-    "duracao": 4
+    "nome": "PUNIV",
+    "descricao": "Apenas mais um curso.",
+    "duracao": 3,
+    "disciplinas": [1, 2, 3]
 }
 
 ### Update an existent curso

@@ -40,7 +40,22 @@ export async function saveCurso(data: createCursoBodyType) {
         data: { cursoId: curso.id, disciplinaId: disciplina },
       });
     }
+
+    const cursoDisciplinas = await prisma.cursosDisciplinas.findMany({
+      where: { cursoId: curso.id },
+      select: {
+        disciplinaId: true,
+      },
+    });
+
+    return {
+      ...curso,
+      disciplinas: cursoDisciplinas.map((disciplina) => {
+        return disciplina.disciplinaId;
+      }),
+    };
   }
+
   return curso;
 }
 

@@ -106,7 +106,9 @@ export const createCursoSchema = {
   tags: ['cursos'],
   body: cursoBodySchema,
   response: {
-    201: cursoOkResponseSchema,
+    201: cursoOkResponseSchema.extend({
+      disciplinas: z.array(z.number().int().positive()).optional(),
+    }),
     400: complexBadRequestSchema,
     404: complexBadRequestSchema,
   },
