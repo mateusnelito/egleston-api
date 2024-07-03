@@ -95,11 +95,14 @@ export const associateCursosWithDisciplinaSchema = {
   tags: ['disciplinas'],
   params: disciplinaParamsSchema,
   body: z.object({
-    cursos: z.array(z.number().int().positive(), {
-      invalid_type_error: 'Os cursos devem ser  enviadas no formato de array.',
-      message:
-        'O array de cursos deve conter apenas números inteiros positivos.',
-    }),
+    cursos: z
+      .array(z.number().int().positive(), {
+        invalid_type_error:
+          'Os cursos devem ser  enviadas no formato de array.',
+        message:
+          'O array de cursos deve conter apenas números inteiros positivos.',
+      })
+      .nonempty({ message: 'O array de cursos não deve estar vazio.' }),
   }),
   response: {
     // 201: cursoOkResponseSchema,

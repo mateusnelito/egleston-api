@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
-  associateDisciplinasWithCursoBodyType,
+  cursoDisciplinasAssociationBodyType,
   createCursoBodyType,
   deleteCursoDisciplinaAssociationParamsType,
   getCursosQueryStringType,
@@ -19,6 +19,7 @@ import {
   associateDisciplinasWithCurso,
   checkCursoDisciplinaAssociation,
   deleteCursoDisciplina,
+  deleteDisciplinasWithCursoAssociation,
 } from '../services/cursosDisciplinasServices';
 import { getDisciplinaId } from '../services/disciplinaServices';
 import BadRequest from '../utils/BadRequest';
@@ -140,7 +141,7 @@ export async function getCurso(
 
 export async function associateCursoWithDisciplinas(
   request: FastifyRequest<{
-    Body: associateDisciplinasWithCursoBodyType;
+    Body: cursoDisciplinasAssociationBodyType;
     Params: uniqueCursoResourceParamsType;
   }>,
   reply: FastifyReply
@@ -232,4 +233,56 @@ export async function destroyCursoDisciplina(
   }
   const cursoDisciplina = await deleteCursoDisciplina(cursoId, disciplinaId);
   return reply.send(cursoDisciplina);
+}
+
+export async function deleteCursoWithDisciplinasAssociation(
+  request: FastifyRequest<{
+    Body: cursoDisciplinasAssociationBodyType;
+    Params: uniqueCursoResourceParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { cursoId } = request.params;
+  const { disciplinas } = request.body;
+
+  const isCurso = await getCursoId(cursoId);
+  if (!isCurso) throwNotFoundRequest();
+
+  for (let i = 0; i < disciplinas.length; i++) {
+    const disciplinaId = disciplinas[i];
+
+    const isCursoDisciplinaAssociation = await checkCursoDisciplinaAssociation(
+      cursoId,
+      disciplinaId
+    );
+
+    if (!isCursoDisciplinaAssociation) {
+      // FIXME: Send the errors in simple format:
+      // errors: {
+      //   disciplinas: {
+      //     [i]: 'disciplinaId não existe.'
+      //   },
+      // },
+
+      throw new BadRequest({
+        statusCode: HttpStatusCodes.NOT_FOUND,
+        message: 'Disciplina inválida.',
+        errors: {
+          disciplinas: {
+            [i]: {
+              disciplinaId: ['Não existe relação.'],
+            },
+          },
+        },
+      });
+    }
+  }
+
+  const cursoDisciplinas = await deleteDisciplinasWithCursoAssociation(
+    cursoId,
+    disciplinas
+  );
+
+  // FIXME: Send an appropriate response
+  return reply.send(cursoDisciplinas);
 }

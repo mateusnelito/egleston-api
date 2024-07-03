@@ -43,3 +43,14 @@ export async function deleteCursoDisciplina(
     },
   });
 }
+
+export async function deleteDisciplinasWithCursoAssociation(
+  cursoId: number,
+  disciplinas: Array<number>
+) {
+  for (const disciplinaId of disciplinas) {
+    await prisma.cursosDisciplinas.delete({
+      where: { cursoId_disciplinaId: { cursoId, disciplinaId } },
+    });
+  }
+}

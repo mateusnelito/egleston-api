@@ -80,17 +80,19 @@ export const createCursoSchema = {
   },
 };
 
-export const associateDisciplinasWithCursoSchema = {
+export const cursoDisciplinasAssociationSchema = {
   summary: 'Associa Múltiplas disciplinas à um curso',
   tags: ['cursos'],
   params: cursoParamsSchema,
   body: z.object({
-    disciplinas: z.array(z.number().int().positive(), {
-      invalid_type_error:
-        'As disciplinas devem ser  enviadas no formato de array.',
-      message:
-        'O array de disciplinas deve conter apenas números inteiros positivos.',
-    }),
+    disciplinas: z
+      .array(z.number().int().positive(), {
+        invalid_type_error:
+          'As disciplinas devem ser  enviadas no formato de array.',
+        message:
+          'O array de disciplinas deve conter apenas números inteiros positivos.',
+      })
+      .nonempty({ message: 'O array de disciplinas não deve estar vazio.' }),
   }),
   response: {
     // 201: cursoOkResponseSchema,
@@ -161,8 +163,8 @@ export type getCursosQueryStringType = z.infer<
   typeof getCursosSchema.querystring
 >;
 
-export type associateDisciplinasWithCursoBodyType = z.infer<
-  typeof associateDisciplinasWithCursoSchema.body
+export type cursoDisciplinasAssociationBodyType = z.infer<
+  typeof cursoDisciplinasAssociationSchema.body
 >;
 
 export type deleteCursoDisciplinaAssociationParamsType = z.infer<
