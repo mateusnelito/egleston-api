@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { CURSO_NOME_REGEX, DESCRICAO_REGEX } from '../utils/regexPatterns';
 import {
+  complexBadRequestSchema,
   getAllResourcesParamsSchema,
   notFoundRequestSchema,
   simpleBadRequestSchema,
@@ -89,6 +90,24 @@ export const getDisciplinaSchema = {
   },
 };
 
+export const associateCursosWithDisciplinaSchema = {
+  summary: 'Associa Múltiplos cursos à uma disciplina',
+  tags: ['disciplinas'],
+  params: disciplinaParamsSchema,
+  body: z.object({
+    cursos: z.array(z.number().int().positive(), {
+      invalid_type_error: 'Os cursos devem ser  enviadas no formato de array.',
+      message:
+        'O array de cursos deve conter apenas números inteiros positivos.',
+    }),
+  }),
+  response: {
+    // 201: cursoOkResponseSchema,
+    400: complexBadRequestSchema,
+    404: complexBadRequestSchema,
+  },
+};
+
 export type createDisciplinaBodyType = z.infer<
   typeof createDisciplinaSchema.body
 >;
@@ -102,4 +121,8 @@ export type uniqueDisciplinaResourceParamsType = z.infer<
 
 export type getDisciplinasQueryStringType = z.infer<
   typeof getDisciplinasSchema.querystring
+>;
+
+export type associateCursosWithDisciplinaBodyType = z.infer<
+  typeof associateCursosWithDisciplinaSchema.body
 >;
