@@ -7,19 +7,21 @@ import {
   updateCursoBodyType,
 } from '../schemas/cursoSchema';
 import {
-  associateDisciplinas,
   changeCurso,
-  checkCursoDisciplinaAssociation,
   getCursoDetails,
   getCursoId,
   getCursoNome,
   getCursos as getCursosService,
   saveCurso,
 } from '../services/cursoServices';
+import {
+  associateCursoWithDisciplinas as associateCursoWithDisciplinasService,
+  checkCursoDisciplinaAssociation,
+} from '../services/cursosDisciplinasServices';
+import { getDisciplinaId } from '../services/disciplinaServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
-import { getDisciplinaId } from '../services/disciplinaServices';
 
 function throwNotFoundRequest() {
   throw new NotFoundRequest({
@@ -199,6 +201,11 @@ export async function associateCursoWithDisciplinas(
     }
   }
 
-  const cursoDisciplinas = await associateDisciplinas(cursoId, disciplinas);
+  const cursoDisciplinas = await associateCursoWithDisciplinasService(
+    cursoId,
+    disciplinas
+  );
+
+  // FIXME: Send an appropriate response
   return reply.status(HttpStatusCodes.CREATED).send(cursoDisciplinas);
 }
