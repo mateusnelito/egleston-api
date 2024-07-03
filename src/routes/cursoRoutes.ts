@@ -40,7 +40,7 @@ const cursosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
     handler: getCurso,
   });
 
-  // POST DISCIPLINAS
+  // POST ASSOCIATION BETWEEN MULTIPLES DISCIPLINAS AND ONE CURSO
   server.withTypeProvider<ZodTypeProvider>().post('/:cursoId/disciplinas', {
     schema: associateDisciplinasWithCursoSchema,
     handler: associateCursoWithDisciplinas,

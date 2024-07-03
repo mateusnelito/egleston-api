@@ -15,7 +15,7 @@ import {
   saveCurso,
 } from '../services/cursoServices';
 import {
-  associateCursoWithDisciplinas as associateCursoWithDisciplinasService,
+  associateDisciplinasWithCurso,
   checkCursoDisciplinaAssociation,
 } from '../services/cursosDisciplinasServices';
 import { getDisciplinaId } from '../services/disciplinaServices';
@@ -146,15 +146,15 @@ export async function associateCursoWithDisciplinas(
   const { cursoId } = request.params;
   const { disciplinas } = request.body;
 
-  const isCurso = await getCursoDetails(cursoId);
+  const isCurso = await getCursoId(cursoId);
   if (!isCurso) throwNotFoundRequest();
 
   for (let i = 0; i < disciplinas.length; i++) {
-    const disciplina = disciplinas[i];
+    const disciplinaId = disciplinas[i];
 
     const [isDisciplina, isCursoDisciplinaAssociation] = await Promise.all([
-      await getDisciplinaId(disciplina),
-      await checkCursoDisciplinaAssociation(cursoId, disciplina),
+      await getDisciplinaId(disciplinaId),
+      await checkCursoDisciplinaAssociation(cursoId, disciplinaId),
     ]);
 
     // TODO: Finish the verification before send the errors, to send all invalids disciplinas
@@ -201,7 +201,7 @@ export async function associateCursoWithDisciplinas(
     }
   }
 
-  const cursoDisciplinas = await associateCursoWithDisciplinasService(
+  const cursoDisciplinas = await associateDisciplinasWithCurso(
     cursoId,
     disciplinas
   );

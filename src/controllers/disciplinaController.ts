@@ -1,5 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
+  associateCursosWithDisciplinaBodyType,
   createDisciplinaBodyType,
   getDisciplinasQueryStringType,
   uniqueDisciplinaResourceParamsType,
@@ -16,6 +17,11 @@ import {
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
+import {
+  checkCursoDisciplinaAssociation,
+  associateCursosWithDisciplina as associateCursosWithDisciplinaService,
+} from '../services/cursosDisciplinasServices';
+import { getCursoId } from '../services/cursoServices';
 
 function throwNotFoundRequest() {
   throw new NotFoundRequest({
@@ -98,4 +104,78 @@ export async function getDisciplinas(
     data: cursos,
     next_cursor,
   });
+}
+
+export async function associateDisciplinaWithCursos(
+  request: FastifyRequest<{
+    Body: associateCursosWithDisciplinaBodyType;
+    Params: uniqueDisciplinaResourceParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { disciplinaId } = request.params;
+  const { cursos } = request.body;
+
+  const isDisciplina = await getDisciplinaId(disciplinaId);
+  if (!isDisciplina) throwNotFoundRequest();
+
+  for (let i = 0; i < cursos.length; i++) {
+    const cursoId = cursos[i];
+
+    const [isCurso, isCursoDisciplinaAssociation] = await Promise.all([
+      await getCursoId(cursoId),
+      await checkCursoDisciplinaAssociation(cursoId, disciplinaId),
+    ]);
+
+    // TODO: Finish the verification before send the errors, to send all invalids cursos
+    if (!isCurso) {
+      // FIXME: Send the errors in simple format:
+      // errors: {
+      //   cursos: {
+      //     [i]: 'cursoId não existe.'
+      //   },
+      // },
+
+      throw new BadRequest({
+        statusCode: HttpStatusCodes.NOT_FOUND,
+        message: 'Curso inválido.',
+        errors: {
+          cursos: {
+            [i]: {
+              cursoId: ['cursoId não existe.'],
+            },
+          },
+        },
+      });
+    }
+
+    if (isCursoDisciplinaAssociation) {
+      // FIXME: Send the errors in simple format:
+      // errors: {
+      //   cursos: {
+      //     [i]: 'cursoId não existe.'
+      //   },
+      // },
+
+      throw new BadRequest({
+        statusCode: HttpStatusCodes.NOT_FOUND,
+        message: 'Curso inválido.',
+        errors: {
+          cursos: {
+            [i]: {
+              cursoId: ['cursoId Já está relacionada com a disciplina.'],
+            },
+          },
+        },
+      });
+    }
+  }
+
+  const cursoDisciplinas = await associateCursosWithDisciplinaService(
+    disciplinaId,
+    cursos
+  );
+
+  // FIXME: Send an appropriate response
+  return reply.status(HttpStatusCodes.CREATED).send(cursoDisciplinas);
 }

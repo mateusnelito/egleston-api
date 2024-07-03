@@ -11,13 +11,24 @@ export async function checkCursoDisciplinaAssociation(
   });
 }
 
-export async function associateCursoWithDisciplinas(
-  id: number,
+export async function associateDisciplinasWithCurso(
+  cursoId: number,
   disciplinas: Array<number>
 ) {
-  for (const disciplina of disciplinas) {
+  for (const disciplinaId of disciplinas) {
     await prisma.cursosDisciplinas.create({
-      data: { cursoId: id, disciplinaId: disciplina },
+      data: { cursoId, disciplinaId },
+    });
+  }
+}
+
+export async function associateCursosWithDisciplina(
+  disciplinaId: number,
+  cursos: Array<number>
+) {
+  for (const cursoId of cursos) {
+    await prisma.cursosDisciplinas.create({
+      data: { disciplinaId, cursoId },
     });
   }
 }
