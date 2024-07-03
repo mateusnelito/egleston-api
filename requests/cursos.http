@@ -9,8 +9,8 @@ POST http://localhost:8000/api/cursos/create
 Content-Type: application/json
 
 {
-    "nome": "Engenharia Informática",
-    "descricao": "Melhor curso do mundo.",
+    "nome": "Engenharia Eletrônica",
+    "descricao": "Apenas mais um curso técnico.",
     "duracao": 4
 }
 
@@ -22,4 +22,12 @@ Content-Type: application/json
     "nome": "",
     "descricao": "",
     "duracao": 3
+}
+
+### Associate some curso to multiples disciplinas
+POST http://localhost:8000/api/cursos/6/disciplinas
+Content-Type: application/json
+
+{
+    "disciplinas": [1, 2, 3]
 }

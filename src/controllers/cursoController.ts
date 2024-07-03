@@ -1,12 +1,15 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
+  addDisciplinasToCursoBodyType,
   createCursoBodyType,
   getCursosQueryStringType,
   uniqueCursoResourceParamsType,
   updateCursoBodyType,
 } from '../schemas/cursoSchema';
 import {
+  associateDisciplinas,
   changeCurso,
+  checkCursoDisciplinaAssociation,
   getCursoDetails,
   getCursoId,
   getCursoNome,
@@ -129,4 +132,73 @@ export async function getCurso(
   if (!curso) throwNotFoundRequest();
 
   return reply.send(curso);
+}
+
+export async function associateCursoWithDisciplinas(
+  request: FastifyRequest<{
+    Body: addDisciplinasToCursoBodyType;
+    Params: uniqueCursoResourceParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { cursoId } = request.params;
+  const { disciplinas } = request.body;
+
+  const isCurso = await getCursoDetails(cursoId);
+  if (!isCurso) throwNotFoundRequest();
+
+  for (let i = 0; i < disciplinas.length; i++) {
+    const disciplina = disciplinas[i];
+
+    const [isDisciplina, isCursoDisciplinaAssociation] = await Promise.all([
+      await getDisciplinaId(disciplina),
+      await checkCursoDisciplinaAssociation(cursoId, disciplina),
+    ]);
+
+    // TODO: Finish the verification before send the errors, to send all invalids disciplinas
+    if (!isDisciplina) {
+      // FIXME: Send the errors in simple format:
+      // errors: {
+      //   disciplinas: {
+      //     [i]: 'disciplinaId não existe.'
+      //   },
+      // },
+
+      throw new BadRequest({
+        statusCode: HttpStatusCodes.NOT_FOUND,
+        message: 'Disciplina inválida.',
+        errors: {
+          disciplinas: {
+            [i]: {
+              disciplinaId: ['disciplinaId não existe.'],
+            },
+          },
+        },
+      });
+    }
+
+    if (isCursoDisciplinaAssociation) {
+      // FIXME: Send the errors in simple format:
+      // errors: {
+      //   disciplinas: {
+      //     [i]: 'disciplinaId não existe.'
+      //   },
+      // },
+
+      throw new BadRequest({
+        statusCode: HttpStatusCodes.NOT_FOUND,
+        message: 'Disciplina inválida.',
+        errors: {
+          disciplinas: {
+            [i]: {
+              disciplinaId: ['disciplinaId Já está relacionada com o curso.'],
+            },
+          },
+        },
+      });
+    }
+  }
+
+  const cursoDisciplinas = await associateDisciplinas(cursoId, disciplinas);
+  return reply.status(HttpStatusCodes.CREATED).send(cursoDisciplinas);
 }

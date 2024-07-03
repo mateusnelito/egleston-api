@@ -1,12 +1,14 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
+  associateCursoWithDisciplinas,
   createCurso,
   getCurso,
   getCursos,
   updateCurso,
 } from '../controllers/cursoController';
 import {
+  associateDisciplinasWithCursoSchema,
   createCursoSchema,
   getCursoSchema,
   getCursosSchema,
@@ -36,6 +38,12 @@ const cursosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
   server.withTypeProvider<ZodTypeProvider>().get('/:cursoId', {
     schema: getCursoSchema,
     handler: getCurso,
+  });
+
+  // POST DISCIPLINAS
+  server.withTypeProvider<ZodTypeProvider>().post('/:cursoId/disciplinas', {
+    schema: associateDisciplinasWithCursoSchema,
+    handler: associateCursoWithDisciplinas,
   });
 };
 

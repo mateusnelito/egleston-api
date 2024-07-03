@@ -80,6 +80,25 @@ export const createCursoSchema = {
   },
 };
 
+export const associateDisciplinasWithCursoSchema = {
+  summary: 'Adiciona Múltiplas disciplinas à um curso',
+  tags: ['cursos'],
+  params: cursoParamsSchema,
+  body: z.object({
+    disciplinas: z.array(z.number().int().positive(), {
+      invalid_type_error:
+        'As disciplinas devem ser  enviadas no formato de array.',
+      message:
+        'O array de disciplinas deve conter apenas números inteiros positivos.',
+    }),
+  }),
+  response: {
+    // 201: cursoOkResponseSchema,
+    400: complexBadRequestSchema,
+    404: complexBadRequestSchema,
+  },
+};
+
 export const updateCursoSchema = {
   summary: 'Atualiza um curso existente',
   tags: ['cursos'],
@@ -123,4 +142,8 @@ export type uniqueCursoResourceParamsType = z.infer<
 
 export type getCursosQueryStringType = z.infer<
   typeof getCursosSchema.querystring
+>;
+
+export type addDisciplinasToCursoBodyType = z.infer<
+  typeof associateDisciplinasWithCursoSchema.body
 >;

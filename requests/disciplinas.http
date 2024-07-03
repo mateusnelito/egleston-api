@@ -3,7 +3,7 @@ POST http://localhost:8000/api/disciplinas/create
 Content-Type: application/json
 
 {
-    "nome": "Eletrônica",
+    "nome": "Língua Portuguesa",
     "descricao": "Estuda a língua nativa Angolana"
 }
 
@@ -12,8 +12,8 @@ PUT http://localhost:8000/api/disciplinas/1
 Content-Type: application/json
 
 {
-    "nome": "Lingua Portugues",
-    "descricao": "Estuda a língua nativa Angolana"
+    "nome": "Matemática",
+    "descricao": "Ciência exata"
 }
 
 ### GET a disciplina details
