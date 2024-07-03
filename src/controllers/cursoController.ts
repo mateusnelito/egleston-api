@@ -2,6 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   associateDisciplinasWithCursoBodyType,
   createCursoBodyType,
+  deleteCursoDisciplinaAssociationParamsType,
   getCursosQueryStringType,
   uniqueCursoResourceParamsType,
   updateCursoBodyType,
@@ -17,6 +18,7 @@ import {
 import {
   associateDisciplinasWithCurso,
   checkCursoDisciplinaAssociation,
+  deleteCursoDisciplina,
 } from '../services/cursosDisciplinasServices';
 import { getDisciplinaId } from '../services/disciplinaServices';
 import BadRequest from '../utils/BadRequest';
@@ -208,4 +210,26 @@ export async function associateCursoWithDisciplinas(
 
   // FIXME: Send an appropriate response
   return reply.status(HttpStatusCodes.CREATED).send(cursoDisciplinas);
+}
+
+export async function destroyCursoDisciplina(
+  request: FastifyRequest<{
+    Params: deleteCursoDisciplinaAssociationParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { cursoId, disciplinaId } = request.params;
+  const isCursoDisciplinaRelation = await checkCursoDisciplinaAssociation(
+    cursoId,
+    disciplinaId
+  );
+
+  if (!isCursoDisciplinaRelation) {
+    throw new NotFoundRequest({
+      statusCode: HttpStatusCodes.NOT_FOUND,
+      message: 'Associação não existe.',
+    });
+  }
+  const cursoDisciplina = await deleteCursoDisciplina(cursoId, disciplinaId);
+  return reply.send(cursoDisciplina);
 }

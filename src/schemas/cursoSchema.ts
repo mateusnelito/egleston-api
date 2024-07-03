@@ -133,6 +133,23 @@ export const getCursoSchema = {
   },
 };
 
+export const deleteCursoDisciplinaAssociationSchema = {
+  summary: 'Remove associação entre curso e disciplina',
+  tags: ['cursos'],
+  params: cursoParamsSchema.extend({
+    disciplinaId: z.coerce
+      .number({
+        required_error: 'O id de disciplina é obrigatório.',
+        invalid_type_error: 'O id de disciplina deve ser número.',
+      })
+      .int({ message: 'O id de disciplina deve ser inteiro.' })
+      .positive({ message: 'O id de disciplina deve ser positivo.' }),
+  }),
+  response: {
+    404: notFoundRequestSchema,
+  },
+};
+
 export type createCursoBodyType = z.infer<typeof createCursoSchema.body>;
 export type updateCursoBodyType = z.infer<typeof updateCursoSchema.body>;
 
@@ -146,4 +163,8 @@ export type getCursosQueryStringType = z.infer<
 
 export type associateDisciplinasWithCursoBodyType = z.infer<
   typeof associateDisciplinasWithCursoSchema.body
+>;
+
+export type deleteCursoDisciplinaAssociationParamsType = z.infer<
+  typeof deleteCursoDisciplinaAssociationSchema.params
 >;

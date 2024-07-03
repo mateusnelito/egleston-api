@@ -3,6 +3,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
   associateCursoWithDisciplinas,
   createCurso,
+  destroyCursoDisciplina,
   getCurso,
   getCursos,
   updateCurso,
@@ -10,6 +11,7 @@ import {
 import {
   associateDisciplinasWithCursoSchema,
   createCursoSchema,
+  deleteCursoDisciplinaAssociationSchema,
   getCursoSchema,
   getCursosSchema,
   updateCursoSchema,
@@ -45,6 +47,14 @@ const cursosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
     schema: associateDisciplinasWithCursoSchema,
     handler: associateCursoWithDisciplinas,
   });
+
+  // DELETE ASSOCIATION BETWEEN CURSO AND DISCIPLINAS
+  server
+    .withTypeProvider<ZodTypeProvider>()
+    .delete('/:cursoId/disciplinas/:disciplinaId', {
+      schema: deleteCursoDisciplinaAssociationSchema,
+      handler: destroyCursoDisciplina,
+    });
 };
 
 export default cursosRoutes;

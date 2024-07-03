@@ -31,3 +31,6 @@ Content-Type: application/json
 {
     "disciplinas": [1, 2, 3]
 }
+
+### Delete a curso and disciplina association
+DELETE http://localhost:8000/api/cursos/1/disciplinas/1
