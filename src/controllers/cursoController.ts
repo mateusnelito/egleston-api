@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
-  cursoDisciplinasAssociationBodyType,
   createCursoBodyType,
+  cursoDisciplinasAssociationBodyType,
   deleteCursoDisciplinaAssociationParamsType,
   getCursosQueryStringType,
   uniqueCursoResourceParamsType,
@@ -210,7 +210,7 @@ export async function associateCursoWithDisciplinas(
   );
 
   // FIXME: Send an appropriate response
-  return reply.status(HttpStatusCodes.CREATED).send(cursoDisciplinas);
+  return reply.send(cursoDisciplinas);
 }
 
 export async function destroyCursoDisciplina(

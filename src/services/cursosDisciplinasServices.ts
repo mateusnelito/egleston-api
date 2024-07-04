@@ -20,6 +20,26 @@ export async function associateDisciplinasWithCurso(
       data: { cursoId, disciplinaId },
     });
   }
+  const cursoDisciplina = await prisma.curso.findUnique({
+    where: { id: cursoId },
+    select: {
+      nome: true,
+      descricao: true,
+      duracao: true,
+      CursosDisciplinas: {
+        select: { disciplinaId: true },
+      },
+    },
+  });
+
+  return {
+    nome: cursoDisciplina?.nome,
+    descricao: cursoDisciplina?.descricao,
+    duracao: cursoDisciplina?.duracao,
+    disciplinas: cursoDisciplina?.CursosDisciplinas?.map((disciplina) => {
+      return disciplina.disciplinaId;
+    }),
+  };
 }
 
 export async function associateCursosWithDisciplina(

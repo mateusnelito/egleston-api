@@ -95,7 +95,9 @@ export const cursoDisciplinasAssociationSchema = {
       .nonempty({ message: 'O array de disciplinas não deve estar vazio.' }),
   }),
   response: {
-    // 201: cursoOkResponseSchema,
+    200: cursoOkResponseSchema.omit({ id: true }).extend({
+      disciplinas: z.array(z.number().int().positive()).optional(),
+    }),
     400: complexBadRequestSchema,
     404: complexBadRequestSchema,
   },

@@ -26,11 +26,11 @@ Content-Type: application/json
 }
 
 ### Associate some curso to multiples disciplinas
-POST http://localhost:8000/api/cursos/6/disciplinas
+POST http://localhost:8000/api/cursos/17/disciplinas
 Content-Type: application/json
 
 {
-    "disciplinas": [1, 2, 3]
+    "disciplinas": [3, 5]
 }
 
 ### Delete a curso and disciplina association
