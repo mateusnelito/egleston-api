@@ -74,7 +74,7 @@ export const getDisciplinasSchema = {
   querystring: getAllResourcesParamsSchema,
   response: {
     200: z.object({
-      data: z.array(disciplinaOkResponseSchema),
+      data: z.array(disciplinaOkResponseSchema.omit({ descricao: true })),
       next_cursor: z.number().optional(),
     }),
   },

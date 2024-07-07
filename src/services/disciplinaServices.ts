@@ -38,6 +38,10 @@ export async function getDisciplinas(
   const whereClause = cursor ? { id: { lt: cursor } } : {};
   return await prisma.disciplina.findMany({
     where: whereClause,
+    select: {
+      id: true,
+      nome: true,
+    },
     take: limit,
     orderBy: {
       id: 'desc',
