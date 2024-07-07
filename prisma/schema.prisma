@@ -109,10 +109,11 @@ model ResponsavelContacto {
 
 // FIXME: add more details and unique field
 model Professor {
-  id             Int                @id @default(autoincrement())
-  nomeCompleto   String             @map("nome_completo") @db.VarChar(100)
-  dataNascimento DateTime           @map("data_nascimento") @db.Date
-  Contacto       ProfessorContacto?
+  id                     Int                      @id @default(autoincrement())
+  nomeCompleto           String                   @map("nome_completo") @db.VarChar(100)
+  dataNascimento         DateTime                 @map("data_nascimento") @db.Date
+  Contacto               ProfessorContacto?
+  DisciplinasProfessores DisciplinasProfessores[]
 
   @@index([nomeCompleto])
   @@map("professores")
@@ -143,10 +144,11 @@ model Curso {
 }
 
 model Disciplina {
-  id                Int                 @id @default(autoincrement())
-  nome              String              @unique @db.VarChar(50)
-  descricao         String              @db.Text
-  CursosDisciplinas CursosDisciplinas[]
+  id                     Int                      @id @default(autoincrement())
+  nome                   String                   @unique @db.VarChar(50)
+  descricao              String                   @db.Text
+  CursosDisciplinas      CursosDisciplinas[]
+  DisciplinasProfessores DisciplinasProfessores[]
 
   @@map("disciplinas")
   @@schema("cadastro")
@@ -160,5 +162,16 @@ model CursosDisciplinas {
 
   @@id([cursoId, disciplinaId])
   @@map("cursos_disciplinas")
+  @@schema("cadastro")
+}
+
+model DisciplinasProfessores {
+  disciplinaId Int        @map("disciplina_id")
+  professorId  Int
+  Disciplina   Disciplina @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+  Professor    Professor  @relation(fields: [professorId], references: [id], onDelete: Cascade)
+
+  @@id([disciplinaId, professorId])
+  @@map("disciplinas_professores")
   @@schema("cadastro")
 }
