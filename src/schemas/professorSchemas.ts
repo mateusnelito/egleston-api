@@ -78,7 +78,28 @@ const professorOkResponseSchema = z.object({
 export const createProfessorSchema = {
   summary: 'Adiciona um novo professor',
   tags: ['professores'],
-  body: professorBodySchema,
+  body: professorBodySchema.extend({
+    disciplinas: z
+      .array(
+        z
+          .number({
+            message: 'O array de disciplinas deve conter apenas números.',
+          })
+          .int({
+            message:
+              'O array de disciplinas deve conter apenas números inteiros.',
+          })
+          .positive({
+            message:
+              'O array de disciplinas deve conter apenas números inteiros positivos.',
+          }),
+        {
+          invalid_type_error:
+            'As disciplinas devem ser  enviadas no formato de array.',
+        }
+      )
+      .optional(),
+  }),
   response: {
     201: professorOkResponseSchema,
     400: simpleBadRequestSchema,
