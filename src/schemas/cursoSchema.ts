@@ -131,11 +131,11 @@ export const updateCursoSchema = {
 export const getCursosSchema = {
   summary: 'Retorna todos os cursos',
   tags: ['cursos'],
-  querystring: getAllResourcesParamsSchema,
   response: {
     200: z.object({
-      data: z.array(cursoOkResponseSchema),
-      next_cursor: z.number().optional(),
+      data: z.array(
+        cursoOkResponseSchema.omit({ descricao: true, duracao: true })
+      ),
     }),
   },
 };
@@ -182,10 +182,6 @@ export type updateCursoBodyType = z.infer<typeof updateCursoSchema.body>;
 
 export type uniqueCursoResourceParamsType = z.infer<
   typeof updateCursoSchema.params
->;
-
-export type getCursosQueryStringType = z.infer<
-  typeof getCursosSchema.querystring
 >;
 
 export type cursoDisciplinasAssociationBodyType = z.infer<

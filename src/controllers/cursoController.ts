@@ -3,7 +3,6 @@ import {
   createCursoBodyType,
   cursoDisciplinasAssociationBodyType,
   deleteCursoDisciplinaAssociationParamsType,
-  getCursosQueryStringType,
   uniqueCursoResourceParamsType,
   updateCursoBodyType,
 } from '../schemas/cursoSchema';
@@ -109,20 +108,9 @@ export async function updateCurso(
   });
 }
 
-export async function getCursos(
-  request: FastifyRequest<{ Querystring: getCursosQueryStringType }>,
-  reply: FastifyReply
-) {
-  const { cursor, page_size } = request.query;
-  const cursos = await getCursosService(page_size, cursor);
-
-  let next_cursor =
-    cursos.length === page_size ? cursos[cursos.length - 1].id : undefined;
-
-  return reply.send({
-    data: cursos,
-    next_cursor,
-  });
+export async function getCursos(request: FastifyRequest, reply: FastifyReply) {
+  const cursos = await getCursosService();
+  return reply.send({ data: cursos });
 }
 
 export async function getCurso(

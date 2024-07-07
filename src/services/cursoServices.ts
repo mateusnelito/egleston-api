@@ -63,16 +63,10 @@ export async function changeCurso(id: number, data: createCursoBodyType) {
   return await prisma.curso.update({ where: { id }, data });
 }
 
-export async function getCursos(
-  limit: number,
-  cursor: number | null | undefined
-) {
-  const whereClause = cursor ? { id: { lt: cursor } } : {};
+// Return all cursos without pagination
+export async function getCursos() {
   return await prisma.curso.findMany({
-    where: whereClause,
-    take: limit,
-    orderBy: {
-      id: 'desc',
-    },
+    select: { id: true, nome: true },
+    orderBy: { id: 'desc' },
   });
 }
