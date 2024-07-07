@@ -27,16 +27,7 @@ export async function changeParentesco(
   return await prisma.parentesco.update({ where: { id }, data });
 }
 
-export async function getParentescos(
-  limit: number,
-  cursor: number | null | undefined
-) {
-  const whereClause = cursor ? { id: { lt: cursor } } : {};
-  return await prisma.parentesco.findMany({
-    where: whereClause,
-    take: limit,
-    orderBy: {
-      id: 'desc',
-    },
-  });
+// Return all parentesco on db
+export async function getParentescos() {
+  return await prisma.parentesco.findMany({ orderBy: { id: 'desc' } });
 }

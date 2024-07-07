@@ -64,11 +64,9 @@ export const updateParentescoSchema = {
 export const getParentescosSchema = {
   summary: 'Retorna todos os parentescos',
   tags: ['parentescos'],
-  querystring: getAllResourcesParamsSchema,
   response: {
     200: z.object({
       data: z.array(parentescoOkResponseSchema),
-      next_cursor: z.number().optional(),
     }),
   },
 };
@@ -92,8 +90,4 @@ export type updateParentescoBodyType = z.infer<
 
 export type uniqueParentescoResourceParamsType = z.infer<
   typeof updateParentescoSchema.params
->;
-
-export type getParentescosQueryStringType = z.infer<
-  typeof getParentescosSchema.querystring
 >;

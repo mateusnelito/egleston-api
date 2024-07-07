@@ -1,7 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   createParentescoBodyType,
-  getParentescosQueryStringType,
   uniqueParentescoResourceParamsType,
   updateParentescoBodyType,
 } from '../schemas/parentescoSchema';
@@ -67,22 +66,11 @@ export async function updateParentesco(
 }
 
 export async function getParentescos(
-  request: FastifyRequest<{ Querystring: getParentescosQueryStringType }>,
+  request: FastifyRequest,
   reply: FastifyReply
 ) {
-  const { cursor, page_size } = request.query;
-
-  const parentescos = await getAllParentescos(page_size, cursor);
-
-  let next_cursor =
-    parentescos.length === page_size
-      ? parentescos[parentescos.length - 1].id
-      : undefined;
-
-  return reply.send({
-    data: parentescos,
-    next_cursor,
-  });
+  const parentescos = await getAllParentescos();
+  return reply.send({ data: parentescos });
 }
 
 export async function getParentesco(
