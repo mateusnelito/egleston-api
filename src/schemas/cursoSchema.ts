@@ -109,7 +109,26 @@ export const createCursoSchema = {
   body: cursoBodySchema,
   response: {
     201: cursoOkResponseSchema.extend({
-      disciplinas: z.array(z.number().int().positive()).optional(),
+      disciplinas: z
+        .array(
+          z
+            .number({
+              message: 'O array de disciplinas deve conter apenas números.',
+            })
+            .int({
+              message:
+                'O array de disciplinas deve conter apenas números inteiros.',
+            })
+            .positive({
+              message:
+                'O array de disciplinas deve conter apenas números inteiros positivos.',
+            }),
+          {
+            invalid_type_error:
+              'As disciplinas devem ser  enviadas no formato de array.',
+          }
+        )
+        .optional(),
     }),
     400: complexBadRequestSchema,
     404: complexBadRequestSchema,
