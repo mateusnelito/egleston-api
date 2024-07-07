@@ -20,7 +20,7 @@ Content-Type: application/json
 GET http://localhost:8000/api/disciplinas/1
 
 ### GET disciplinas
-GET http://localhost:8000/api/disciplinas?page_size=2
+GET http://localhost:8000/api/disciplinas
 
 ### Associate some disciplina to multiples cursos
 POST http://localhost:8000/api/disciplinas/4/cursos

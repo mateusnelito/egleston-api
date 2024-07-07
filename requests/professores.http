@@ -3,11 +3,12 @@ POST http://localhost:8000/api/professores/create
 Content-Type: application/json
 
 {
-    "nomeCompleto": "Nome Completo",
+    "nomeCompleto": "Mateus Nelito",
     "dataNascimento": "2005-09-10",
-    "telefone": "923923123",
-    "email": "emil@exampe.com",
-    "outros": "tel. alternativo: 99800123"
+    "telefone": "935580500",
+    "email": "emaiyil@example.com",
+    "outros": "tel. alternativo: 99800123",
+    "disciplinas": [1, 2, 3]
 }
 
 ### Update an existent professor

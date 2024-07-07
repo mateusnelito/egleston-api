@@ -101,7 +101,9 @@ export const createProfessorSchema = {
       .optional(),
   }),
   response: {
-    201: professorOkResponseSchema,
+    201: professorOkResponseSchema.extend({
+      disciplinas: z.array(z.number().int().positive()).optional(),
+    }),
     400: simpleBadRequestSchema,
   },
 };
@@ -149,7 +151,7 @@ export const getProfessoresSchema = {
 export type uniqueProfessorResourceParamsType = z.infer<
   typeof professorParamsSchema
 >;
-export type professorBodyType = z.infer<typeof professorBodySchema>;
+export type professorBodyType = z.infer<typeof createProfessorSchema.body>;
 
 export type getProfessoresQueryStringType = z.infer<
   typeof getProfessoresSchema.querystring

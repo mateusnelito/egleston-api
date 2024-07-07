@@ -1,8 +1,9 @@
 import { prisma } from '../lib/prisma';
 import { professorBodyType } from '../schemas/professorSchemas';
+import { formatDate } from '../utils/utils';
 
 export async function saveProfessor(data: professorBodyType) {
-  return await prisma.professor.create({
+  const professor = await prisma.professor.create({
     data: {
       nomeCompleto: data.nomeCompleto,
       dataNascimento: data.dataNascimento,
@@ -15,6 +16,31 @@ export async function saveProfessor(data: professorBodyType) {
       },
     },
   });
+
+  // Handle with n-n association between professores and disciplinas
+  if (data.disciplinas) {
+    for (const disciplinaId of data.disciplinas) {
+      await prisma.disciplinasProfessores.create({
+        data: { professorId: professor.id, disciplinaId },
+      });
+    }
+
+    const professorDisciplinas = await prisma.disciplinasProfessores.findMany({
+      where: { professorId: professor.id },
+      select: {
+        disciplinaId: true,
+      },
+    });
+
+    return {
+      id: professor.id,
+      nomeCompleto: professor.nomeCompleto,
+      dataNascimento: formatDate(professor.dataNascimento),
+      disciplinas: professorDisciplinas.map((disciplina) => {
+        return disciplina.disciplinaId;
+      }),
+    };
+  }
 }
 
 export async function getProfessorDetails(id: number) {
