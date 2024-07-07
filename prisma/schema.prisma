@@ -167,7 +167,7 @@ model CursosDisciplinas {
 
 model DisciplinasProfessores {
   disciplinaId Int        @map("disciplina_id")
-  professorId  Int
+  professorId  Int        @map("professor_id")
   Disciplina   Disciplina @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
   Professor    Professor  @relation(fields: [professorId], references: [id], onDelete: Cascade)
 
