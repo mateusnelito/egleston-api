@@ -41,6 +41,8 @@ export async function saveProfessor(data: professorBodyType) {
       }),
     };
   }
+
+  return professor;
 }
 
 export async function getProfessorDetails(id: number) {
