@@ -50,7 +50,7 @@ const cursosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
     handler: associateCursoWithDisciplinas,
   });
 
-  // DELETE ASSOCIATION BETWEEN CURSO AND DISCIPLINAS
+  // DELETE ASSOCIATION BETWEEN CURSO AND DISCIPLINA
   server
     .withTypeProvider<ZodTypeProvider>()
     .delete('/:cursoId/disciplinas/:disciplinaId', {
