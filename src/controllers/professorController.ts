@@ -2,6 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   getProfessoresQueryStringType,
   professorBodyType,
+  professorDisciplinasAssociationBodyType,
   uniqueProfessorResourceParamsType,
 } from '../schemas/professorSchemas';
 import { getEmail, getTelefone } from '../services/professorContactoServices';
@@ -17,6 +18,11 @@ import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
 import { formatDate } from '../utils/utils';
 import { getDisciplinaId } from '../services/disciplinaServices';
+import {
+  associateDisciplinasWithProfessor,
+  checkDisciplinaProfessorAssociation,
+} from '../services/disciplinasProfessoresServices';
+import { prisma } from '../lib/prisma';
 
 function throwTelefoneBadRequest() {
   throw new BadRequest({
@@ -166,4 +172,80 @@ export async function getProfessores(
     data,
     next_cursor,
   });
+}
+
+export async function associateProfessorWithDisciplinas(
+  request: FastifyRequest<{
+    Body: professorDisciplinasAssociationBodyType;
+    Params: uniqueProfessorResourceParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { professorId } = request.params;
+  const { disciplinas } = request.body;
+
+  const isProfessor = await getProfessorId(professorId);
+  if (!isProfessor) throwNotFoundRequest();
+
+  for (let i = 0; i < disciplinas.length; i++) {
+    const disciplinaId = disciplinas[i];
+
+    const [isDisciplina, isDisciplinaProfessorAssociation] = await Promise.all([
+      await getDisciplinaId(disciplinaId),
+      await checkDisciplinaProfessorAssociation(professorId, disciplinaId),
+    ]);
+
+    // TODO: Finish the verification before send the errors, to send all invalids disciplinas
+    if (!isDisciplina) {
+      // FIXME: Send the errors in simple format:
+      // errors: {
+      //   disciplinas: {
+      //     [i]: 'disciplinaId não existe.'
+      //   },
+      // },
+
+      throw new BadRequest({
+        statusCode: HttpStatusCodes.NOT_FOUND,
+        message: 'Disciplina inválida.',
+        errors: {
+          disciplinas: {
+            [i]: {
+              disciplinaId: ['disciplinaId não existe.'],
+            },
+          },
+        },
+      });
+    }
+
+    if (isDisciplinaProfessorAssociation) {
+      // FIXME: Send the errors in simple format:
+      // errors: {
+      //   disciplinas: {
+      //     [i]: 'disciplinaId não existe.'
+      //   },
+      // },
+
+      throw new BadRequest({
+        statusCode: HttpStatusCodes.NOT_FOUND,
+        message: 'Disciplina inválida.',
+        errors: {
+          disciplinas: {
+            [i]: {
+              disciplinaId: [
+                'disciplinaId Já está relacionada com o professor.',
+              ],
+            },
+          },
+        },
+      });
+    }
+  }
+
+  const cursoDisciplinas = await associateDisciplinasWithProfessor(
+    professorId,
+    disciplinas
+  );
+
+  // FIXME: Send an appropriate response
+  return reply.send(cursoDisciplinas);
 }
