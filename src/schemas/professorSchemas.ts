@@ -188,6 +188,23 @@ export const createProfessorDisciplinasAssociationSchema = {
   ...professorDisciplinasAssociationSchema,
 };
 
+export const deleteProfessorDisciplinaAssociationSchema = {
+  summary: 'Remove associação entre professor e disciplina',
+  tags: ['professores'],
+  params: professorParamsSchema.extend({
+    disciplinaId: z.coerce
+      .number({
+        required_error: 'O id de disciplina é obrigatório.',
+        invalid_type_error: 'O id de disciplina deve ser número.',
+      })
+      .int({ message: 'O id de disciplina deve ser inteiro.' })
+      .positive({ message: 'O id de disciplina deve ser positivo.' }),
+  }),
+  response: {
+    404: notFoundRequestSchema,
+  },
+};
+
 export type uniqueProfessorResourceParamsType = z.infer<
   typeof professorParamsSchema
 >;
@@ -199,4 +216,8 @@ export type getProfessoresQueryStringType = z.infer<
 
 export type professorDisciplinasAssociationBodyType = z.infer<
   typeof createProfessorDisciplinasAssociationSchema.body
+>;
+
+export type deleteProfessorDisciplinaAssociationParamsType = z.infer<
+  typeof deleteProfessorDisciplinaAssociationSchema.params
 >;
