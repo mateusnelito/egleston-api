@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma';
+import { formatDate } from '../utils/utils';
 
 export async function checkDisciplinaProfessorAssociation(
   professorId: number,
@@ -18,7 +19,7 @@ export async function associateDisciplinasWithProfessor(
       data: { professorId, disciplinaId },
     });
   }
-  const disciplinaProfessor = await prisma.professor.findUnique({
+  const professor = await prisma.professor.findUnique({
     where: { id: professorId },
     select: {
       id: true,
@@ -30,15 +31,17 @@ export async function associateDisciplinasWithProfessor(
     },
   });
 
-  return {
-    nomeCompleto: disciplinaProfessor?.nomeCompleto,
-    dataNascimento: disciplinaProfessor?.dataNascimento,
-    disciplinas: disciplinaProfessor?.DisciplinasProfessores?.map(
-      (disciplina) => {
+  // Gambiarra 'cause professor always exist in this point of program
+  // FIXME: Find a better way to handle the serialization error
+  if (professor) {
+    return {
+      nomeCompleto: professor.nomeCompleto,
+      dataNascimento: formatDate(professor.dataNascimento),
+      disciplinas: professor.DisciplinasProfessores.map((disciplina) => {
         return disciplina.disciplinaId;
-      }
-    ),
-  };
+      }),
+    };
+  }
 }
 
 export async function associateProfessoresWithDisciplina(
