@@ -3,6 +3,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
   associateProfessorWithDisciplinas,
   createProfessor,
+  destroyProfessorDisciplina,
   getProfessor,
   getProfessores,
   updateProfessor,
@@ -10,6 +11,7 @@ import {
 import {
   createProfessorDisciplinasAssociationSchema,
   createProfessorSchema,
+  deleteProfessorDisciplinaAssociationSchema,
   getProfessorSchema,
   getProfessoresSchema,
   updateProfessorSchema,
@@ -47,6 +49,14 @@ const professoresRoutes: FastifyPluginAsync = async (
     schema: createProfessorDisciplinasAssociationSchema,
     handler: associateProfessorWithDisciplinas,
   });
+
+  // DELETE ASSOCIATION BETWEEN PROFESSOR AND DISCIPLINA
+  server
+    .withTypeProvider<ZodTypeProvider>()
+    .delete('/:professorId/disciplinas/:disciplinaId', {
+      schema: deleteProfessorDisciplinaAssociationSchema,
+      handler: destroyProfessorDisciplina,
+    });
 };
 
 export default professoresRoutes;

@@ -1,5 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
+  deleteProfessorDisciplinaAssociationParamsType,
   getProfessoresQueryStringType,
   professorBodyType,
   professorDisciplinasAssociationBodyType,
@@ -21,8 +22,8 @@ import { getDisciplinaId } from '../services/disciplinaServices';
 import {
   associateDisciplinasWithProfessor,
   checkDisciplinaProfessorAssociation,
+  deleteDisciplinaProfessor,
 } from '../services/disciplinasProfessoresServices';
-import { prisma } from '../lib/prisma';
 
 function throwTelefoneBadRequest() {
   throw new BadRequest({
@@ -248,4 +249,28 @@ export async function associateProfessorWithDisciplinas(
 
   // FIXME: Send an appropriate response
   return reply.send(cursoDisciplinas);
+}
+
+export async function destroyProfessorDisciplina(
+  request: FastifyRequest<{
+    Params: deleteProfessorDisciplinaAssociationParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { professorId, disciplinaId } = request.params;
+  const isProfessorDisciplinaRelation =
+    await checkDisciplinaProfessorAssociation(professorId, disciplinaId);
+
+  if (!isProfessorDisciplinaRelation) {
+    throw new NotFoundRequest({
+      statusCode: HttpStatusCodes.NOT_FOUND,
+      message: 'Associação não existe.',
+    });
+  }
+
+  const professorDisciplina = await deleteDisciplinaProfessor(
+    professorId,
+    disciplinaId
+  );
+  return reply.send(professorDisciplina);
 }
