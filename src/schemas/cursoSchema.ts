@@ -99,7 +99,7 @@ export const cursoDisciplinasAssociationSchema = {
       disciplinas: z.array(z.number().int().positive()).optional(),
     }),
     400: complexBadRequestSchema,
-    404: complexBadRequestSchema,
+    404: complexBadRequestSchema.or(notFoundRequestSchema),
   },
 };
 

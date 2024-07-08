@@ -118,7 +118,7 @@ export const associateCursosWithDisciplinaSchema = {
   response: {
     // 201: cursoOkResponseSchema,
     400: complexBadRequestSchema,
-    404: complexBadRequestSchema,
+    404: complexBadRequestSchema.or(notFoundRequestSchema),
   },
 };
 

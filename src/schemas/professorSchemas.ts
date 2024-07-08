@@ -5,6 +5,7 @@ import {
 } from '../utils/regexPatterns';
 import { contactoSchema } from './contactoSchema';
 import {
+  complexBadRequestSchema,
   getAllResourcesParamsSchema,
   notFoundRequestSchema,
   simpleBadRequestSchema,
@@ -74,6 +75,40 @@ const professorOkResponseSchema = z.object({
   nomeCompleto: z.string(),
   dataNascimento: z.string().date(),
 });
+
+const professorDisciplinasAssociationSchema = {
+  tags: ['professores'],
+  params: professorParamsSchema,
+  body: z.object({
+    disciplinas: z
+      .array(
+        z
+          .number({
+            message: 'O array de disciplinas deve conter apenas números.',
+          })
+          .int({
+            message:
+              'O array de disciplinas deve conter apenas números inteiros.',
+          })
+          .positive({
+            message:
+              'O array de disciplinas deve conter apenas números inteiros positivos.',
+          }),
+        {
+          invalid_type_error:
+            'As disciplinas devem ser  enviadas no formato de array.',
+        }
+      )
+      .nonempty({ message: 'O array de disciplinas não deve estar vazio.' }),
+  }),
+  response: {
+    200: professorOkResponseSchema.omit({ id: true }).extend({
+      disciplinas: z.array(z.number().int().positive()).optional(),
+    }),
+    400: complexBadRequestSchema,
+    404: complexBadRequestSchema.or(notFoundRequestSchema),
+  },
+};
 
 export const createProfessorSchema = {
   summary: 'Adiciona um novo professor',
@@ -148,6 +183,11 @@ export const getProfessoresSchema = {
   },
 };
 
+export const createProfessorDisciplinasAssociationSchema = {
+  summary: 'Associa Múltiplas disciplinas à um professor',
+  ...professorDisciplinasAssociationSchema,
+};
+
 export type uniqueProfessorResourceParamsType = z.infer<
   typeof professorParamsSchema
 >;
@@ -155,4 +195,8 @@ export type professorBodyType = z.infer<typeof createProfessorSchema.body>;
 
 export type getProfessoresQueryStringType = z.infer<
   typeof getProfessoresSchema.querystring
+>;
+
+export type professorDisciplinasAssociationBodyType = z.infer<
+  typeof createProfessorDisciplinasAssociationSchema.body
 >;
