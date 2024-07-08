@@ -1,12 +1,14 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
+  associateProfessorWithDisciplinas,
   createProfessor,
   getProfessor,
   getProfessores,
   updateProfessor,
 } from '../controllers/professorController';
 import {
+  createProfessorDisciplinasAssociationSchema,
   createProfessorSchema,
   getProfessorSchema,
   getProfessoresSchema,
@@ -38,6 +40,12 @@ const professoresRoutes: FastifyPluginAsync = async (
   server.withTypeProvider<ZodTypeProvider>().get('/', {
     schema: getProfessoresSchema,
     handler: getProfessores,
+  });
+
+  // POST MULTIPLES disciplinas TO ONE Professor
+  server.withTypeProvider<ZodTypeProvider>().post('/:professorId/disciplinas', {
+    schema: createProfessorDisciplinasAssociationSchema,
+    handler: associateProfessorWithDisciplinas,
   });
 };
 
