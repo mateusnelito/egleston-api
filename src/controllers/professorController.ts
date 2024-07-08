@@ -23,6 +23,7 @@ import {
   associateDisciplinasWithProfessor,
   checkDisciplinaProfessorAssociation,
   deleteDisciplinaProfessor,
+  deleteDisciplinasWithProfessorAssociation,
 } from '../services/disciplinasProfessoresServices';
 
 function throwTelefoneBadRequest() {
@@ -273,4 +274,54 @@ export async function destroyProfessorDisciplina(
     disciplinaId
   );
   return reply.send(professorDisciplina);
+}
+
+export async function deleteProfessorWithDisciplinasAssociation(
+  request: FastifyRequest<{
+    Body: professorDisciplinasAssociationBodyType;
+    Params: uniqueProfessorResourceParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { professorId } = request.params;
+  const { disciplinas } = request.body;
+
+  const isProfessor = await getProfessorId(professorId);
+  if (!isProfessor) throwNotFoundRequest();
+
+  for (let i = 0; i < disciplinas.length; i++) {
+    const disciplinaId = disciplinas[i];
+
+    const isProfessorDisciplinaAssociation =
+      await checkDisciplinaProfessorAssociation(professorId, disciplinaId);
+
+    if (!isProfessorDisciplinaAssociation) {
+      // FIXME: Send the errors in simple format:
+      // errors: {
+      //   disciplinas: {
+      //     [i]: 'disciplinaId não existe.'
+      //   },
+      // },
+
+      throw new BadRequest({
+        statusCode: HttpStatusCodes.NOT_FOUND,
+        message: 'Disciplina inválida.',
+        errors: {
+          disciplinas: {
+            [i]: {
+              disciplinaId: ['Não existe relação.'],
+            },
+          },
+        },
+      });
+    }
+  }
+
+  const professorDisciplinas = await deleteDisciplinasWithProfessorAssociation(
+    professorId,
+    disciplinas
+  );
+
+  // FIXME: Send an appropriate response
+  return reply.send(professorDisciplinas);
 }
