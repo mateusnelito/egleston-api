@@ -205,6 +205,11 @@ export const deleteProfessorDisciplinaAssociationSchema = {
   },
 };
 
+export const deleProfessorDisciplinasAssociationSchema = {
+  summary: 'Deleta múltiplas disciplinas associadas à um professor',
+  ...professorDisciplinasAssociationSchema,
+};
+
 export type uniqueProfessorResourceParamsType = z.infer<
   typeof professorParamsSchema
 >;
