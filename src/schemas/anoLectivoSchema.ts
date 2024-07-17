@@ -15,8 +15,11 @@ const anoLectivoBodySchema = z.object({
       invalid_type_error: 'O id do ano lectivo deve ser número.',
     })
     .trim()
-    .length(10, {
-      message: 'O nome do ano lectivo deve possuir apenas 10 caracteres',
+    .min(4, {
+      message: 'O nome do ano lectivo deve possuir no mínimo 4 caracteres.',
+    })
+    .max(4, {
+      message: 'O nome do ano lectivo deve possuir no máximo 10 caracteres.',
     }),
   inicio: z
     .string({
