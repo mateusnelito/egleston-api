@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { CURSO_NOME_REGEX, DESCRICAO_REGEX } from '../utils/regexPatterns';
 import {
   complexBadRequestSchema,
-  getAllResourcesParamsSchema,
   notFoundRequestSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
