@@ -13,3 +13,13 @@ export async function getAnoLectivoNome(nome: string) {
     select: { nome: true },
   });
 }
+
+export async function getAnoLectivoInicioTermino(
+  inicio: string,
+  termino: string
+) {
+  return await prisma.anoLectivo.findUnique({
+    where: { inicio_termino: { inicio, termino } },
+    select: { inicio: true, termino: true },
+  });
+}
