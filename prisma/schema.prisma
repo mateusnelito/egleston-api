@@ -175,3 +175,15 @@ model DisciplinasProfessores {
   @@map("disciplinas_professores")
   @@schema("cadastro")
 }
+
+model AnoLectivo {
+  id      Int      @id @default(autoincrement()) @db.SmallInt
+  // TODO: Confirm the correct type of this field
+  nome    String   @unique @db.VarChar(10)
+  inicio  DateTime @db.Date
+  termino DateTime @db.Date
+
+  @@unique([inicio, termino])
+  @@map("ano_lectivo")
+  @@schema("cadastro")
+}
