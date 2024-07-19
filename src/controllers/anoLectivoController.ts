@@ -1,6 +1,9 @@
 import dayjs from 'dayjs';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { postAnoLectivoBodyType } from '../schemas/anoLectivoSchema';
+import {
+  anoLectivoParamsType,
+  postAnoLectivoBodyType,
+} from '../schemas/anoLectivoSchema';
 import {
   getAnoLectivoInicioTermino,
   getAnoLectivoNome,
@@ -8,30 +11,10 @@ import {
 } from '../services/anoLectivoServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
+import { formatDate } from '../utils/utils';
 
-function throwNomeBadRequest() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Nome do ano lectivo inválido.',
-    errors: { nome: ['O nome do ano lectivo já existe.'] },
-  });
-}
-
-function throwDuplicateAnoLectivoDurationBadRequest() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Ano lectivo inválido',
-    errors: { nome: ['Ano lectivo já existe.'] },
-  });
-}
-
-export async function createAnoLectivo(
-  request: FastifyRequest<{ Body: postAnoLectivoBodyType }>,
-  reply: FastifyReply
-) {
-  const { nome, inicio, termino } = request.body;
-
-  // Validating beginning and end
+// Validate the beginning and the end of ano lectivo
+function checkBeginAndEndDates(inicio: string, termino: string) {
   const begin = dayjs(inicio);
   const end = dayjs(termino);
 
@@ -61,9 +44,35 @@ export async function createAnoLectivo(
     });
   }
 
+  return { begin: begin.toDate(), end: end.toDate() };
+}
+
+function throwNomeBadRequest() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Nome do ano lectivo inválido.',
+    errors: { nome: ['O nome do ano lectivo já existe.'] },
+  });
+}
+
+function throwDuplicateAnoLectivoDurationBadRequest() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Ano lectivo inválido',
+    errors: { nome: ['Ano lectivo já existe.'] },
+  });
+}
+
+export async function createAnoLectivo(
+  request: FastifyRequest<{ Body: postAnoLectivoBodyType }>,
+  reply: FastifyReply
+) {
+  const { nome, inicio, termino } = request.body;
+  const { begin, end } = checkBeginAndEndDates(inicio, termino);
+
   const [isAnoLectivoNome, isAnoLectivoInicioAndTermino] = await Promise.all([
     await getAnoLectivoNome(nome),
-    await getAnoLectivoInicioTermino(begin.toDate(), end.toDate()),
+    await getAnoLectivoInicioTermino(begin, end),
   ]);
 
   if (isAnoLectivoNome) throwNomeBadRequest();
@@ -74,14 +83,14 @@ export async function createAnoLectivo(
 
   const anoLectivo = await saveAnoLectivo({
     nome,
-    inicio: begin.toDate(),
-    termino: end.toDate(),
+    inicio: begin,
+    termino: end,
   });
 
   return reply.status(HttpStatusCodes.CREATED).send({
     id: anoLectivo.id,
     nome: anoLectivo.nome,
-    inicio: dayjs(anoLectivo.inicio).format('YYYY-MM-DD'),
-    termino: dayjs(anoLectivo.termino).format('YYYY-MM-DD'),
+    inicio: formatDate(anoLectivo.inicio),
+    termino: formatDate(anoLectivo.termino),
   });
 }
