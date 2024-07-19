@@ -65,18 +65,7 @@ const alunoBodySchema = z
     dataNascimento: z
       .string({ required_error: 'A data de nascimento é obrigatória.' })
       .trim()
-      .date(
-        'A data de nascimento deve ser uma data válida no formato AAAA-MM-DD.'
-      )
-      .transform((date) => new Date(date))
-      // FIXME: Change the bases date to a dynamic logic
-      .refine((date) => date >= new Date('1900-01-01'), {
-        message:
-          'A data de nascimento não pode ser anterior a 1 de janeiro de 1900.',
-      })
-      .refine((date) => date <= new Date(Date.now()), {
-        message: 'A data de nascimento não pode estar no futuro.',
-      }),
+      .date('A data de nascimento inválida.'),
     genero: z.enum(['M', 'F'], { message: 'O género deve ser "M" ou "F".' }),
   })
   .merge(enderecoSchema)
