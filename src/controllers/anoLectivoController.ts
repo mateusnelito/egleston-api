@@ -9,6 +9,7 @@ import {
   getAnoLectivoId,
   getAnoLectivoInicioTermino,
   getAnoLectivoNome,
+  recoveryAnoLectivos,
   saveAnoLectivo,
 } from '../services/anoLectivoServices';
 import BadRequest from '../utils/BadRequest';
@@ -142,4 +143,12 @@ export async function updateAnoLectivo(
     inicio: formatDate(anoLectivo.inicio),
     termino: formatDate(anoLectivo.termino),
   });
+}
+
+export async function getAnoLectivos(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  const data = await recoveryAnoLectivos();
+  return reply.send({ data });
 }
