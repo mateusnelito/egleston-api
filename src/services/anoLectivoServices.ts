@@ -14,10 +14,7 @@ export async function getAnoLectivoNome(nome: string) {
   });
 }
 
-export async function getAnoLectivoInicioTermino(
-  inicio: string,
-  termino: string
-) {
+export async function getAnoLectivoInicioTermino(inicio: Date, termino: Date) {
   return await prisma.anoLectivo.findUnique({
     where: { inicio_termino: { inicio, termino } },
     select: { inicio: true, termino: true },
