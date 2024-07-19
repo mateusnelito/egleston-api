@@ -52,3 +52,10 @@ export async function getAnoLectivoId(id: number) {
     select: { id: true },
   });
 }
+
+export async function changeAnoLectivo(id: number, data: anoLectivo) {
+  return await prisma.anoLectivo.update({
+    where: { id },
+    data,
+  });
+}
