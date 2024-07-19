@@ -18,7 +18,7 @@ const anoLectivoBodySchema = z.object({
     .min(4, {
       message: 'O nome do ano lectivo deve possuir no mínimo 4 caracteres.',
     })
-    .max(4, {
+    .max(10, {
       message: 'O nome do ano lectivo deve possuir no máximo 10 caracteres.',
     }),
   inicio: z
