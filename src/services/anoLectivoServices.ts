@@ -19,9 +19,22 @@ export async function getAnoLectivoNome(nome: string) {
   });
 }
 
-export async function getAnoLectivoInicioTermino(inicio: Date, termino: Date) {
+export async function getAnoLectivoInicioTermino(
+  inicio: Date,
+  termino: Date,
+  id?: number
+) {
+  const select = { inicio: true, termino: true };
+
+  if (id) {
+    return await prisma.anoLectivo.findFirst({
+      where: { id: { not: id }, inicio, termino },
+      select,
+    });
+  }
+
   return await prisma.anoLectivo.findUnique({
     where: { inicio_termino: { inicio, termino } },
-    select: { inicio: true, termino: true },
+    select,
   });
 }
