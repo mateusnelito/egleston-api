@@ -12,9 +12,16 @@ export async function saveAnoLectivo(data: anoLectivo) {
   });
 }
 
-export async function getAnoLectivoNome(nome: string) {
-  return await prisma.anoLectivo.findUnique({
-    where: { nome },
+export async function getAnoLectivoNome(nome: string, id?: number) {
+  const whereClause = id
+    ? {
+        id: { not: id },
+        nome,
+      }
+    : { nome };
+
+  return await prisma.anoLectivo.findFirst({
+    where: whereClause,
     select: { nome: true },
   });
 }
@@ -36,5 +43,12 @@ export async function getAnoLectivoInicioTermino(
   return await prisma.anoLectivo.findUnique({
     where: { inicio_termino: { inicio, termino } },
     select,
+  });
+}
+
+export async function getAnoLectivoId(id: number) {
+  return await prisma.anoLectivo.findUnique({
+    where: { id },
+    select: { id: true },
   });
 }
