@@ -37,6 +37,16 @@ const anoLectivoBodySchema = z.object({
     .date('O termino deve ser uma data válida.'),
 });
 
+const anoLectivoParamsSchema = z.object({
+  anoLectivoId: z.coerce
+    .number({
+      required_error: 'O id do ano lectivo é obrigatório.',
+      invalid_type_error: 'O id do ano lectivo deve ser número.',
+    })
+    .int({ message: 'O id do ano lectivo deve ser inteiro.' })
+    .positive({ message: 'O id do ano lectivo deve ser positivo.' }),
+});
+
 export const postAnoLectivoSchema = {
   summary: 'Adiciona um ano lectivo ',
   tags: ['ano-lectivo'],
@@ -47,4 +57,16 @@ export const postAnoLectivoSchema = {
   },
 };
 
+export const putAnoLectivoSchema = {
+  summary: 'Atualiza um ano lectivo existente',
+  tags: ['ano-lectivo'],
+  params: anoLectivoParamsSchema,
+  body: anoLectivoBodySchema.omit({ id: true }),
+  response: {
+    200: anoLectivoBodySchema.omit({ id: true }),
+    400: simpleBadRequestSchema,
+  },
+};
+
 export type postAnoLectivoBodyType = z.infer<typeof postAnoLectivoSchema.body>;
+export type anoLectivoParamsType = z.infer<typeof anoLectivoParamsSchema>;
