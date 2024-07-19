@@ -9,6 +9,7 @@ import {
   getAnoLectivoId,
   getAnoLectivoInicioTermino,
   getAnoLectivoNome,
+  recoveryAnoLectivo,
   recoveryAnoLectivos,
   saveAnoLectivo,
 } from '../services/anoLectivoServices';
@@ -151,4 +152,23 @@ export async function getAnoLectivos(
 ) {
   const data = await recoveryAnoLectivos();
   return reply.send({ data });
+}
+
+export async function getAnoLectivo(
+  request: FastifyRequest<{ Params: anoLectivoParamsType }>,
+  reply: FastifyReply
+) {
+  const { anoLectivoId } = request.params;
+  const anoLectivo = await recoveryAnoLectivo(anoLectivoId);
+
+  if (!anoLectivo) {
+    throwNotFoundRequest();
+  } else {
+    return reply.send({
+      id: anoLectivo.id,
+      nome: anoLectivo.nome,
+      inicio: formatDate(anoLectivo.inicio),
+      termino: formatDate(anoLectivo.termino),
+    });
+  }
 }
