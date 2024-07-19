@@ -23,7 +23,8 @@ export async function saveAluno(data: CreateAlunoBodyType) {
         nomeCompletoPai: data.nomeCompletoPai,
         nomeCompletoMae: data.nomeCompletoMae,
         numeroBi: data.numeroBi,
-        dataNascimento: data.dataNascimento,
+        // FIXME: Remove this functionality to appropriated place
+        dataNascimento: new Date(data.dataNascimento),
         genero: data.genero,
         Endereco: {
           create: createEnderecoData(data.bairro, data.rua, data.numeroCasa),
