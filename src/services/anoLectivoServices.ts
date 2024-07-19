@@ -65,3 +65,7 @@ export async function recoveryAnoLectivos() {
     select: { id: true, nome: true },
   });
 }
+
+export async function recoveryAnoLectivo(id: number) {
+  return await prisma.anoLectivo.findUnique({ where: { id } });
+}
