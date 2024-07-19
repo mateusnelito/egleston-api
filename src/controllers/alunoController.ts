@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   CreateAlunoBodyType,
@@ -24,6 +25,34 @@ import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
 import { formatDate } from '../utils/utils';
+
+function throwDataNascimentoBadRequest(message: string) {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Data de nascimento inválida.',
+    errors: { dataNascimento: [message] },
+  });
+}
+
+// Validate based on business rules birth date
+function checkBirthDate(birthDate: string) {
+  const date = dayjs(birthDate);
+
+  // -> Check if birthDate is in future
+  if (date.isAfter(dayjs())) {
+    throwDataNascimentoBadRequest(
+      'Data de nascimento não pôde estar no futuro.'
+    );
+  }
+
+  // -> Check if the current aluno is older than 14
+  // TODO: Confirm if the base age is 14 years old
+  if (dayjs().subtract(date.year(), 'year').year() < 14) {
+    throwDataNascimentoBadRequest('Idade inferior a 14 anos.');
+  }
+
+  return date;
+}
 
 function throwTelefoneBadRequest() {
   throw new BadRequest({
@@ -58,7 +87,9 @@ export async function createAluno(
 
   // Checking data integrity
   // -> Aluno
-  const { numeroBi, telefone, email } = data;
+  const { dataNascimento, numeroBi, telefone, email } = data;
+  checkBirthDate(dataNascimento);
+
   const [isNumeroBi, isTelefone] = await Promise.all([
     await getAlunoNumeroBi(numeroBi),
     await getTelefone(telefone),
@@ -156,7 +187,9 @@ export async function updateAluno(
   reply: FastifyReply
 ) {
   const { alunoId } = request.params;
-  const { telefone, email } = request.body;
+  const { dataNascimento, telefone, email } = request.body;
+
+  checkBirthDate(dataNascimento);
 
   const isAluno = await getAlunoId(alunoId);
   if (!isAluno) throwNotFoundRequest();
