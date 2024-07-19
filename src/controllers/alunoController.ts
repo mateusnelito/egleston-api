@@ -47,7 +47,7 @@ function checkBirthDate(birthDate: string) {
 
   // -> Check if the current aluno is older than 14
   // TODO: Confirm if the base age is 14 years old
-  if (dayjs().subtract(date.year(), 'year').year() < 14) {
+  if (dayjs().diff(date, 'y') < 14) {
     throwDataNascimentoBadRequest('Idade inferior a 14 anos.');
   }
 
