@@ -1,7 +1,12 @@
 import { prisma } from '../lib/prisma';
-import { postAnoLectivoBodyType } from '../schemas/anoLectivoSchema';
 
-export async function saveAnoLectivo(data: postAnoLectivoBodyType) {
+interface anoLectivo {
+  nome: string;
+  inicio: Date;
+  termino: Date;
+}
+
+export async function saveAnoLectivo(data: anoLectivo) {
   return await prisma.anoLectivo.create({
     data,
   });
