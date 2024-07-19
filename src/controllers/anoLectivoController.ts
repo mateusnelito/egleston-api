@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { postAnoLectivoBodyType } from '../schemas/anoLectivoSchema';
 import {
@@ -16,12 +17,11 @@ function throwNomeBadRequest() {
   });
 }
 
-// FIXME: add a better and expressive error message
 function throwDuplicateAnoLectivoDurationBadRequest() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Duração do ano lectivo inválido.',
-    errors: { nome: ['A duração do ano lectivo já existe.'] },
+    message: 'Ano lectivo inválido',
+    errors: { nome: ['Ano lectivo já existe.'] },
   });
 }
 
@@ -31,11 +31,39 @@ export async function createAnoLectivo(
 ) {
   const { nome, inicio, termino } = request.body;
 
-  // TODO: Add date validation with dayjs
+  // Validating beginning and end
+  const begin = dayjs(inicio);
+  const end = dayjs(termino);
+
+  if (begin.isAfter(end)) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+      message: 'inicio inválido.',
+      errors: { inicio: ['Inicio não pôde ser depois do termino.'] },
+    });
+  }
+
+  const monthsBetweenYears = end.diff(begin, 'M');
+
+  if (monthsBetweenYears < 6) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+      message: 'Ano lectivo inválido',
+      errors: { termino: ['Término muito aproximado.'] },
+    });
+  }
+
+  if (monthsBetweenYears > 11) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+      message: 'Ano lectivo inválido',
+      errors: { termino: ['Término muito distante.'] },
+    });
+  }
 
   const [isAnoLectivoNome, isAnoLectivoInicioAndTermino] = await Promise.all([
     await getAnoLectivoNome(nome),
-    await getAnoLectivoInicioTermino(inicio, termino),
+    await getAnoLectivoInicioTermino(begin.toDate(), end.toDate()),
   ]);
 
   if (isAnoLectivoNome) throwNomeBadRequest();
@@ -44,6 +72,16 @@ export async function createAnoLectivo(
     throwDuplicateAnoLectivoDurationBadRequest();
   }
 
-  const newAnoLectivo = await saveAnoLectivo({ nome, inicio, termino });
-  return reply.status(HttpStatusCodes.CREATED).send(newAnoLectivo);
+  const anoLectivo = await saveAnoLectivo({
+    nome,
+    inicio: begin.toDate(),
+    termino: end.toDate(),
+  });
+
+  return reply.status(HttpStatusCodes.CREATED).send({
+    id: anoLectivo.id,
+    nome: anoLectivo.nome,
+    inicio: dayjs(anoLectivo.inicio).format('YYYY-MM-DD'),
+    termino: dayjs(anoLectivo.termino).format('YYYY-MM-DD'),
+  });
 }
