@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { simpleBadRequestSchema } from './globalSchema';
+import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
 const anoLectivoBodySchema = z.object({
   id: z
     .number({
@@ -64,6 +64,7 @@ export const putAnoLectivoSchema = {
   body: anoLectivoBodySchema.omit({ id: true }),
   response: {
     200: anoLectivoBodySchema.omit({ id: true }),
+    404: notFoundRequestSchema,
     400: simpleBadRequestSchema,
   },
 };
@@ -75,6 +76,16 @@ export const getAnoLectivosSchema = {
     200: z.object({
       data: z.array(anoLectivoBodySchema.omit({ inicio: true, termino: true })),
     }),
+  },
+};
+
+export const getAnoLectivoSchema = {
+  summary: 'Retorna um ano lectivo',
+  tags: ['ano-lectivo'],
+  params: anoLectivoParamsSchema,
+  response: {
+    200: anoLectivoBodySchema,
+    404: notFoundRequestSchema,
   },
 };
 
