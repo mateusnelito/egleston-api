@@ -68,5 +68,15 @@ export const putAnoLectivoSchema = {
   },
 };
 
+export const getAnoLectivosSchema = {
+  summary: 'Retorna todos os anos lectivos',
+  tags: ['ano-lectivo'],
+  response: {
+    200: z.object({
+      data: z.array(anoLectivoBodySchema.omit({ inicio: true, termino: true })),
+    }),
+  },
+};
+
 export type postAnoLectivoBodyType = z.infer<typeof postAnoLectivoSchema.body>;
 export type anoLectivoParamsType = z.infer<typeof anoLectivoParamsSchema>;
