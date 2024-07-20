@@ -80,6 +80,8 @@ export async function createAnoLectivo(
   request: FastifyRequest<{ Body: postAnoLectivoBodyType }>,
   reply: FastifyReply
 ) {
+  // TODO: Add nome dynamically based on begin and end of year
+
   const { nome, inicio, termino } = request.body;
   const { begin, end } = checkBeginAndEndDates(inicio, termino);
 
