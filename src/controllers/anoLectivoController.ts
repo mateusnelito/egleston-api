@@ -64,7 +64,8 @@ function throwDuplicateAnoLectivoDurationBadRequest() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Ano lectivo inválido',
-    errors: { nome: ['Ano lectivo já existe.'] },
+    // FIXME: Send an appropriated error message
+    errors: { termino: ['Ano lectivo já existe.'] },
   });
 }
 
