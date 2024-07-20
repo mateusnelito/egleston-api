@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma';
+import { postClasseBodyType } from '../schemas/classeSchemas';
 
 export async function getClasseByCompostUniqueKey(
   nome: string,
@@ -11,4 +12,8 @@ export async function getClasseByCompostUniqueKey(
     },
     select: { id: true },
   });
+}
+
+export async function saveClasse(data: postClasseBodyType) {
+  return await prisma.classe.create({ data });
 }
