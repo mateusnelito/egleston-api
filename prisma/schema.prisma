@@ -138,6 +138,7 @@ model Curso {
   descricao         String              @db.Text
   duracao           Int                 @db.SmallInt
   CursosDisciplinas CursosDisciplinas[]
+  Classe            Classe[]
 
   @@map("cursos")
   @@schema("cadastro")
@@ -182,8 +183,22 @@ model AnoLectivo {
   nome    String   @unique @db.VarChar(10)
   inicio  DateTime @db.Date
   termino DateTime @db.Date
+  Classe  Classe[]
 
   @@unique([inicio, termino])
   @@map("ano_lectivo")
+  @@schema("cadastro")
+}
+
+model Classe {
+  id           Int        @id @default(autoincrement())
+  nome         String     @db.VarChar(30)
+  AnoLectivo   AnoLectivo @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade)
+  anoLectivoId Int        @map("ano_lectivo_id") @db.SmallInt
+  Curso        Curso      @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  cursoId      Int        @map("curso_id") @db.SmallInt
+
+  @@unique([nome, anoLectivoId, cursoId])
+  @@map("classes")
   @@schema("cadastro")
 }
