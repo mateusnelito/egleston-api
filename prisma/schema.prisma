@@ -192,7 +192,7 @@ model AnoLectivo {
 
 model Classe {
   id           Int        @id @default(autoincrement())
-  nome         String     @db.VarChar(30)
+  nome         String     @db.VarChar(3)
   AnoLectivo   AnoLectivo @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade)
   anoLectivoId Int        @map("ano_lectivo_id") @db.SmallInt
   Curso        Curso      @relation(fields: [cursoId], references: [id], onDelete: Cascade)
