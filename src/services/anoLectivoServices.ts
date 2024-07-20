@@ -63,6 +63,7 @@ export async function changeAnoLectivo(id: number, data: anoLectivo) {
 export async function recoveryAnoLectivos() {
   return await prisma.anoLectivo.findMany({
     select: { id: true, nome: true },
+    orderBy: { id: 'desc' },
   });
 }
 
