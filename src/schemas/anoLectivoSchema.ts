@@ -8,7 +8,6 @@ const anoLectivoBodySchema = z.object({
     })
     .int({ message: 'O id do ano lectivo deve ser inteiro.' })
     .positive({ message: 'O id do ano lectivo deve ser positivo.' }),
-  // TODO: Add a regex validation for nome
   nome: z
     .string({
       required_error: 'O nome do ano lectivo é obrigatório.',
@@ -20,6 +19,9 @@ const anoLectivoBodySchema = z.object({
     })
     .max(10, {
       message: 'O nome do ano lectivo deve possuir no máximo 10 caracteres.',
+    })
+    .regex(/^\d{4}-\d{4}$/, {
+      message: 'o nome do ano lectivo deve seguir o padrão 9999-9999.',
     }),
   inicio: z
     .string({
