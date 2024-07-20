@@ -44,7 +44,7 @@ export const postClasseSchema = {
   response: {
     201: classeBodySchema,
     400: simpleBadRequestSchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
