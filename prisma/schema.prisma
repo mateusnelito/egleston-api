@@ -185,7 +185,7 @@ model AnoLectivo {
   termino DateTime @db.Date
   Classe  Classe[]
 
-  @@map("ano_lectivo")
+  @@map("ano_lectivos")
   @@schema("cadastro")
 }
 
