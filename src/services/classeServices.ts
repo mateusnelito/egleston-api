@@ -44,15 +44,23 @@ export async function getClasse(id: number) {
         select: { nome: true },
       },
     },
-    // include: {
-    //   AnoLectivo: {
-    //     select: {
-    //       nome: true,
-    //     },
-    //   },
-    //   Curso: {
-    //     select: { nome: true },
-    //   },
-    // },
+  });
+}
+
+export async function getClassesByAnoLectivo(anoLectivoId: number) {
+  return await prisma.classe.findMany({
+    where: { anoLectivoId },
+    select: {
+      id: true,
+      nome: true,
+      Curso: {
+        select: {
+          nome: true,
+        },
+      },
+    },
+    orderBy: {
+      Curso: { nome: 'asc' },
+    },
   });
 }
