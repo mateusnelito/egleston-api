@@ -28,3 +28,31 @@ export async function getClasseId(id: number) {
 export async function changeClasse(id: number, data: postClasseBodyType) {
   return await prisma.classe.update({ where: { id }, data });
 }
+
+export async function getClasse(id: number) {
+  return await prisma.classe.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      nome: true,
+      AnoLectivo: {
+        select: {
+          nome: true,
+        },
+      },
+      Curso: {
+        select: { nome: true },
+      },
+    },
+    // include: {
+    //   AnoLectivo: {
+    //     select: {
+    //       nome: true,
+    //     },
+    //   },
+    //   Curso: {
+    //     select: { nome: true },
+    //   },
+    // },
+  });
+}
