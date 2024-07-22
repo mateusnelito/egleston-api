@@ -17,3 +17,10 @@ export async function getClasseByCompostUniqueKey(
 export async function saveClasse(data: postClasseBodyType) {
   return await prisma.classe.create({ data });
 }
+
+export async function getClasseId(id: number) {
+  return await prisma.classe.findUnique({
+    where: { id },
+    select: { id: true },
+  });
+}
