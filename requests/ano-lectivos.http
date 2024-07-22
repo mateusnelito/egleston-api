@@ -1,0 +1,24 @@
+### Create
+POST http://localhost:8000/api/ano-lectivos
+Content-Type: application/json
+
+{
+  "inicio": "2024-09-01",
+  "termino": "2025-08-01"
+}
+
+### Update
+PUT http://localhost:8000/api/ano-lectivos/1
+Content-Type: application/json
+
+{
+  "inicio": "2023-09-01",
+  "termino": "2024-08-01"
+}
+
+### Get all
+
+GET http://localhost:8000/api/ano-lectivos
+
+### Get unique
+GET http://localhost:8000/api/ano-lectivos/4
