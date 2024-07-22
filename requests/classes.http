@@ -1,0 +1,22 @@
+### Create
+POST http://localhost:8000/api/classes
+Content-Type: application/json
+
+{
+  "nome": "10ª",
+  "anoLectivoId": 1,
+  "cursoId": 1
+}
+
+### Update
+PUT http://localhost:8000/api/classes/1
+Content-Type: application/json
+
+{
+  "nome": "10ª",
+  "anoLectivoId": 1,
+  "cursoId": 1
+}
+
+### Get Unique
+GET http://localhost:8000/api/classes/2
