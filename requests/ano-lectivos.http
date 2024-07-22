@@ -22,3 +22,6 @@ GET http://localhost:8000/api/ano-lectivos
 
 ### Get unique
 GET http://localhost:8000/api/ano-lectivos/4
+
+### Get all classes
+GET http://localhost:8000/api/ano-lectivos/5/classes
