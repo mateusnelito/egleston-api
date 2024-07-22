@@ -102,5 +102,22 @@ export const getAnoLectivoSchema = {
   },
 };
 
+export const getAnoLectivoClassesSchema = {
+  summary: 'Retorna todas as classes do ano',
+  tags: ['ano-lectivo'],
+  params: anoLectivoParamsSchema,
+  response: {
+    200: z.object({
+      data: z.array(
+        z.object({
+          id: z.number().int().positive(),
+          nome: z.string(),
+          curso: z.string(),
+        })
+      ),
+    }),
+  },
+};
+
 export type postAnoLectivoBodyType = z.infer<typeof postAnoLectivoSchema.body>;
 export type anoLectivoParamsType = z.infer<typeof anoLectivoParamsSchema>;
