@@ -72,17 +72,17 @@ export const putClasseSchema = {
   },
 };
 
-export const getClassesSchema = {
-  summary: 'Retorna todas as classes com base no ano lectivo',
-  tags: ['classes'],
-  response: {
-    200: z.object({
-      data: z.array(
-        classeBodySchema.omit({ anoLectivoId: true, cursoId: true })
-      ),
-    }),
-  },
-};
+// export const getClassesSchema = {
+//   summary: 'Retorna todas as classes com base no ano lectivo',
+//   tags: ['classes'],
+//   response: {
+//     200: z.object({
+//       data: z.array(
+//         classeBodySchema.omit({ anoLectivoId: true, cursoId: true })
+//       ),
+//     }),
+//   },
+// };
 
 export const getClasseSchema = {
   summary: 'Retorna uma classe',
