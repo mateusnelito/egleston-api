@@ -52,10 +52,15 @@ const anoLectivoParamsSchema = z.object({
 export const postAnoLectivoSchema = {
   summary: 'Adiciona um ano lectivo ',
   tags: ['ano-lectivo'],
-  body: anoLectivoBodySchema.omit({ id: true }),
+  body: anoLectivoBodySchema.omit({ id: true, nome: true }),
   response: {
     201: anoLectivoBodySchema,
-    400: simpleBadRequestSchema,
+    400: simpleBadRequestSchema.or(
+      z.object({
+        statusCode: z.number().default(400),
+        message: z.string(),
+      })
+    ),
   },
 };
 
@@ -63,11 +68,16 @@ export const putAnoLectivoSchema = {
   summary: 'Atualiza um ano lectivo existente',
   tags: ['ano-lectivo'],
   params: anoLectivoParamsSchema,
-  body: anoLectivoBodySchema.omit({ id: true }),
+  body: anoLectivoBodySchema.omit({ id: true, nome: true }),
   response: {
     200: anoLectivoBodySchema.omit({ id: true }),
     404: notFoundRequestSchema,
-    400: simpleBadRequestSchema,
+    400: simpleBadRequestSchema.or(
+      z.object({
+        statusCode: z.number().default(400),
+        message: z.string(),
+      })
+    ),
   },
 };
 
