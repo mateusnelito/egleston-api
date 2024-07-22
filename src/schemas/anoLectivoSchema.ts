@@ -72,6 +72,7 @@ export const putAnoLectivoSchema = {
   response: {
     200: anoLectivoBodySchema.omit({ id: true }),
     404: notFoundRequestSchema,
+    // TODO: Move this schema to globalSchema and associate with BadRequest class
     400: simpleBadRequestSchema.or(
       z.object({
         statusCode: z.number().default(400),

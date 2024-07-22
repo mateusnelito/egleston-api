@@ -66,6 +66,7 @@ export async function createAnoLectivo(
   const isAnoLectivoNome = await getAnoLectivoNome(nome);
 
   if (isAnoLectivoNome) {
+    // TODO: Move this code to BadRequest class
     return reply.status(HttpStatusCodes.BAD_REQUEST).send({
       statusCode: HttpStatusCodes.BAD_REQUEST,
       message: 'O ano lectivo já existe.',
