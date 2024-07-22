@@ -24,6 +24,7 @@ import { getDisciplinaId } from '../services/disciplinaServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
+import { getClassesByCurso } from '../services/classeServices';
 
 function throwNotFoundRequest() {
   throw new NotFoundRequest({
@@ -273,4 +274,27 @@ export async function deleteCursoWithDisciplinasAssociation(
 
   // FIXME: Send an appropriate response
   return reply.send(cursoDisciplinas);
+}
+
+export async function getCursoClasses(
+  request: FastifyRequest<{
+    Params: uniqueCursoResourceParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { cursoId } = request.params;
+
+  const curso = await getCursoId(cursoId);
+  if (!curso) throwNotFoundRequest();
+
+  const classes = await getClassesByCurso(cursoId);
+  const data = classes.map((classe) => {
+    return {
+      id: classe.id,
+      nome: classe.nome,
+      anoLectivo: classe.AnoLectivo.nome,
+    };
+  });
+
+  return reply.send({ data });
 }
