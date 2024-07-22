@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
+  getAnoLectivoClassesSchema,
   getAnoLectivoSchema,
   getAnoLectivosSchema,
   postAnoLectivoSchema,
@@ -9,6 +10,7 @@ import {
 import {
   createAnoLectivo,
   getAnoLectivo,
+  getAnoLectivoClasses,
   getAnoLectivos,
   updateAnoLectivo,
 } from '../controllers/anoLectivoController';
@@ -38,5 +40,11 @@ export const anoLectivoRoutes: FastifyPluginAsync = async (
   server.withTypeProvider<ZodTypeProvider>().get('/:anoLectivoId', {
     schema: getAnoLectivoSchema,
     handler: getAnoLectivo,
+  });
+
+  // GET Classes
+  server.withTypeProvider<ZodTypeProvider>().get('/:anoLectivoId/classes', {
+    schema: getAnoLectivoClassesSchema,
+    handler: getAnoLectivoClasses,
   });
 };
