@@ -61,8 +61,14 @@ export const putClasseSchema = {
   body: classeBodySchema.omit({ id: true }),
   response: {
     200: classeBodySchema.omit({ id: true }),
-    400: simpleBadRequestSchema,
-    404: notFoundRequestSchema,
+    // TODO: Move this schema to globalSchema and associate with BadRequest class
+    400: simpleBadRequestSchema.or(
+      z.object({
+        statusCode: z.number().default(400),
+        message: z.string(),
+      })
+    ),
+    404: simpleBadRequestSchema.or(notFoundRequestSchema),
   },
 };
 
