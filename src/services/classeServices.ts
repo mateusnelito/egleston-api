@@ -24,3 +24,7 @@ export async function getClasseId(id: number) {
     select: { id: true },
   });
 }
+
+export async function changeClasse(id: number, data: postClasseBodyType) {
+  return await prisma.classe.update({ where: { id }, data });
+}
