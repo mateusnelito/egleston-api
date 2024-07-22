@@ -64,3 +64,21 @@ export async function getClassesByAnoLectivo(anoLectivoId: number) {
     },
   });
 }
+
+export async function getClassesByCurso(cursoId: number) {
+  return await prisma.classe.findMany({
+    where: { cursoId },
+    select: {
+      id: true,
+      nome: true,
+      AnoLectivo: {
+        select: {
+          nome: true,
+        },
+      },
+    },
+    orderBy: {
+      AnoLectivo: { nome: 'desc' },
+    },
+  });
+}
