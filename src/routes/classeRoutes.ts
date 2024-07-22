@@ -6,7 +6,7 @@ import {
   postClasseSchema,
   putClasseSchema,
 } from '../schemas/classeSchemas';
-import { createClasse } from '../controllers/classeController';
+import { createClasse, updateClasse } from '../controllers/classeController';
 
 export const classeRoutes: FastifyPluginAsync = async (
   server: FastifyInstance
@@ -20,7 +20,7 @@ export const classeRoutes: FastifyPluginAsync = async (
   // PUT
   server.withTypeProvider<ZodTypeProvider>().put('/:classeId', {
     schema: putClasseSchema,
-    handler: () => {},
+    handler: updateClasse,
   });
 
   // GET
