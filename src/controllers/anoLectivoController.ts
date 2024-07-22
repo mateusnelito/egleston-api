@@ -16,6 +16,7 @@ import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
 import { formatDate } from '../utils/utils';
+import { getClassesByAnoLectivo } from '../services/classeServices';
 
 // Constants for month validation
 const MIN_MONTHS = 11;
@@ -151,4 +152,25 @@ export async function getAnoLectivo(
       termino: formatDate(anoLectivo.termino),
     });
   }
+}
+
+export async function getAnoLectivoClasses(
+  request: FastifyRequest<{ Params: anoLectivoParamsType }>,
+  reply: FastifyReply
+) {
+  const { anoLectivoId } = request.params;
+  const anoLectivo = await getAnoLectivoId(anoLectivoId);
+
+  if (!anoLectivo) throwNotFoundRequest();
+
+  const classes = await getClassesByAnoLectivo(anoLectivoId);
+  const data = classes.map((classe) => {
+    return {
+      id: classe.id,
+      nome: classe.nome,
+      curso: classe.Curso.nome,
+    };
+  });
+
+  return reply.send({ data });
 }
