@@ -9,6 +9,7 @@ import {
   getClasseByCompostUniqueKey,
   getClasseId,
   saveClasse,
+  getClasse as getClasseService,
 } from '../services/classeServices';
 import NotFoundRequest from '../utils/NotFoundRequest';
 
@@ -101,4 +102,21 @@ export async function updateClasse(
 
   const updatedClasse = await changeClasse(classeId, request.body);
   return reply.send(updatedClasse);
+}
+
+export async function getClasse(
+  request: FastifyRequest<{ Params: classeParamsType }>,
+  reply: FastifyReply
+) {
+  const { classeId } = request.params;
+  const classe = await getClasseService(classeId);
+
+  if (!classe) throwNotFoundClasse();
+
+  return reply.send({
+    id: classe?.id,
+    nome: classe?.nome,
+    anoLectivo: classe?.AnoLectivo?.nome,
+    curso: classe?.Curso?.nome,
+  });
 }
