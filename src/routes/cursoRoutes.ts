@@ -6,6 +6,7 @@ import {
   deleteCursoWithDisciplinasAssociation,
   destroyCursoDisciplina,
   getCurso,
+  getCursoClasses,
   getCursos,
   updateCurso,
 } from '../controllers/cursoController';
@@ -14,6 +15,7 @@ import {
   createCursoSchema,
   deleCursoDisciplinasAssociationSchema,
   deleteCursoDisciplinaAssociationSchema,
+  getCursoClassesSchema,
   getCursoSchema,
   getCursosSchema,
   updateCursoSchema,
@@ -62,6 +64,12 @@ const cursosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
   server.withTypeProvider<ZodTypeProvider>().delete('/:cursoId/disciplinas', {
     schema: deleCursoDisciplinasAssociationSchema,
     handler: deleteCursoWithDisciplinasAssociation,
+  });
+
+  // GET All Classes
+  server.withTypeProvider<ZodTypeProvider>().get('/:cursoId/classes', {
+    schema: getCursoClassesSchema,
+    handler: getCursoClasses,
   });
 };
 
