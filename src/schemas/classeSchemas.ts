@@ -89,7 +89,9 @@ export const getClasseSchema = {
   tags: ['classes'],
   params: classeParamsSchema,
   response: {
-    200: classeBodySchema,
+    200: classeBodySchema
+      .omit({ anoLectivoId: true, cursoId: true })
+      .extend({ anoLectivo: z.string(), curso: z.string() }),
     404: notFoundRequestSchema,
   },
 };
