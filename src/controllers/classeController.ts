@@ -24,14 +24,15 @@ export async function createClasse(
     throw new BadRequest({
       statusCode: HttpStatusCodes.NOT_FOUND,
       message: 'Ano lectivo inválido',
-      errors: { anoLectivoId: ['Ano lectivo não existe.'] },
+      errors: { anoLectivoId: ['ID do ano lectivo não existe.'] },
     });
   }
+
   if (!isCurso) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.NOT_FOUND,
       message: 'Curso inválido',
-      errors: { cursoId: ['Curso não existe.'] },
+      errors: { cursoId: ['ID do curso não existe.'] },
     });
   }
 
@@ -42,10 +43,10 @@ export async function createClasse(
   );
 
   if (isClasse) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Classe inválida',
-      errors: { nome: ['Classe já existe.'] },
+    // TODO: Move this code to BadRequest class
+    return reply.status(HttpStatusCodes.BAD_REQUEST).send({
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+      message: 'Classe já existe.',
     });
   }
 
