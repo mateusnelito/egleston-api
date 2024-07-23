@@ -8,6 +8,7 @@ import responsaveisRoutes from './responsavelRoutes';
 import { anoLectivoRoutes } from './anoLectivoRoutes';
 import { classeRoutes } from './classeRoutes';
 import { salaRoutes } from './salaRoutes';
+import { turnoRoutes } from './turnoRoutes';
 
 // Create a plugin with all the routes as plugins
 // Remember FastifyPlugin equals JS object
@@ -22,5 +23,6 @@ const routes: FastifyPluginAsync = async (server: FastifyInstance) => {
   server.register(anoLectivoRoutes, { prefix: '/api/ano-lectivos' });
   server.register(classeRoutes, { prefix: '/api/classes' });
   server.register(salaRoutes, { prefix: '/api/salas' });
+  server.register(turnoRoutes, { prefix: '/api/turnos' });
 };
 export default routes; // Export the all routes
