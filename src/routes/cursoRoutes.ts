@@ -13,7 +13,7 @@ import {
 import {
   createCursoDisciplinasAssociationSchema,
   createCursoSchema,
-  deleCursoDisciplinasAssociationSchema,
+  deleteCursoDisciplinasAssociationSchema,
   deleteCursoDisciplinaAssociationSchema,
   getCursoClassesSchema,
   getCursoSchema,
@@ -62,7 +62,7 @@ const cursosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
 
   // DELETE ASSOCIATIONS BETWEEN MULTIPLES DISCIPLINAS AND ONE CURSO
   server.withTypeProvider<ZodTypeProvider>().delete('/:cursoId/disciplinas', {
-    schema: deleCursoDisciplinasAssociationSchema,
+    schema: deleteCursoDisciplinasAssociationSchema,
     handler: deleteCursoWithDisciplinasAssociation,
   });
 

@@ -192,7 +192,7 @@ export const deleteCursoDisciplinaAssociationSchema = {
   },
 };
 
-export const deleCursoDisciplinasAssociationSchema = {
+export const deleteCursoDisciplinasAssociationSchema = {
   summary: 'Deleta múltiplas disciplinas associadas à um curso',
   ...cursoDisciplinasAssociationSchema,
 };
