@@ -15,3 +15,11 @@ export async function saveSala(data: postSalaBodyType) {
 export async function getSalaId(id: number) {
   return await prisma.sala.findUnique({ where: { id }, select: { id: true } });
 }
+
+export async function changeSala(id: number, data: postSalaBodyType) {
+  return await prisma.sala.update({
+    where: { id },
+    data,
+    select: { nome: true, capacidade: true, localizacao: true },
+  });
+}
