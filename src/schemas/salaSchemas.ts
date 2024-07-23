@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { simpleBadRequestSchema } from './globalSchema';
 const salaBodySchema = z.object({
   id: z
     .number({
@@ -58,3 +59,15 @@ const salaParamsSchema = z.object({
     .int({ message: 'O id da sala deve ser inteiro.' })
     .positive({ message: 'O id da sala deve ser positivo.' }),
 });
+
+export const postSalaSchema = {
+  summary: 'Adiciona uma nova sala',
+  tags: ['salas'],
+  body: salaBodySchema.omit({ id: true }),
+  response: {
+    201: salaBodySchema,
+    400: simpleBadRequestSchema,
+  },
+};
+
+export type postSalaBodyType = z.infer<typeof postSalaSchema.body>;
