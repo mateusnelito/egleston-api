@@ -25,3 +25,12 @@ GET http://localhost:8000/api/ano-lectivos/4
 
 ### Get all classes
 GET http://localhost:8000/api/ano-lectivos/5/classes
+
+### Post classe in ano lectivo
+POST http://localhost:8000/api/ano-lectivos/50/classes
+Content-Type: application/json
+
+{
+  "nome": "10ª",
+  "cursoId": 1
+}
