@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
+import { classeBodySchema } from './classeSchemas';
 const anoLectivoBodySchema = z.object({
   id: z
     .number({
@@ -119,5 +120,16 @@ export const getAnoLectivoClassesSchema = {
   },
 };
 
+export const postClasseToAnoLectivoSchema = {
+  summary: 'Adiciona uma classe ao ano lectivo',
+  tags: ['ano-lectivo'],
+  params: anoLectivoParamsSchema,
+  body: classeBodySchema.omit({ id: true, anoLectivoId: true }),
+  response: {},
+};
+
 export type postAnoLectivoBodyType = z.infer<typeof postAnoLectivoSchema.body>;
 export type anoLectivoParamsType = z.infer<typeof anoLectivoParamsSchema>;
+export type postClasseToAnoLectivoBodyType = z.infer<
+  typeof postAnoLectivoSchema.body
+>;
