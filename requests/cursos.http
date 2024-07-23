@@ -46,3 +46,12 @@ Content-Type: application/json
 
 ### GET curso classes
 GET http://localhost:8000/api/cursos/1/classes
+
+### Add classe to curso
+POST http://localhost:8000/api/cursos/1/classes
+Content-Type: application/json
+
+{
+    "nome": "10ª",
+    "anoLectivoId": 5
+}
