@@ -3,6 +3,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   anoLectivoParamsType,
   postAnoLectivoBodyType,
+  postClasseToAnoLectivoBodyType,
 } from '../schemas/anoLectivoSchema';
 import {
   changeAnoLectivo,
@@ -16,7 +17,12 @@ import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
 import { formatDate } from '../utils/utils';
-import { getClassesByAnoLectivo } from '../services/classeServices';
+import {
+  getClasseByCompostUniqueKey,
+  getClassesByAnoLectivo,
+  saveClasse,
+} from '../services/classeServices';
+import { getCursoId } from '../services/cursoServices';
 
 // Constants for month validation
 const MIN_MONTHS = 11;
@@ -173,4 +179,51 @@ export async function getAnoLectivoClasses(
   });
 
   return reply.send({ data });
+}
+
+export async function addClasseToAnoLectivo(
+  request: FastifyRequest<{
+    Params: anoLectivoParamsType;
+    Body: postClasseToAnoLectivoBodyType;
+  }>,
+  reply: FastifyReply
+) {
+  const { anoLectivoId } = request.params;
+  const { nome, cursoId } = request.body;
+
+  const [isAnoLectivo, isCurso] = await Promise.all([
+    await getAnoLectivoId(anoLectivoId),
+    await getCursoId(cursoId),
+  ]);
+
+  if (!isAnoLectivo) throwNotFoundRequest();
+  if (!isCurso) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.NOT_FOUND,
+      message: 'Curso inválido',
+      errors: { cursoId: ['ID do curso não existe.'] },
+    });
+  }
+
+  const isClasse = await getClasseByCompostUniqueKey(
+    nome,
+    anoLectivoId,
+    cursoId
+  );
+
+  if (isClasse) {
+    // TODO: Move this code to BadRequest class
+    return reply.status(HttpStatusCodes.BAD_REQUEST).send({
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+      message: 'Classe já registada no ano lectivo.',
+    });
+  }
+
+  const classe = await saveClasse({
+    nome,
+    anoLectivoId,
+    cursoId,
+  });
+  // TODO: Send a appropriate response
+  return reply.status(HttpStatusCodes.CREATED).send(classe);
 }
