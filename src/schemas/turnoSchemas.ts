@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { simpleBadRequestSchema } from './globalSchema';
+import { time } from 'console';
 const turnoBodySchema = z.object({
   id: z
     .number({
@@ -24,9 +25,18 @@ const turnoBodySchema = z.object({
   // .regex(//, {
   //   message: 'o nome do turno deve seguir o padrão 9999-9999.',
   // }),
-  // FIXME: Remove if isn't work
-  inicio: z.date(),
-  termino: z.date(),
+  inicio: z
+    .string({
+      required_error: 'O inicio é obrigatório.',
+      invalid_type_error: 'O inicio deve ser string.',
+    })
+    .time({ message: 'O inicio deve ser válido (HH:mm:ss)' }),
+  termino: z
+    .string({
+      required_error: 'O termino é obrigatório.',
+      invalid_type_error: 'O termino deve ser string.',
+    })
+    .time({ message: 'O termino deve ser válido (HH:mm:ss)' }),
 });
 
 const turnoParamsSchema = z.object({
