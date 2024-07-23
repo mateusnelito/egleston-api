@@ -125,11 +125,20 @@ export const postClasseToAnoLectivoSchema = {
   tags: ['ano-lectivo'],
   params: anoLectivoParamsSchema,
   body: classeBodySchema.omit({ id: true, anoLectivoId: true }),
-  response: {},
+  response: {
+    201: classeBodySchema,
+    400: simpleBadRequestSchema.or(
+      z.object({
+        statusCode: z.number().default(400),
+        message: z.string(),
+      })
+    ),
+    404: simpleBadRequestSchema.or(notFoundRequestSchema),
+  },
 };
 
 export type postAnoLectivoBodyType = z.infer<typeof postAnoLectivoSchema.body>;
 export type anoLectivoParamsType = z.infer<typeof anoLectivoParamsSchema>;
 export type postClasseToAnoLectivoBodyType = z.infer<
-  typeof postAnoLectivoSchema.body
+  typeof postClasseToAnoLectivoSchema.body
 >;
