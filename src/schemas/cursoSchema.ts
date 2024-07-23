@@ -5,6 +5,7 @@ import {
   notFoundRequestSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
+import { classeBodySchema } from './classeSchemas';
 
 const cursoBodySchema = z.object({
   nome: z
@@ -215,6 +216,23 @@ export const getCursoClassesSchema = {
   },
 };
 
+export const postClasseToCursoSchema = {
+  summary: 'Adiciona uma classe ao curso',
+  tags: ['cursos'],
+  params: cursoParamsSchema,
+  body: classeBodySchema.omit({ id: true, cursoId: true }),
+  response: {
+    200: classeBodySchema,
+    400: simpleBadRequestSchema.or(
+      z.object({
+        statusCode: z.number().default(400),
+        message: z.string(),
+      })
+    ),
+    404: simpleBadRequestSchema.or(notFoundRequestSchema),
+  },
+};
+
 export type createCursoBodyType = z.infer<typeof createCursoSchema.body>;
 export type updateCursoBodyType = z.infer<typeof updateCursoSchema.body>;
 
@@ -228,4 +246,8 @@ export type cursoDisciplinasAssociationBodyType = z.infer<
 
 export type deleteCursoDisciplinaAssociationParamsType = z.infer<
   typeof deleteCursoDisciplinaAssociationSchema.params
+>;
+
+export type postClasseToCursoBodyType = z.infer<
+  typeof postClasseToCursoSchema.body
 >;
