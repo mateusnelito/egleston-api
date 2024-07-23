@@ -23,3 +23,7 @@ export async function changeSala(id: number, data: postSalaBodyType) {
     select: { nome: true, capacidade: true, localizacao: true },
   });
 }
+
+export async function getSala(id: number) {
+  return await prisma.sala.findUnique({ where: { id } });
+}
