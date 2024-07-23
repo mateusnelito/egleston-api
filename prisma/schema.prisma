@@ -211,3 +211,14 @@ model Sala {
   @@map("salas")
   @@schema("cadastro")
 }
+
+model Turno {
+  id      Int      @id @default(autoincrement()) @db.SmallInt
+  nome    String   @unique @db.VarChar(30)
+  inicio  DateTime @db.Time()
+  termino DateTime @db.Time()
+
+  @@unique([inicio, termino])
+  @@map("turnos")
+  @@schema("cadastro")
+}
