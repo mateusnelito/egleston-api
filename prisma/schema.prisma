@@ -201,3 +201,13 @@ model Classe {
   @@map("classes")
   @@schema("cadastro")
 }
+
+model Sala {
+  id          Int    @id @default(autoincrement()) @db.SmallInt
+  nome        String @unique @db.VarChar(30)
+  capacidade  Int    @db.SmallInt
+  localizacao String @db.VarChar(255)
+
+  @@map("salas")
+  @@schema("cadastro")
+}
