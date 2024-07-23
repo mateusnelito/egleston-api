@@ -72,6 +72,7 @@ export async function createResponsavel(
     });
   }
 
+  // TODO: Add a responsaveis limit like only 3 responsaveis for a time
   // TODO: Verify if already exist a father or mother in db for the current aluno
   // TODO: 'Cause nobody has 2 fathers or mothers
   // TODO: search for better way to validate parentesco and avoid duplication
