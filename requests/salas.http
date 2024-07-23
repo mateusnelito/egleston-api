@@ -1,0 +1,25 @@
+### Create sala
+POST http://localhost:8000/api/salas
+Content-Type: application/json
+
+{
+    "nome": "B",
+    "capacidade": 20,
+    "localizacao": "Blah Blah Blah"
+}
+
+### Update sala
+PUT http://localhost:8000/api/salas/1
+Content-Type: application/json
+
+{
+    "nome": "A",
+    "capacidade": 30,
+    "localizacao": "Localização desconhecida."
+}
+
+### Get a sala
+GET http://localhost:8000/api/salas/1
+
+### Get salas
+GET http://localhost:8000/api/salas
