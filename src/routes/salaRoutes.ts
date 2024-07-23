@@ -1,13 +1,15 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
+import { postSalaSchema } from '../schemas/salaSchemas';
+import { createSalaController } from '../controllers/salaController';
 
 export const salaRoutes: FastifyPluginAsync = async (
   server: FastifyInstance
 ) => {
   // POST
   server.withTypeProvider<ZodTypeProvider>().post('/', {
-    schema: {},
-    handler: () => {},
+    schema: postSalaSchema,
+    handler: createSalaController,
   });
 
   // PUT
