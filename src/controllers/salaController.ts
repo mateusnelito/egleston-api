@@ -2,6 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { postSalaBodyType, salaParamsType } from '../schemas/salaSchemas';
 import {
   changeSala,
+  getSala,
   getSalaByNome,
   getSalaId,
   saveSala,
@@ -54,4 +55,16 @@ export async function updateSalaController(
 
   const updatedSala = await changeSala(salaId, request.body);
   return reply.send(updatedSala);
+}
+
+export async function getSalaController(
+  request: FastifyRequest<{ Params: salaParamsType }>,
+  reply: FastifyReply
+) {
+  const { salaId } = request.params;
+
+  const sala = await getSala(salaId);
+
+  if (!sala) throwNotFoundSala();
+  return reply.send(sala);
 }

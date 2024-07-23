@@ -1,8 +1,13 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { postSalaSchema, putSalaSchema } from '../schemas/salaSchemas';
+import {
+  getSalaSchema,
+  postSalaSchema,
+  putSalaSchema,
+} from '../schemas/salaSchemas';
 import {
   createSalaController,
+  getSalaController,
   updateSalaController,
 } from '../controllers/salaController';
 
@@ -23,8 +28,8 @@ export const salaRoutes: FastifyPluginAsync = async (
 
   // GET Unique
   server.withTypeProvider<ZodTypeProvider>().get('/:salaId', {
-    schema: {},
-    handler: () => {},
+    schema: getSalaSchema,
+    handler: getSalaController,
   });
 
   // GET All
