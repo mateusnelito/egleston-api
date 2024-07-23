@@ -96,7 +96,11 @@ export const getSalasSchema = {
   summary: 'Retorna todas as salas',
   tags: ['salas'],
   response: {
-    200: z.array(salaBodySchema.omit({ capacidade: true, localizacao: true })),
+    200: z.object({
+      data: z.array(
+        salaBodySchema.omit({ capacidade: true, localizacao: true })
+      ),
+    }),
   },
 };
 
