@@ -5,9 +5,11 @@ import {
   getAnoLectivoSchema,
   getAnoLectivosSchema,
   postAnoLectivoSchema,
+  postClasseToAnoLectivoSchema,
   putAnoLectivoSchema,
 } from '../schemas/anoLectivoSchema';
 import {
+  addClasseToAnoLectivo,
   createAnoLectivo,
   getAnoLectivo,
   getAnoLectivoClasses,
@@ -46,5 +48,11 @@ export const anoLectivoRoutes: FastifyPluginAsync = async (
   server.withTypeProvider<ZodTypeProvider>().get('/:anoLectivoId/classes', {
     schema: getAnoLectivoClassesSchema,
     handler: getAnoLectivoClasses,
+  });
+
+  // POST classe in ano lectivo
+  server.withTypeProvider<ZodTypeProvider>().post('/:anoLectivoId/classes', {
+    schema: postClasseToAnoLectivoSchema,
+    handler: addClasseToAnoLectivo,
   });
 };
