@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { simpleBadRequestSchema } from './globalSchema';
+import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
 const salaBodySchema = z.object({
   id: z
     .number({
@@ -67,6 +67,18 @@ export const postSalaSchema = {
   response: {
     201: salaBodySchema,
     400: simpleBadRequestSchema,
+  },
+};
+
+export const putSalaSchema = {
+  summary: 'Atualiza uma sala existente',
+  tags: ['salas'],
+  params: salaParamsSchema,
+  body: salaBodySchema.omit({ id: true }),
+  response: {
+    200: salaBodySchema.omit({ id: true }),
+    400: simpleBadRequestSchema,
+    404: notFoundRequestSchema,
   },
 };
 
