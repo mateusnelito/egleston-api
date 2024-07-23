@@ -92,5 +92,13 @@ export const getSalaSchema = {
   },
 };
 
+export const getSalasSchema = {
+  summary: 'Retorna todas as salas',
+  tags: ['salas'],
+  response: {
+    200: z.array(salaBodySchema.omit({ capacidade: true, localizacao: true })),
+  },
+};
+
 export type postSalaBodyType = z.infer<typeof postSalaSchema.body>;
 export type salaParamsType = z.infer<typeof salaParamsSchema>;
