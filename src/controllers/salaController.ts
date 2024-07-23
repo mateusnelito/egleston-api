@@ -5,6 +5,7 @@ import {
   getSala,
   getSalaByNome,
   getSalaId,
+  getSalas,
   saveSala,
 } from '../services/salaServices';
 import BadRequest from '../utils/BadRequest';
@@ -67,4 +68,12 @@ export async function getSalaController(
 
   if (!sala) throwNotFoundSala();
   return reply.send(sala);
+}
+
+export async function getSalasController(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  const data = await getSalas();
+  return reply.send({ data });
 }
