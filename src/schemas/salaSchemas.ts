@@ -83,3 +83,4 @@ export const putSalaSchema = {
 };
 
 export type postSalaBodyType = z.infer<typeof postSalaSchema.body>;
+export type salaParamsType = z.infer<typeof salaParamsSchema>;
