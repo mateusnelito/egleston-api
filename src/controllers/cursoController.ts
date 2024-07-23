@@ -3,6 +3,7 @@ import {
   createCursoBodyType,
   cursoDisciplinasAssociationBodyType,
   deleteCursoDisciplinaAssociationParamsType,
+  postClasseToCursoBodyType,
   uniqueCursoResourceParamsType,
   updateCursoBodyType,
 } from '../schemas/cursoSchema';
@@ -24,7 +25,12 @@ import { getDisciplinaId } from '../services/disciplinaServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
-import { getClassesByCurso } from '../services/classeServices';
+import {
+  getClasseByCompostUniqueKey,
+  getClassesByCurso,
+  saveClasse,
+} from '../services/classeServices';
+import { getAnoLectivoId } from '../services/anoLectivoServices';
 
 function throwNotFoundRequest() {
   throw new NotFoundRequest({
@@ -297,4 +303,47 @@ export async function getCursoClasses(
   });
 
   return reply.send({ data });
+}
+
+export async function createClasseToCurso(
+  request: FastifyRequest<{
+    Params: uniqueCursoResourceParamsType;
+    Body: postClasseToCursoBodyType;
+  }>,
+  reply: FastifyReply
+) {
+  const { cursoId } = request.params;
+  const { nome, anoLectivoId } = request.body;
+
+  const [isCurso, isAnoLectivo] = await Promise.all([
+    await getCursoId(cursoId),
+    await getAnoLectivoId(anoLectivoId),
+  ]);
+
+  if (!isCurso) throwNotFoundRequest();
+  if (!isAnoLectivo) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.NOT_FOUND,
+      message: 'Ano lectivo inválido',
+      errors: { anoLectivoId: ['ID do ano lectivo não existe.'] },
+    });
+  }
+
+  const isClasse = await getClasseByCompostUniqueKey(
+    nome,
+    anoLectivoId,
+    cursoId
+  );
+
+  if (isClasse) {
+    // TODO: Move this code to BadRequest class
+    return reply.status(HttpStatusCodes.BAD_REQUEST).send({
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+      message: 'Classe já registada no curso.',
+    });
+  }
+
+  const classe = await saveClasse({ nome, anoLectivoId, cursoId });
+  // TODO: Send a appropriate response
+  return reply.status(HttpStatusCodes.CREATED).send(classe);
 }
