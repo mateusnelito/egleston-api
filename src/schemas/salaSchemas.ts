@@ -48,3 +48,13 @@ const salaBodySchema = z.object({
   //   message: 'o nome da sala deve seguir o padrão 9999-9999.',
   // }),
 });
+
+const salaParamsSchema = z.object({
+  salaId: z.coerce
+    .number({
+      required_error: 'O id da sala é obrigatório.',
+      invalid_type_error: 'O id da sala deve ser número.',
+    })
+    .int({ message: 'O id da sala deve ser inteiro.' })
+    .positive({ message: 'O id da sala deve ser positivo.' }),
+});
