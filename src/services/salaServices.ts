@@ -27,3 +27,10 @@ export async function changeSala(id: number, data: postSalaBodyType) {
 export async function getSala(id: number) {
   return await prisma.sala.findUnique({ where: { id } });
 }
+
+export async function getSalas() {
+  return await prisma.sala.findMany({
+    select: { id: true, nome: true },
+    orderBy: { id: 'desc' },
+  });
+}
