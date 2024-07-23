@@ -82,5 +82,15 @@ export const putSalaSchema = {
   },
 };
 
+export const getSalaSchema = {
+  summary: 'Retorna uma sala',
+  tags: ['salas'],
+  params: salaParamsSchema,
+  response: {
+    200: salaBodySchema,
+    404: notFoundRequestSchema,
+  },
+};
+
 export type postSalaBodyType = z.infer<typeof postSalaSchema.body>;
 export type salaParamsType = z.infer<typeof salaParamsSchema>;
