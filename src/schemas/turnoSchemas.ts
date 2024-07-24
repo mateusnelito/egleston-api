@@ -30,13 +30,13 @@ const turnoBodySchema = z.object({
       required_error: 'O inicio é obrigatório.',
       invalid_type_error: 'O inicio deve ser string.',
     })
-    .time({ message: 'O inicio deve ser válido (HH:mm:ss)' }),
+    .time({ precision: 0, message: 'O inicio deve ser válido (HH:mm:ss)' }),
   termino: z
     .string({
       required_error: 'O termino é obrigatório.',
       invalid_type_error: 'O termino deve ser string.',
     })
-    .time({ message: 'O termino deve ser válido (HH:mm:ss)' }),
+    .time({ precision: 0, message: 'O termino deve ser válido (HH:mm:ss)' }),
 });
 
 const turnoParamsSchema = z.object({
