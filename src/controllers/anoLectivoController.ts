@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   anoLectivoParamsType,
@@ -13,46 +12,42 @@ import {
   recoveryAnoLectivos,
   saveAnoLectivo,
 } from '../services/anoLectivoServices';
-import BadRequest from '../utils/BadRequest';
-import HttpStatusCodes from '../utils/HttpStatusCodes';
-import NotFoundRequest from '../utils/NotFoundRequest';
-import { formatDate } from '../utils/utils';
 import {
   getClasseByCompostUniqueKey,
   getClassesByAnoLectivo,
   saveClasse,
 } from '../services/classeServices';
 import { getCursoId } from '../services/cursoServices';
+import BadRequest from '../utils/BadRequest';
+import HttpStatusCodes from '../utils/HttpStatusCodes';
+import NotFoundRequest from '../utils/NotFoundRequest';
+import {
+  calculateTimeBetweenDates,
+  formatDate,
+  isBeginDateAfterEndDate,
+} from '../utils/utils';
 
-// Constants for month validation
-const MIN_MONTHS = 11;
-const MAX_MONTHS = 11;
+function throwInicioBadRequest() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Data de início inválida.',
+    errors: { inicio: ['Início não pode ser após o término.'] },
+  });
+}
 
-// Validate the beginning and the end of ano lectivo
-function checkBeginAndEndDates(inicio: string, termino: string) {
-  // FIXME: O dia de inicio do mês não começa em 01 caso for dado com 01.
-  // FIXME: e.g: 2024-09-01 -> 2024-08-31
-  const begin = dayjs(inicio);
-  const end = dayjs(termino);
+function throwYearLengthBadRequest() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Ano lectivo inválido',
+    errors: { termino: ['A duração do ano lectivo deve ser de 11 meses.'] },
+  });
+}
 
-  if (begin.isAfter(end)) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Data de início inválida.',
-      errors: { inicio: ['Início não pode ser após o término.'] },
-    });
-  }
-
-  const monthsBetweenYears = end.diff(begin, 'M');
-
-  if (monthsBetweenYears < MIN_MONTHS || monthsBetweenYears > MAX_MONTHS) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Ano lectivo inválido',
-      errors: { termino: ['A duração do ano lectivo deve ser de 11 meses.'] },
-    });
-  }
-  return { begin: begin.toDate(), end: end.toDate() };
+function throwAnoLectivoAlreadyExistBadRequest() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'O ano lectivo já existe.',
+  });
 }
 
 function throwNotFoundRequest() {
@@ -62,30 +57,30 @@ function throwNotFoundRequest() {
   });
 }
 
+const YEAR_LENGTH = 11;
+
 export async function createAnoLectivo(
   request: FastifyRequest<{ Body: postAnoLectivoBodyType }>,
   reply: FastifyReply
 ) {
-  const { inicio, termino } = request.body;
-  const { begin, end } = checkBeginAndEndDates(inicio, termino);
-  const nome = `${begin.getFullYear()}-${end.getFullYear()}`;
+  const { inicio: inicioString, termino: terminoString } = request.body;
+  const inicio = new Date(inicioString);
+  const termino = new Date(terminoString);
+
+  // Validating dates
+  if (isBeginDateAfterEndDate(inicio, termino)) throwInicioBadRequest();
+
+  // FIXME: O dia de inicio do mês não começa em 01 caso for dado com 01.
+  // FIXME: e.g: 2024-09-01 -> 2024-08-31
+  const yearMonthLength = calculateTimeBetweenDates(inicio, termino, 'M');
+  if (yearMonthLength !== YEAR_LENGTH) throwYearLengthBadRequest();
+
+  const nome = `${inicio.getFullYear()}-${termino.getFullYear()}`;
 
   const isAnoLectivoNome = await getAnoLectivoNome(nome);
+  if (isAnoLectivoNome) throwAnoLectivoAlreadyExistBadRequest();
 
-  if (isAnoLectivoNome) {
-    // TODO: Move this code to BadRequest class
-    return reply.status(HttpStatusCodes.BAD_REQUEST).send({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'O ano lectivo já existe.',
-    });
-  }
-
-  const anoLectivo = await saveAnoLectivo({
-    nome,
-    inicio: begin,
-    termino: end,
-  });
-
+  const anoLectivo = await saveAnoLectivo({ nome, inicio, termino });
   return reply.status(HttpStatusCodes.CREATED).send({
     id: anoLectivo.id,
     nome: anoLectivo.nome,
@@ -101,11 +96,18 @@ export async function updateAnoLectivo(
   }>,
   reply: FastifyReply
 ) {
-  const { inicio, termino } = request.body;
-  const { begin, end } = checkBeginAndEndDates(inicio, termino);
-  const nome = `${begin.getFullYear()}-${end.getFullYear()}`;
+  const { inicio: inicioString, termino: terminoString } = request.body;
+  const inicio = new Date(inicioString);
+  const termino = new Date(terminoString);
+
+  // Validating dates
+  if (isBeginDateAfterEndDate(inicio, termino)) throwInicioBadRequest();
+
+  const yearMonthLength = calculateTimeBetweenDates(inicio, termino, 'M');
+  if (yearMonthLength !== YEAR_LENGTH) throwYearLengthBadRequest();
 
   const { anoLectivoId } = request.params;
+  const nome = `${inicio.getFullYear()}-${termino.getFullYear()}`;
 
   const [isAnoLectivo, isAnoLectivoNome] = await Promise.all([
     getAnoLectivoId(anoLectivoId),
@@ -113,19 +115,13 @@ export async function updateAnoLectivo(
   ]);
 
   if (!isAnoLectivo) throwNotFoundRequest();
-  if (isAnoLectivoNome) {
-    return reply.status(HttpStatusCodes.BAD_REQUEST).send({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'O ano lectivo já existe.',
-    });
-  }
+  if (isAnoLectivoNome) throwAnoLectivoAlreadyExistBadRequest();
 
   const anoLectivo = await changeAnoLectivo(anoLectivoId, {
     nome,
-    inicio: begin,
-    termino: end,
+    inicio,
+    termino,
   });
-
   return reply.send({
     nome: anoLectivo.nome,
     inicio: formatDate(anoLectivo.inicio),
@@ -212,8 +208,7 @@ export async function addClasseToAnoLectivo(
   );
 
   if (isClasse) {
-    // TODO: Move this code to BadRequest class
-    return reply.status(HttpStatusCodes.BAD_REQUEST).send({
+    throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
       message: 'Classe já registada no ano lectivo.',
     });
