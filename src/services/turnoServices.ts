@@ -47,3 +47,7 @@ export async function changeTurno(id: number, data: turnoBodyType) {
     select: { nome: true, inicio: true, termino: true },
   });
 }
+
+export async function getTurno(id: number) {
+  return await prisma.turno.findUnique({ where: { id } });
+}
