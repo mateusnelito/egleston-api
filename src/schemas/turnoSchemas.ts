@@ -55,12 +55,7 @@ export const postTurnoSchema = {
   body: turnoBodySchema.omit({ id: true }),
   response: {
     201: turnoBodySchema,
-    400: simpleBadRequestSchema.or(
-      z.object({
-        statusCode: z.number().default(400),
-        message: z.string(),
-      })
-    ),
+    400: simpleBadRequestSchema,
   },
 };
 
