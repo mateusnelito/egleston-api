@@ -1,0 +1,25 @@
+### Create turno
+POST http://localhost:8000/api/turnos
+Content-Type: application/json
+
+{
+    "nome": "Manhã",
+    "inicio": "08:00:00",
+    "termino": "12:00:00"
+}
+
+### Create turno
+PUT http://localhost:8000/api/turnos/1
+Content-Type: application/json
+
+{
+    "nome": "Manhã",
+    "inicio": "08:00:00",
+    "termino": "12:00:00"
+}
+
+### Get turno
+GET http://localhost:8000/api/turnos/1
+
+### Get turnos
+GET http://localhost:8000/api/turnos
