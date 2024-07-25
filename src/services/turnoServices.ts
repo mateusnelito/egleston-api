@@ -28,3 +28,7 @@ export async function getTurnoByInicioAndTermino(
     select: { id: true },
   });
 }
+
+export async function getTurnoId(id: number) {
+  return await prisma.turno.findUnique({ where: { id }, select: { id: true } });
+}
