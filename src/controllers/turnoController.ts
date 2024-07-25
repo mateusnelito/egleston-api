@@ -1,20 +1,38 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { postTurnoBodyType } from '../schemas/turnoSchemas';
-import HttpStatusCodes from '../utils/HttpStatusCodes';
-import BadRequest from '../utils/BadRequest';
-import NotFoundRequest from '../utils/NotFoundRequest';
 import {
   getTurnoByInicioAndTermino,
   getTurnoByNome,
   saveTurno,
 } from '../services/turnoServices';
-import dayjs from 'dayjs';
+import BadRequest from '../utils/BadRequest';
+import HttpStatusCodes from '../utils/HttpStatusCodes';
+import NotFoundRequest from '../utils/NotFoundRequest';
+import {
+  calculateTimeBetweenDates,
+  isBeginDateAfterEndDate,
+} from '../utils/utils';
 
 function throwTurnoNomeAlreadyExist() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Nome inválido',
     errors: { nome: ['Nome já existe.'] },
+  });
+}
+
+function throwInicioBadRequest() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Hora de início inválida.',
+    errors: { inicio: ['Início não pode ser após o término.'] },
+  });
+}
+
+function throwTurnoAlreadyExistBadRequest() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Turno já existe.',
   });
 }
 
@@ -25,8 +43,8 @@ function throwNotFoundTurno() {
   });
 }
 
-function throwDurationBadRequest(message: string, reply: FastifyReply) {
-  return reply.status(HttpStatusCodes.BAD_REQUEST).send({
+function throwDurationBadRequest(message: string) {
+  throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message,
   });
@@ -34,41 +52,34 @@ function throwDurationBadRequest(message: string, reply: FastifyReply) {
 
 // Controller const
 const BASE_DATE = '2024-07-24';
+const MAXIMUM_DURATION_HOURS = 8;
+const MINIMUM_DURATION_HOURS = 1;
 
-// Maximum and minimum duration in hours
-const MAXIMUM_DURATION = 8;
-const MINIMUM_DURATION = 1;
-
-// TODO: REFACTOR THIS CODE
 export async function createTurnoController(
   request: FastifyRequest<{ Body: postTurnoBodyType }>,
   reply: FastifyReply
 ) {
   const { nome, inicio, termino } = request.body;
 
-  const inicioTime = dayjs(`${BASE_DATE} ${inicio}`);
-  const terminoTime = dayjs(`${BASE_DATE} ${termino}`);
+  const inicioDate = new Date(`${BASE_DATE} ${inicio}`);
+  const terminoDate = new Date(`${BASE_DATE} ${termino}`);
 
-  if (inicioTime.isAfter(terminoTime)) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Hora de início inválida.',
-      errors: { inicio: ['Início não pode ser após o término.'] },
-    });
-  }
+  if (isBeginDateAfterEndDate(inicioDate, terminoDate)) throwInicioBadRequest();
 
-  const duration = terminoTime.diff(inicioTime, 'hours');
+  const turnoDurationHours = calculateTimeBetweenDates(
+    inicioDate,
+    terminoDate,
+    'hours'
+  );
 
-  if (duration < MINIMUM_DURATION)
+  if (turnoDurationHours < MINIMUM_DURATION_HOURS)
     throwDurationBadRequest(
-      `A duração do turno deve ser no minimo de ${MINIMUM_DURATION}h.`,
-      reply
+      `A duração do turno deve ser no minimo de ${MINIMUM_DURATION_HOURS}h.`
     );
 
-  if (duration > MAXIMUM_DURATION)
+  if (turnoDurationHours > MAXIMUM_DURATION_HOURS)
     throwDurationBadRequest(
-      `A duração do turno deve ser no maximo de ${MAXIMUM_DURATION}h.`,
-      reply
+      `A duração do turno deve ser no maximo de ${MAXIMUM_DURATION_HOURS}h.`
     );
 
   const [isTurnoNome, isTurno] = await Promise.all([
@@ -77,12 +88,8 @@ export async function createTurnoController(
   ]);
 
   if (isTurnoNome) throwTurnoNomeAlreadyExist();
-  if (isTurno) {
-    return reply.status(HttpStatusCodes.BAD_REQUEST).send({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: `Turno já existe.`,
-    });
-  }
+  if (isTurno) throwTurnoAlreadyExistBadRequest();
+
   const turno = await saveTurno({ nome, inicio, termino });
   return reply.status(HttpStatusCodes.CREATED).send(turno);
 }
