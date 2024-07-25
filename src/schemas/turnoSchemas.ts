@@ -80,5 +80,15 @@ export const getTurnoSchema = {
   },
 };
 
+export const getTurnosSchema = {
+  summary: 'Retorna todos os turnos',
+  tags: ['turnos'],
+  response: {
+    200: z.object({
+      data: z.array(turnoBodySchema.omit({ inicio: true, termino: true })),
+    }),
+  },
+};
+
 export type turnoBodyType = z.infer<typeof postTurnoSchema.body>;
 export type turnoParamsType = z.infer<typeof turnoParamsSchema>;
