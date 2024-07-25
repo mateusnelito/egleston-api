@@ -196,6 +196,7 @@ model Classe {
   anoLectivoId Int        @map("ano_lectivo_id") @db.SmallInt
   Curso        Curso      @relation(fields: [cursoId], references: [id], onDelete: Cascade)
   cursoId      Int        @map("curso_id") @db.SmallInt
+  Turma        Turma[]
 
   @@unique([nome, anoLectivoId, cursoId])
   @@map("classes")
@@ -203,10 +204,11 @@ model Classe {
 }
 
 model Sala {
-  id          Int    @id @default(autoincrement()) @db.SmallInt
-  nome        String @unique @db.VarChar(30)
-  capacidade  Int    @db.SmallInt
-  localizacao String @db.VarChar(255)
+  id          Int     @id @default(autoincrement()) @db.SmallInt
+  nome        String  @unique @db.VarChar(30)
+  capacidade  Int     @db.SmallInt
+  localizacao String  @db.VarChar(255)
+  Turma       Turma[]
 
   @@map("salas")
   @@schema("cadastro")
@@ -220,5 +222,18 @@ model Turno {
 
   @@unique([inicio, termino])
   @@map("turnos")
+  @@schema("cadastro")
+}
+
+model Turma {
+  id       Int    @id @default(autoincrement())
+  nome     String @db.VarChar(30)
+  Classe   Classe @relation(fields: [classeId], references: [id], onDelete: Cascade)
+  classeId Int    @map("classe_id")
+  Sala     Sala   @relation(fields: [salaId], references: [id], onDelete: Cascade)
+  salaId   Int    @map("sala_id") @db.SmallInt
+
+  @@unique([nome, classeId, salaId])
+  @@map("turmas")
   @@schema("cadastro")
 }
