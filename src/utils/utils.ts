@@ -5,7 +5,7 @@ export function formatDate(date: Date): String {
   return date.toISOString().slice(0, 10);
 }
 
-export function isDateBeginAfterDateEnd(begin: Date, end: Date): boolean {
+export function isBeginDateAfterEndDate(begin: Date, end: Date): boolean {
   return dayjs(begin).isAfter(dayjs(end));
 }
 
