@@ -70,5 +70,17 @@ export const putTurmaSchema = {
   },
 };
 
+export const getTurmaSchema = {
+  summary: 'Retorna uma turma',
+  tags: ['turmas'],
+  params: turmaParamsSchema,
+  response: {
+    200: turmaBodySchema
+      .omit({ classeId: true, salaId: true })
+      .extend({ classe: z.string(), sala: z.string() }),
+    404: notFoundRequestSchema,
+  },
+};
+
 export type turmaBodyType = z.infer<typeof postTurmaSchema.body>;
 export type turmaParamsType = z.infer<typeof turmaParamsSchema>;
