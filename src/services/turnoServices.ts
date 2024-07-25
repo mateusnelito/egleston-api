@@ -1,10 +1,17 @@
 import { prisma } from '../lib/prisma';
 import { turnoBodyType } from '../schemas/turnoSchemas';
 
-export async function getTurnoByNome(nome: string) {
-  return await prisma.turno.findUnique({
-    where: { nome },
-    select: { id: true },
+export async function getTurnoByNome(nome: string, id?: number) {
+  const whereClause = id
+    ? {
+        id: { not: id },
+        nome,
+      }
+    : { nome };
+
+  return await prisma.turno.findFirst({
+    where: whereClause,
+    select: { nome: true },
   });
 }
 
