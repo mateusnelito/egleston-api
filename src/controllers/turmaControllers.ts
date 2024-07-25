@@ -1,9 +1,11 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { turmaBodyType } from '../schemas/turmaSchemas';
+import { turmaBodyType, turmaParamsType } from '../schemas/turmaSchemas';
 import { getClasseId } from '../services/classeServices';
 import { getSalaId } from '../services/salaServices';
 import {
+  changeTurma,
   getTurmaByUniqueCompostKey,
+  getTurmaId,
   saveTurma,
 } from '../services/turmaServices';
 import BadRequest from '../utils/BadRequest';
@@ -33,6 +35,13 @@ function throwTurmaAlreadyExistError() {
   });
 }
 
+function throwNotFoundTurmaIdError() {
+  throw new NotFoundRequest({
+    statusCode: HttpStatusCodes.NOT_FOUND,
+    message: 'ID da turma não existe.',
+  });
+}
+
 export async function createTurmaController(
   request: FastifyRequest<{ Body: turmaBodyType }>,
   reply: FastifyReply
@@ -50,4 +59,28 @@ export async function createTurmaController(
 
   const turma = await saveTurma({ nome, classeId, salaId });
   return reply.status(HttpStatusCodes.CREATED).send(turma);
+}
+
+export async function updateTurmaController(
+  request: FastifyRequest<{ Params: turmaParamsType; Body: turmaBodyType }>,
+  reply: FastifyReply
+) {
+  const { nome, classeId, salaId } = request.body;
+  const { turmaId } = request.params;
+
+  const [isTurmaId, isClasseId, isSalaId, isTurma] = await Promise.all([
+    await getTurmaId(turmaId),
+    await getClasseId(classeId),
+    await getSalaId(salaId),
+    await getTurmaByUniqueCompostKey(nome, classeId, salaId),
+  ]);
+
+  if (!isTurmaId) throwNotFoundTurmaIdError();
+  if (!isClasseId) throwNotFoundClasseIdError();
+  if (!isSalaId) throwNotFoundSalaIdError();
+  if (isTurma && isTurma.id !== turmaId) throwTurmaAlreadyExistError();
+
+  const turma = await changeTurma(turmaId, { nome, classeId, salaId });
+  // TODO: SEND A BETTER RESPONSE
+  return reply.send(turma);
 }

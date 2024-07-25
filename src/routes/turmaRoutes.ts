@@ -1,7 +1,10 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { postTurmaSchema } from '../schemas/turmaSchemas';
-import { createTurmaController } from '../controllers/turmaControllers';
+import { postTurmaSchema, putTurmaSchema } from '../schemas/turmaSchemas';
+import {
+  createTurmaController,
+  updateTurmaController,
+} from '../controllers/turmaControllers';
 
 export const turmaRoutes: FastifyPluginAsync = async (
   server: FastifyInstance
@@ -14,8 +17,8 @@ export const turmaRoutes: FastifyPluginAsync = async (
 
   // PUT
   server.withTypeProvider<ZodTypeProvider>().put('/:turmaId', {
-    schema: {},
-    handler: () => {},
+    schema: putTurmaSchema,
+    handler: updateTurmaController,
   });
 
   // GET Turma
