@@ -1,0 +1,22 @@
+### Create Turma
+POST http://localhost:8000/api/turmas
+Content-Type: application/json
+
+{
+    "nome": "A",
+    "classeId": 1,
+    "salaId": 1
+}
+
+### Create Turma
+PUT http://localhost:8000/api/turmas/1
+Content-Type: application/json
+
+{
+    "nome": "B",
+    "classeId": 1,
+    "salaId": 1
+}
+
+### Get Turma
+GET http://localhost:8000/api/turmas/1
