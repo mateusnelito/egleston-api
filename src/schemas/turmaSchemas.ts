@@ -58,4 +58,17 @@ export const postTurmaSchema = {
   },
 };
 
+export const putTurmaSchema = {
+  summary: 'Atualiza uma turma existente',
+  tags: ['turmas'],
+  params: turmaParamsSchema,
+  body: turmaBodySchema.omit({ id: true }),
+  response: {
+    200: turmaBodySchema.omit({ id: true }),
+    400: simpleBadRequestSchema,
+    404: notFoundRequestSchema,
+  },
+};
+
 export type turmaBodyType = z.infer<typeof postTurmaSchema.body>;
+export type turmaParamsType = z.infer<typeof turmaParamsSchema>;
