@@ -6,6 +6,7 @@ import {
   getTurnoByInicioAndTermino,
   getTurnoByNome,
   getTurnoId,
+  getTurnos,
   saveTurno,
 } from '../services/turnoServices';
 import BadRequest from '../utils/BadRequest';
@@ -150,4 +151,12 @@ export async function getTurnoController(
 
   if (!turno) throwNotFoundTurno();
   return reply.send(turno);
+}
+
+export async function getTurnosController(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  const data = await getTurnos();
+  return reply.send({ data });
 }
