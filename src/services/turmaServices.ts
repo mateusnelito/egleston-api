@@ -15,3 +15,7 @@ export async function getTurmaByUniqueCompostKey(
 export async function saveTurma(data: turmaBodyType) {
   return await prisma.turma.create({ data });
 }
+
+export async function getTurmaId(id: number) {
+  return await prisma.turma.findUnique({ where: { id }, select: { id: true } });
+}
