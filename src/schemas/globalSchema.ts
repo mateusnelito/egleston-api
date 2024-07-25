@@ -1,23 +1,25 @@
 import { z } from 'zod';
 
-const defaultBadRequestSkeleton = z.object({
+export const defaultBadRequestSchema = z.object({
   statusCode: z.number().default(400),
   message: z.string(),
 });
 
-export const simpleBadRequestSchema = defaultBadRequestSkeleton.extend({
-  errors: z.record(z.string(), z.array(z.string())),
-});
+export const simpleBadRequestSchema = defaultBadRequestSchema
+  .extend({
+    errors: z.record(z.string(), z.array(z.string())),
+  })
+  .or(defaultBadRequestSchema);
 
-// FIXME: Serialize the appropriate schema
-export const complexBadRequestSchema = simpleBadRequestSchema.or(
-  defaultBadRequestSkeleton.extend({
+// FIXME: Serialize to the appropriate schema
+export const complexBadRequestSchema = defaultBadRequestSchema
+  .extend({
     errors: z.record(z.any()),
   })
-);
+  .or(simpleBadRequestSchema);
 
-export const notFoundRequestSchema = defaultBadRequestSkeleton.or(
-  defaultBadRequestSkeleton.extend({
+export const notFoundRequestSchema = defaultBadRequestSchema.or(
+  defaultBadRequestSchema.extend({
     errors: z.record(z.string(), z.string()),
   })
 );
