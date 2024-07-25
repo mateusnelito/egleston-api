@@ -4,6 +4,7 @@ import { getClasseId } from '../services/classeServices';
 import { getSalaId } from '../services/salaServices';
 import {
   changeTurma,
+  getTurma,
   getTurmaByUniqueCompostKey,
   getTurmaId,
   saveTurma,
@@ -83,4 +84,21 @@ export async function updateTurmaController(
   const turma = await changeTurma(turmaId, { nome, classeId, salaId });
   // TODO: SEND A BETTER RESPONSE
   return reply.send(turma);
+}
+
+export async function getTurmaController(
+  request: FastifyRequest<{ Params: turmaParamsType }>,
+  reply: FastifyReply
+) {
+  const { turmaId } = request.params;
+
+  const turma = await getTurma(turmaId);
+  if (!turma) throwNotFoundTurmaIdError();
+
+  return reply.send({
+    id: turma?.id,
+    nome: turma?.nome,
+    classe: turma?.Classe.nome,
+    sala: turma?.Sala.nome,
+  });
 }
