@@ -1,8 +1,13 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { postTurnoSchema, putTurnoSchema } from '../schemas/turnoSchemas';
+import {
+  getTurnoSchema,
+  postTurnoSchema,
+  putTurnoSchema,
+} from '../schemas/turnoSchemas';
 import {
   createTurnoController,
+  getTurnoController,
   updateTurnoController,
 } from '../controllers/turnoController';
 
@@ -23,8 +28,8 @@ export const turnoRoutes: FastifyPluginAsync = async (
 
   // GET Unique
   server.withTypeProvider<ZodTypeProvider>().get('/:turnoId', {
-    schema: {},
-    handler: () => {},
+    schema: getTurnoSchema,
+    handler: getTurnoController,
   });
 
   // GET all
