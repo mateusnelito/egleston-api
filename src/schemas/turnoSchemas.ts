@@ -70,5 +70,15 @@ export const putTurnoSchema = {
   },
 };
 
+export const getTurnoSchema = {
+  summary: 'Retorna um turno',
+  tags: ['turnos'],
+  params: turnoParamsSchema,
+  response: {
+    200: turnoBodySchema,
+    404: notFoundRequestSchema,
+  },
+};
+
 export type turnoBodyType = z.infer<typeof postTurnoSchema.body>;
 export type turnoParamsType = z.infer<typeof turnoParamsSchema>;
