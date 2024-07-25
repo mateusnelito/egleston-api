@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { postTurnoBodyType } from '../schemas/turnoSchemas';
+import { turnoBodyType } from '../schemas/turnoSchemas';
 import {
   getTurnoByInicioAndTermino,
   getTurnoByNome,
@@ -56,7 +56,7 @@ const MAXIMUM_DURATION_HOURS = 8;
 const MINIMUM_DURATION_HOURS = 1;
 
 export async function createTurnoController(
-  request: FastifyRequest<{ Body: postTurnoBodyType }>,
+  request: FastifyRequest<{ Body: turnoBodyType }>,
   reply: FastifyReply
 ) {
   const { nome, inicio, termino } = request.body;

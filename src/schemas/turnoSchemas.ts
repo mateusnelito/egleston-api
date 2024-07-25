@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { simpleBadRequestSchema } from './globalSchema';
-import { time } from 'console';
+import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
 const turnoBodySchema = z.object({
   id: z
     .number({
@@ -59,4 +58,17 @@ export const postTurnoSchema = {
   },
 };
 
-export type postTurnoBodyType = z.infer<typeof postTurnoSchema.body>;
+export const putTurnoSchema = {
+  summary: 'Atualiza um turno existente',
+  tags: ['turnos'],
+  params: turnoParamsSchema,
+  body: turnoBodySchema.omit({ id: true }),
+  response: {
+    200: turnoBodySchema.omit({ id: true }),
+    404: notFoundRequestSchema,
+    400: simpleBadRequestSchema,
+  },
+};
+
+export type turnoBodyType = z.infer<typeof postTurnoSchema.body>;
+export type turnoParamsType = z.infer<typeof turnoParamsSchema>;

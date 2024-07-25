@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma';
-import { postTurnoBodyType } from '../schemas/turnoSchemas';
+import { turnoBodyType } from '../schemas/turnoSchemas';
 
 export async function getTurnoByNome(nome: string) {
   return await prisma.turno.findUnique({
@@ -8,7 +8,7 @@ export async function getTurnoByNome(nome: string) {
   });
 }
 
-export async function saveTurno(data: postTurnoBodyType) {
+export async function saveTurno(data: turnoBodyType) {
   return await prisma.turno.create({ data });
 }
 
