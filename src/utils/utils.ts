@@ -8,3 +8,11 @@ export function formatDate(date: Date): String {
 export function isDateBeginAfterDateEnd(begin: Date, end: Date): boolean {
   return dayjs(begin).isAfter(dayjs(end));
 }
+
+export function calculateTimeBetweenDates(
+  begin: Date,
+  end: Date,
+  unit: dayjs.UnitType
+): number {
+  return dayjs(end).diff(dayjs(begin), unit);
+}
