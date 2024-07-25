@@ -32,3 +32,11 @@ export async function getTurnoByInicioAndTermino(
 export async function getTurnoId(id: number) {
   return await prisma.turno.findUnique({ where: { id }, select: { id: true } });
 }
+
+export async function changeTurno(id: number, data: turnoBodyType) {
+  return await prisma.turno.update({
+    where: { id },
+    data,
+    select: { nome: true, inicio: true, termino: true },
+  });
+}
