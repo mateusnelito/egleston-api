@@ -18,11 +18,11 @@ export const complexBadRequestSchema = defaultBadRequestSchema
   })
   .or(simpleBadRequestSchema);
 
-export const notFoundRequestSchema = defaultBadRequestSchema.or(
-  defaultBadRequestSchema.extend({
+export const notFoundRequestSchema = defaultBadRequestSchema
+  .extend({
     errors: z.record(z.string(), z.string()),
   })
-);
+  .or(defaultBadRequestSchema);
 
 export const getAllResourcesParamsSchema = z.object({
   page_size: z.coerce

@@ -15,10 +15,7 @@ class NotFoundRequest extends Error {
   // Method to format the response with the NotFoundRequest error details
   sendError(reply: FastifyReply) {
     // Return the formatted response object
-    return reply.status(this.error.statusCode).send({
-      statusCode: this.error.statusCode,
-      message: this.error.message,
-    });
+    return reply.status(this.error.statusCode).send(this.error);
   }
 }
 export default NotFoundRequest;
