@@ -1,12 +1,12 @@
 import { prisma } from '../lib/prisma';
 
-interface anoLectivo {
+interface anoLectivoInterface {
   nome: string;
   inicio: Date;
   termino: Date;
 }
 
-export async function saveAnoLectivo(data: anoLectivo) {
+export async function saveAnoLectivo(data: anoLectivoInterface) {
   return await prisma.anoLectivo.create({
     data,
   });
@@ -33,7 +33,7 @@ export async function getAnoLectivoId(id: number) {
   });
 }
 
-export async function changeAnoLectivo(id: number, data: anoLectivo) {
+export async function changeAnoLectivo(id: number, data: anoLectivoInterface) {
   return await prisma.anoLectivo.update({
     where: { id },
     data,
