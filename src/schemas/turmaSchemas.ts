@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
 const turmaBodySchema = z.object({
   id: z
     .number({
@@ -45,3 +46,16 @@ const turmaParamsSchema = z.object({
     .int({ message: 'O id da turma deve ser inteiro.' })
     .positive({ message: 'O id da turma deve ser positivo.' }),
 });
+
+export const postTurmaSchema = {
+  summary: 'Adiciona uma nova turma',
+  tags: ['turmas'],
+  body: turmaBodySchema.omit({ id: true }),
+  response: {
+    201: turmaBodySchema,
+    400: simpleBadRequestSchema,
+    404: notFoundRequestSchema,
+  },
+};
+
+export type turmaBodyType = z.infer<typeof postTurmaSchema.body>;
