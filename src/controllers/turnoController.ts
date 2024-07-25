@@ -2,6 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { turnoBodyType, turnoParamsType } from '../schemas/turnoSchemas';
 import {
   changeTurno,
+  getTurno,
   getTurnoByInicioAndTermino,
   getTurnoByNome,
   getTurnoId,
@@ -137,4 +138,16 @@ export async function updateTurnoController(
 
   const turnoUpdated = await changeTurno(turnoId, { nome, inicio, termino });
   return reply.send(turnoUpdated);
+}
+
+export async function getTurnoController(
+  request: FastifyRequest<{ Params: turnoParamsType }>,
+  reply: FastifyReply
+) {
+  const { turnoId } = request.params;
+
+  const turno = await getTurno(turnoId);
+
+  if (!turno) throwNotFoundTurno();
+  return reply.send(turno);
 }
