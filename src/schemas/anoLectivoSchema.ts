@@ -56,12 +56,7 @@ export const postAnoLectivoSchema = {
   body: anoLectivoBodySchema.omit({ id: true, nome: true }),
   response: {
     201: anoLectivoBodySchema,
-    400: simpleBadRequestSchema.or(
-      z.object({
-        statusCode: z.number().default(400),
-        message: z.string(),
-      })
-    ),
+    400: simpleBadRequestSchema,
   },
 };
 
@@ -73,13 +68,7 @@ export const putAnoLectivoSchema = {
   response: {
     200: anoLectivoBodySchema.omit({ id: true }),
     404: notFoundRequestSchema,
-    // TODO: Move this schema to globalSchema and associate with BadRequest class
-    400: simpleBadRequestSchema.or(
-      z.object({
-        statusCode: z.number().default(400),
-        message: z.string(),
-      })
-    ),
+    400: simpleBadRequestSchema,
   },
 };
 
@@ -127,12 +116,7 @@ export const postClasseToAnoLectivoSchema = {
   body: classeBodySchema.omit({ id: true, anoLectivoId: true }),
   response: {
     201: classeBodySchema,
-    400: simpleBadRequestSchema.or(
-      z.object({
-        statusCode: z.number().default(400),
-        message: z.string(),
-      })
-    ),
+    400: simpleBadRequestSchema,
     404: simpleBadRequestSchema.or(notFoundRequestSchema),
   },
 };
