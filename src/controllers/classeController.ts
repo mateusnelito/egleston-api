@@ -12,8 +12,9 @@ import {
   getClasse as getClasseService,
 } from '../services/classeServices';
 import NotFoundRequest from '../utils/NotFoundRequest';
+import { getTurmasByClasse } from '../services/turmaServices';
 
-function throwNotFoundAnoLectivo() {
+function throwNotFoundAnoLectivoIdError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
     message: 'Ano lectivo inválido',
@@ -21,7 +22,7 @@ function throwNotFoundAnoLectivo() {
   });
 }
 
-function throwNotFoundCurso() {
+function throwNotFoundCursoIdError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
     message: 'Curso inválido',
@@ -29,7 +30,7 @@ function throwNotFoundCurso() {
   });
 }
 
-function throwNotFoundClasse() {
+function throwNotFoundClasseIdError() {
   throw new NotFoundRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
     message: 'ID da classe não existe.',
@@ -47,8 +48,8 @@ export async function createClasse(
     await getCursoId(cursoId),
   ]);
 
-  if (!isAnoLectivo) throwNotFoundAnoLectivo();
-  if (!isCurso) throwNotFoundCurso();
+  if (!isAnoLectivo) throwNotFoundAnoLectivoIdError();
+  if (!isCurso) throwNotFoundCursoIdError();
 
   const isClasse = await getClasseByCompostUniqueKey(
     nome,
@@ -80,15 +81,15 @@ export async function updateClasse(
 
   const isClasse = await getClasseId(classeId);
 
-  if (!isClasse) throwNotFoundClasse();
+  if (!isClasse) throwNotFoundClasseIdError();
 
   const [isAnoLectivo, isCurso] = await Promise.all([
     await getAnoLectivoId(anoLectivoId),
     await getCursoId(cursoId),
   ]);
 
-  if (!isAnoLectivo) throwNotFoundAnoLectivo();
-  if (!isCurso) throwNotFoundCurso();
+  if (!isAnoLectivo) throwNotFoundAnoLectivoIdError();
+  if (!isCurso) throwNotFoundCursoIdError();
 
   const classe = await getClasseByCompostUniqueKey(nome, anoLectivoId, cursoId);
 
@@ -111,7 +112,7 @@ export async function getClasse(
   const { classeId } = request.params;
   const classe = await getClasseService(classeId);
 
-  if (!classe) throwNotFoundClasse();
+  if (!classe) throwNotFoundClasseIdError();
 
   return reply.send({
     id: classe?.id,
@@ -119,4 +120,16 @@ export async function getClasse(
     anoLectivo: classe?.AnoLectivo?.nome,
     curso: classe?.Curso?.nome,
   });
+}
+
+export async function getClasseTurmasController(
+  request: FastifyRequest<{ Params: classeParamsType }>,
+  reply: FastifyReply
+) {
+  const { classeId } = request.params;
+  const isClasseId = await getClasseId(classeId);
+
+  if (!isClasseId) throwNotFoundClasseIdError();
+  const turmas = await getTurmasByClasse(classeId);
+  return reply.send({ data: turmas });
 }
