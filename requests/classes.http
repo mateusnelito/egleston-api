@@ -20,3 +20,6 @@ Content-Type: application/json
 
 ### Get Unique
 GET http://localhost:8000/api/classes/2
+
+### Get Classe Turmas
+GET http://localhost:8000/api/classes/1/turmas
