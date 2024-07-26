@@ -39,3 +39,10 @@ export async function getTurma(id: number) {
     },
   });
 }
+
+export async function getTurmasByClasse(classeId: number) {
+  return await prisma.turma.findMany({
+    where: { classeId },
+    select: { id: true, nome: true },
+  });
+}
