@@ -23,3 +23,6 @@ GET http://localhost:8000/api/salas/1
 
 ### Get salas
 GET http://localhost:8000/api/salas
+
+### Get Turmas by Sala
+GET http://localhost:8000/api/salas/1/turmas

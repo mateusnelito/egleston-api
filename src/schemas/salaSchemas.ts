@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
+import { turmaBodySchema } from './turmaSchemas';
 const salaBodySchema = z.object({
   id: z
     .number({
@@ -104,5 +105,32 @@ export const getSalasSchema = {
   },
 };
 
+export const getSalaTurmasSchema = {
+  summary: 'Retorna todas as turmas de uma sala',
+  tags: ['salas'],
+  params: salaParamsSchema,
+  response: {
+    200: z.object({
+      data: z.array(turmaBodySchema.omit({ salaId: true, classeId: true })),
+    }),
+    404: notFoundRequestSchema,
+  },
+};
+
+export const postTurmaToSalaSchema = {
+  summary: 'Adiciona uma turma a uma sala',
+  tags: ['sala'],
+  params: salaParamsSchema,
+  body: turmaBodySchema.omit({ id: true, salaId: true }),
+  response: {
+    // TODO: SEND A BETTER RESPONSE BODY
+    201: turmaBodySchema,
+    404: notFoundRequestSchema,
+  },
+};
+
 export type postSalaBodyType = z.infer<typeof postSalaSchema.body>;
 export type salaParamsType = z.infer<typeof salaParamsSchema>;
+export type postTurmaToSalaBodyType = z.infer<
+  typeof postTurmaToSalaSchema.body
+>;

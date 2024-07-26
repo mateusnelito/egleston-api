@@ -11,6 +11,7 @@ import {
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
+import { getTurmasBySala } from '../services/turmaServices';
 
 function throwNomeAlreadyExist() {
   throw new BadRequest({
@@ -20,7 +21,7 @@ function throwNomeAlreadyExist() {
   });
 }
 
-function throwNotFoundSala() {
+function throwNotFoundSalaIdError() {
   throw new NotFoundRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
     message: 'ID da sala não existe.',
@@ -51,7 +52,7 @@ export async function updateSalaController(
     await getSalaByNome(nome),
   ]);
 
-  if (!isSala) throwNotFoundSala();
+  if (!isSala) throwNotFoundSalaIdError();
   if (sala && sala.id !== salaId) throwNomeAlreadyExist();
 
   const updatedSala = await changeSala(salaId, request.body);
@@ -66,7 +67,7 @@ export async function getSalaController(
 
   const sala = await getSala(salaId);
 
-  if (!sala) throwNotFoundSala();
+  if (!sala) throwNotFoundSalaIdError();
   return reply.send(sala);
 }
 
@@ -76,4 +77,16 @@ export async function getSalasController(
 ) {
   const data = await getSalas();
   return reply.send({ data });
+}
+
+export async function getSalaTurmasController(
+  request: FastifyRequest<{ Params: salaParamsType }>,
+  reply: FastifyReply
+) {
+  const { salaId } = request.params;
+  const isSalaId = await getSalaId(salaId);
+
+  if (!isSalaId) throwNotFoundSalaIdError();
+  const turmas = await getTurmasBySala(salaId);
+  return reply.send({ data: turmas });
 }

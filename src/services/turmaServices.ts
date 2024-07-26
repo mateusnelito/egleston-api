@@ -46,3 +46,10 @@ export async function getTurmasByClasse(classeId: number) {
     select: { id: true, nome: true },
   });
 }
+
+export async function getTurmasBySala(salaId: number) {
+  return await prisma.turma.findMany({
+    where: { salaId },
+    select: { id: true, nome: true },
+  });
+}
