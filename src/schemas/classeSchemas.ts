@@ -97,5 +97,20 @@ export const getClasseTurmasSchema = {
   },
 };
 
+export const postTurmaToClasseSchema = {
+  summary: 'Adiciona uma turma a classe',
+  tags: ['classes'],
+  params: classeParamsSchema,
+  body: turmaBodySchema.omit({ id: true, classeId: true }),
+  response: {
+    // TODO: SEND A BETTER RESPONSE BODY
+    201: turmaBodySchema,
+    404: notFoundRequestSchema,
+  },
+};
+
 export type postClasseBodyType = z.infer<typeof postClasseSchema.body>;
 export type classeParamsType = z.infer<typeof classeParamsSchema>;
+export type postTurmaToClasseBodyType = z.infer<
+  typeof postTurmaToClasseSchema.body
+>;
