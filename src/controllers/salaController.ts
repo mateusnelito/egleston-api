@@ -1,5 +1,9 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { postSalaBodyType, salaParamsType } from '../schemas/salaSchemas';
+import {
+  postSalaBodyType,
+  postTurmaToSalaBodyType,
+  salaParamsType,
+} from '../schemas/salaSchemas';
 import {
   changeSala,
   getSala,
@@ -11,7 +15,12 @@ import {
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
-import { getTurmasBySala } from '../services/turmaServices';
+import {
+  getTurmaByUniqueCompostKey,
+  getTurmasBySala,
+  saveTurma,
+} from '../services/turmaServices';
+import { getClasseId } from '../services/classeServices';
 
 function throwNomeAlreadyExist() {
   throw new BadRequest({
@@ -89,4 +98,40 @@ export async function getSalaTurmasController(
   if (!isSalaId) throwNotFoundSalaIdError();
   const turmas = await getTurmasBySala(salaId);
   return reply.send({ data: turmas });
+}
+
+export async function createTurmaInSalaController(
+  request: FastifyRequest<{
+    Params: salaParamsType;
+    Body: postTurmaToSalaBodyType;
+  }>,
+  reply: FastifyReply
+) {
+  const { salaId } = request.params;
+  const { nome, classeId } = request.body;
+
+  const [isClasseId, isSalaId, isTurma] = await Promise.all([
+    await getClasseId(classeId),
+    await getSalaId(salaId),
+    await getTurmaByUniqueCompostKey(nome, salaId, salaId),
+  ]);
+
+  if (!isSalaId) throwNotFoundSalaIdError();
+  if (!isClasseId) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.NOT_FOUND,
+      message: 'Classe inválida',
+      errors: { classeId: 'ID da classe não existe.' },
+    });
+  }
+
+  if (isTurma) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+      message: 'Turma já registada na sala.',
+    });
+  }
+
+  const turma = await saveTurma({ nome, classeId: salaId, salaId });
+  return reply.status(HttpStatusCodes.CREATED).send(turma);
 }

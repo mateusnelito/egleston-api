@@ -119,7 +119,7 @@ export const getSalaTurmasSchema = {
 
 export const postTurmaToSalaSchema = {
   summary: 'Adiciona uma turma a uma sala',
-  tags: ['sala'],
+  tags: ['salas'],
   params: salaParamsSchema,
   body: turmaBodySchema.omit({ id: true, salaId: true }),
   response: {

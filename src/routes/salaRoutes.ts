@@ -5,10 +5,12 @@ import {
   getSalasSchema,
   getSalaTurmasSchema,
   postSalaSchema,
+  postTurmaToSalaSchema,
   putSalaSchema,
 } from '../schemas/salaSchemas';
 import {
   createSalaController,
+  createTurmaInSalaController,
   getSalaController,
   getSalasController,
   getSalaTurmasController,
@@ -46,5 +48,11 @@ export const salaRoutes: FastifyPluginAsync = async (
   server.withTypeProvider<ZodTypeProvider>().get('/:salaId/turmas', {
     schema: getSalaTurmasSchema,
     handler: getSalaTurmasController,
+  });
+
+  // POST Turma
+  server.withTypeProvider<ZodTypeProvider>().post('/:salaId/turmas', {
+    schema: postTurmaToSalaSchema,
+    handler: createTurmaInSalaController,
   });
 };
