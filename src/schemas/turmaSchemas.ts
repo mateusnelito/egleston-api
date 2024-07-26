@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
-const turmaBodySchema = z.object({
+export const turmaBodySchema = z.object({
   id: z
     .number({
       required_error: 'O id do turno é obrigatório.',
