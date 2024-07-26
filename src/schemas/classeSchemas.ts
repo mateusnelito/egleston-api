@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
+import { turmaBodySchema } from './turmaSchemas';
 export const classeBodySchema = z.object({
   id: z
     .number({
@@ -80,6 +81,18 @@ export const getClasseSchema = {
     200: classeBodySchema
       .omit({ anoLectivoId: true, cursoId: true })
       .extend({ anoLectivo: z.string(), curso: z.string() }),
+    404: notFoundRequestSchema,
+  },
+};
+
+export const getClasseTurmasSchema = {
+  summary: 'Retorna todas as turmas de uma classe',
+  tags: ['classes'],
+  params: classeParamsSchema,
+  response: {
+    200: z.object({
+      data: z.array(turmaBodySchema.omit({ salaId: true, classeId: true })),
+    }),
     404: notFoundRequestSchema,
   },
 };
