@@ -42,7 +42,7 @@ const salaBodySchema = z.object({
     .min(10, {
       message: 'A localização deve possuir no mínimo 10 caracteres.',
     })
-    .max(30, {
+    .max(255, {
       message: 'A localização deve possuir no máximo 255 caracteres.',
     }),
   // TODO: Add appropriated regex
