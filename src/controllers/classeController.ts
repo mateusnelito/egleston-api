@@ -1,5 +1,9 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { classeParamsType, postClasseBodyType } from '../schemas/classeSchemas';
+import {
+  classeParamsType,
+  postClasseBodyType,
+  postTurmaToClasseBodyType,
+} from '../schemas/classeSchemas';
 import { getAnoLectivoId } from '../services/anoLectivoServices';
 import { getCursoId } from '../services/cursoServices';
 import BadRequest from '../utils/BadRequest';
@@ -12,7 +16,12 @@ import {
   getClasse as getClasseService,
 } from '../services/classeServices';
 import NotFoundRequest from '../utils/NotFoundRequest';
-import { getTurmasByClasse } from '../services/turmaServices';
+import {
+  getTurmaByUniqueCompostKey,
+  getTurmasByClasse,
+  saveTurma,
+} from '../services/turmaServices';
+import { getSalaId } from '../services/salaServices';
 
 function throwNotFoundAnoLectivoIdError() {
   throw new BadRequest({
@@ -132,4 +141,41 @@ export async function getClasseTurmasController(
   if (!isClasseId) throwNotFoundClasseIdError();
   const turmas = await getTurmasByClasse(classeId);
   return reply.send({ data: turmas });
+}
+
+export async function createTurmaInClasseController(
+  request: FastifyRequest<{
+    Params: classeParamsType;
+    Body: postTurmaToClasseBodyType;
+  }>,
+  reply: FastifyReply
+) {
+  const { classeId } = request.params;
+  const { nome, salaId } = request.body;
+
+  const [isClasseId, isSalaId, isTurma] = await Promise.all([
+    await getClasseId(classeId),
+    await getSalaId(salaId),
+    await getTurmaByUniqueCompostKey(nome, classeId, salaId),
+  ]);
+
+  if (!isClasseId) throwNotFoundClasseIdError();
+
+  if (!isSalaId) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.NOT_FOUND,
+      message: 'Sala inválida',
+      errors: { salaId: 'ID da sala não existe.' },
+    });
+  }
+
+  if (isTurma) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+      message: 'Turma já registada na classe.',
+    });
+  }
+
+  const turma = await saveTurma({ nome, classeId, salaId });
+  return reply.status(HttpStatusCodes.CREATED).send(turma);
 }

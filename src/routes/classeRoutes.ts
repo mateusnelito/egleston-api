@@ -4,10 +4,12 @@ import {
   getClasseSchema,
   getClasseTurmasSchema,
   postClasseSchema,
+  postTurmaToClasseSchema,
   putClasseSchema,
 } from '../schemas/classeSchemas';
 import {
   createClasse,
+  createTurmaInClasseController,
   getClasse,
   getClasseTurmasController,
   updateClasse,
@@ -44,5 +46,11 @@ export const classeRoutes: FastifyPluginAsync = async (
   server.withTypeProvider<ZodTypeProvider>().get('/:classeId/turmas', {
     schema: getClasseTurmasSchema,
     handler: getClasseTurmasController,
+  });
+
+  // POST Turma
+  server.withTypeProvider<ZodTypeProvider>().post('/:classeId/turmas', {
+    schema: postTurmaToClasseSchema,
+    handler: createTurmaInClasseController,
   });
 };
