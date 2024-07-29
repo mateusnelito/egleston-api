@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
+import {
+  complexBadRequestSchema,
+  notFoundRequestSchema,
+  simpleBadRequestSchema,
+} from './globalSchema';
 import { turmaBodySchema } from './turmaSchemas';
 export const classeBodySchema = z.object({
   id: z
@@ -109,8 +113,48 @@ export const postTurmaToClasseSchema = {
   },
 };
 
+const classeTurnoSchema = {
+  tags: ['classes'],
+  params: classeParamsSchema,
+  body: z.object({
+    turnos: z
+      .array(
+        z
+          .number({
+            message: 'O array de turnos deve conter apenas números.',
+          })
+          .int({
+            message: 'O array de turnos deve conter apenas números inteiros.',
+          })
+          .positive({
+            message:
+              'O array de turnos deve conter apenas números inteiros positivos.',
+          }),
+        {
+          invalid_type_error:
+            'Os turnos devem ser  enviadas no formato de array.',
+        }
+      )
+      .nonempty({ message: 'O array de turnos não deve estar vazio.' }),
+  }),
+  response: {
+    // 200: classeBodySchema.omit({ id: true }).extend({
+    //   turnos: z.array(z.number().int().positive()).optional(),
+    // }),
+    400: complexBadRequestSchema,
+    404: complexBadRequestSchema.or(notFoundRequestSchema),
+  },
+};
+
+export const postClasseTurnoSchema = {
+  summary: 'Associa Múltiplos turnos à uma classe',
+  classeTurnosAssociationSchema: classeTurnoSchema,
+};
+
 export type postClasseBodyType = z.infer<typeof postClasseSchema.body>;
 export type classeParamsType = z.infer<typeof classeParamsSchema>;
 export type postTurmaToClasseBodyType = z.infer<
   typeof postTurmaToClasseSchema.body
 >;
+
+export type classeTurnoBodyType = z.infer<typeof classeTurnoSchema.body>;
