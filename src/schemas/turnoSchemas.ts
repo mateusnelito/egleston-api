@@ -94,7 +94,7 @@ export const getTurnosSchema = {
   },
 };
 
-const postMultiplesClassesInTurnoSchema = {
+export const postMultiplesClassesInTurnoSchema = {
   tags: ['turnos'],
   summary: 'Associa um turno à várias classes.',
   params: turnoParamsSchema,
