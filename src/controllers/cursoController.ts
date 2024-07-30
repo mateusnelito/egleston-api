@@ -63,21 +63,12 @@ export async function createCurso(
 
       // TODO: Finish the verification before send the errors, to send all invalids disciplinas
       if (!isDisciplina) {
-        // FIXME: Send the errors in simple format:
-        // errors: {
-        //   disciplinas: {
-        //     [i]: 'disciplinaId não existe.'
-        //   },
-        // },
-
         throw new BadRequest({
           statusCode: HttpStatusCodes.NOT_FOUND,
           message: 'Disciplina inválida.',
           errors: {
             disciplinas: {
-              [i]: {
-                disciplinaId: ['disciplinaId não existe.'],
-              },
+              [i]: 'disciplinaId não existe.',
             },
           },
         });
@@ -157,42 +148,24 @@ export async function associateCursoWithDisciplinas(
 
     // TODO: Finish the verification before send the errors, to send all invalids disciplinas
     if (!isDisciplinaId) {
-      // FIXME: Send the errors in simple format:
-      // errors: {
-      //   disciplinas: {
-      //     [i]: 'disciplinaId não existe.'
-      //   },
-      // },
-
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Disciplina inválida.',
         errors: {
           disciplinas: {
-            [i]: {
-              disciplinaId: ['disciplinaId não existe.'],
-            },
+            [i]: 'disciplinaId não existe.',
           },
         },
       });
     }
 
     if (isCursoDisciplinaAssociation) {
-      // FIXME: Send the errors in simple format:
-      // errors: {
-      //   disciplinas: {
-      //     [i]: 'disciplinaId não existe.'
-      //   },
-      // },
-
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Disciplina inválida.',
         errors: {
           disciplinas: {
-            [i]: {
-              disciplinaId: ['disciplinaId Já está relacionada com o curso.'],
-            },
+            [i]: 'disciplinaId Já está relacionada com o curso.',
           },
         },
       });
@@ -204,7 +177,7 @@ export async function associateCursoWithDisciplinas(
     disciplinas
   );
 
-  // FIXME: Send an appropriate response
+  // TODO: Send an appropriate response
   return reply.send(cursoDisciplinas);
 }
 
@@ -252,21 +225,12 @@ export async function deleteCursoWithDisciplinasAssociation(
     );
 
     if (!isCursoDisciplinaAssociation) {
-      // FIXME: Send the errors in simple format:
-      // errors: {
-      //   disciplinas: {
-      //     [i]: 'disciplinaId não existe.'
-      //   },
-      // },
-
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Disciplina inválida.',
         errors: {
           disciplinas: {
-            [i]: {
-              disciplinaId: ['Não existe relação.'],
-            },
+            [i]: 'Não existe relação.',
           },
         },
       });
@@ -278,7 +242,7 @@ export async function deleteCursoWithDisciplinasAssociation(
     disciplinas
   );
 
-  // FIXME: Send an appropriate response
+  // TODO: Send an appropriate response
   return reply.send(cursoDisciplinas);
 }
 

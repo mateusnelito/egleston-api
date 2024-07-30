@@ -6,6 +6,13 @@ import {
   professorDisciplinasAssociationBodyType,
   uniqueProfessorResourceParamsType,
 } from '../schemas/professorSchemas';
+import { getDisciplinaId } from '../services/disciplinaServices';
+import {
+  associateDisciplinasWithProfessor,
+  checkDisciplinaProfessorAssociation,
+  deleteDisciplinaProfessor,
+  deleteDisciplinasWithProfessorAssociation,
+} from '../services/disciplinasProfessoresServices';
 import { getEmail, getTelefone } from '../services/professorContactoServices';
 import {
   changeProfessor,
@@ -18,13 +25,6 @@ import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
 import { formatDate } from '../utils/utils';
-import { getDisciplinaId } from '../services/disciplinaServices';
-import {
-  associateDisciplinasWithProfessor,
-  checkDisciplinaProfessorAssociation,
-  deleteDisciplinaProfessor,
-  deleteDisciplinasWithProfessorAssociation,
-} from '../services/disciplinasProfessoresServices';
 
 function throwTelefoneBadRequest() {
   throw new BadRequest({
@@ -70,21 +70,12 @@ export async function createProfessor(
 
       // TODO: Finish the verification before send the errors, to send all invalids disciplinas
       if (!isDisciplina) {
-        // FIXME: Send the errors in simple format:
-        // errors: {
-        //   disciplinas: {
-        //     [i]: 'disciplinaId não existe.'
-        //   },
-        // },
-
         throw new BadRequest({
           statusCode: HttpStatusCodes.NOT_FOUND,
           message: 'Disciplina inválida.',
           errors: {
             disciplinas: {
-              [i]: {
-                disciplinaId: ['disciplinaId não existe.'],
-              },
+              [i]: 'disciplinaId não existe.',
             },
           },
         });
@@ -228,7 +219,7 @@ export async function associateProfessorWithDisciplinas(
     disciplinas
   );
 
-  // FIXME: Send an appropriate response
+  // TODO: Send an appropriate response
   return reply.send(cursoDisciplinas);
 }
 
@@ -294,6 +285,6 @@ export async function deleteProfessorWithDisciplinasAssociation(
     disciplinas
   );
 
-  // FIXME: Send an appropriate response
+  // TODO: Send an appropriate response
   return reply.send(professorDisciplinas);
 }

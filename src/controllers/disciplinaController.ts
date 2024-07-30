@@ -129,42 +129,24 @@ export async function associateDisciplinaWithCursos(
 
     // TODO: Finish the verification before send the errors, to send all invalids cursos
     if (!isCurso) {
-      // FIXME: Send the errors in simple format:
-      // errors: {
-      //   cursos: {
-      //     [i]: 'cursoId não existe.'
-      //   },
-      // },
-
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Curso inválido.',
         errors: {
           cursos: {
-            [i]: {
-              cursoId: ['cursoId não existe.'],
-            },
+            [i]: 'cursoId não existe.',
           },
         },
       });
     }
 
     if (isCursoDisciplinaAssociation) {
-      // FIXME: Send the errors in simple format:
-      // errors: {
-      //   cursos: {
-      //     [i]: 'cursoId não existe.'
-      //   },
-      // },
-
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Curso inválido.',
         errors: {
           cursos: {
-            [i]: {
-              cursoId: ['cursoId Já está relacionada com a disciplina.'],
-            },
+            [i]: 'cursoId Já está relacionada com a disciplina.',
           },
         },
       });
@@ -176,6 +158,6 @@ export async function associateDisciplinaWithCursos(
     cursos
   );
 
-  // FIXME: Send an appropriate response
+  // TODO: Send an appropriate response
   return reply.status(HttpStatusCodes.CREATED).send(cursoDisciplinas);
 }

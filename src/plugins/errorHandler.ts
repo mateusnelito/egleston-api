@@ -38,7 +38,7 @@ async function errorHandlerPlugin(server: FastifyInstance) {
     return reply.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send({
       statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
       message: 'Internal server error!',
-      // FIXME: Remove the line after dev mode finish
+      // TODO: Remove the line above after dev mode finish
       errors: err,
     });
   });
