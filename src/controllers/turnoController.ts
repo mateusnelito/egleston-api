@@ -1,5 +1,9 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { turnoBodyType, turnoParamsType } from '../schemas/turnoSchemas';
+import {
+  postMultiplesClassesInTurnoBodyType,
+  turnoBodyType,
+  turnoParamsType,
+} from '../schemas/turnoSchemas';
 import {
   changeTurno,
   getTurno,
@@ -16,6 +20,11 @@ import {
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
 } from '../utils/utils';
+import {
+  createMultiplesClasseTurnoBasedOnTurnoId,
+  getClasseTurnoById,
+} from '../services/classeTurnoServices';
+import { getClasseId } from '../services/classeServices';
 
 function throwTurnoNomeAlreadyExist() {
   throw new BadRequest({
@@ -159,4 +168,62 @@ export async function getTurnosController(
 ) {
   const data = await getTurnos();
   return reply.send({ data });
+}
+
+export async function createMultiplesClasseTurnoController(
+  request: FastifyRequest<{
+    Params: turnoParamsType;
+    Body: postMultiplesClassesInTurnoBodyType;
+  }>,
+  reply: FastifyReply
+) {
+  const { turnoId } = request.params;
+  const { classes } = request.body;
+
+  const isTurnoId = await getTurnoId(turnoId);
+
+  if (!isTurnoId) throwNotFoundTurno();
+
+  // FIXME: VERIFY IF IN ARRAY EXIST DUPLICATED ENTRY
+  for (let i = 0; i < classes.length; i++) {
+    const classeId = classes[i];
+
+    const [isClasseId, isClasseTurnoId] = await Promise.all([
+      await getClasseId(classeId),
+      await getClasseTurnoById(classeId, turnoId),
+    ]);
+
+    // TODO: Finish the verification before send the errors, to send all invalids turnos
+    if (!isClasseId) {
+      throw new BadRequest({
+        statusCode: HttpStatusCodes.NOT_FOUND,
+        message: 'Classe inválida.',
+        errors: {
+          classes: {
+            [i]: 'classeId não existe.',
+          },
+        },
+      });
+    }
+
+    if (isClasseTurnoId) {
+      throw new BadRequest({
+        statusCode: HttpStatusCodes.NOT_FOUND,
+        message: 'Classe inválida.',
+        errors: {
+          turnos: {
+            [i]: 'classe Já está relacionada com o turno.',
+          },
+        },
+      });
+    }
+  }
+
+  const classeTurnos = await createMultiplesClasseTurnoBasedOnTurnoId(
+    turnoId,
+    classes
+  );
+
+  // TODO: SEND A BETTER RESPONSE
+  return reply.status(HttpStatusCodes.CREATED).send(classeTurnos);
 }
