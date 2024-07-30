@@ -2,6 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   classeParamsType,
   classeTurnoBodyType,
+  deleteClasseTurnoParamsType,
   postClasseBodyType,
   postTurmaToClasseBodyType,
 } from '../schemas/classeSchemas';
@@ -26,6 +27,7 @@ import { getSalaId } from '../services/salaServices';
 import { getTurnoId } from '../services/turnoServices';
 import {
   createMultiplesClasseTurnoBasedOnClasseId,
+  deleteClasseTurno,
   deleteMultiplesClasseTurnoBasedOnClasseId,
   getClasseTurnoById,
 } from '../services/classeTurnoServices';
@@ -282,4 +284,24 @@ export async function deleteMultiplesClasseTurnoController(
 
   // TODO: SEND A BETTER RESPONSE
   return reply.status(HttpStatusCodes.CREATED).send(classeTurnos);
+}
+
+export async function deleteClasseTurnoController(
+  request: FastifyRequest<{ Params: deleteClasseTurnoParamsType }>,
+  reply: FastifyReply
+) {
+  const { classeId, turnoId } = request.params;
+  const isClasseTurnoId = await getClasseTurnoById(classeId, turnoId);
+
+  if (!isClasseTurnoId) {
+    throw new NotFoundRequest({
+      statusCode: HttpStatusCodes.NOT_FOUND,
+      message: 'Associação não existe.',
+    });
+  }
+
+  const classeTurno = await deleteClasseTurno(classeId, turnoId);
+
+  // TODO: SEND A BETTER RESPONSE
+  return reply.send(classeTurno);
 }
