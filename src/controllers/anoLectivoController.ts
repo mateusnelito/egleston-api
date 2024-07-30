@@ -71,7 +71,7 @@ export async function createAnoLectivo(
   if (isBeginDateAfterEndDate(inicio, termino)) throwInicioBadRequest();
 
   // FIXME: O dia de inicio do mês não começa em 01 caso for dado com 01.
-  // FIXME: e.g: 2024-09-01 -> 2024-08-31
+  // e.g: 2024-09-01 -> 2024-08-31
   const yearMonthLength = calculateTimeBetweenDates(inicio, termino, 'M');
   if (yearMonthLength !== YEAR_LENGTH) throwYearLengthBadRequest();
 
