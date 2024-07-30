@@ -146,9 +146,14 @@ const classeTurnoSchema = {
   },
 };
 
-export const postClasseTurnoSchema = {
+export const postMultiplesClasseTurnoSchema = {
   ...classeTurnoSchema,
   summary: 'Associa Múltiplos turnos à uma classe',
+};
+
+export const deleteMultiplesClasseTurnoSchema = {
+  ...classeTurnoSchema,
+  summary: 'Deleta Múltiplos turnos relacionados à uma classe',
 };
 
 export type postClasseBodyType = z.infer<typeof postClasseSchema.body>;
