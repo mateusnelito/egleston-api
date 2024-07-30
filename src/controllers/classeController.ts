@@ -26,6 +26,7 @@ import { getSalaId } from '../services/salaServices';
 import { getTurnoId } from '../services/turnoServices';
 import {
   createMultiplesClasseTurnoBasedOnClasseId,
+  deleteMultiplesClasseTurnoBasedOnClasseId,
   getClasseTurnoById,
 } from '../services/classeTurnoServices';
 
@@ -239,5 +240,46 @@ export async function createClasseTurnoController(
   );
 
   // TODO: SEND A BETTER RESPONSE
-  return reply.status(HttpStatusCodes.CREATED).send(turnos);
+  return reply.status(HttpStatusCodes.CREATED).send(classeTurnos);
+}
+
+export async function deleteMultiplesClasseTurnoController(
+  request: FastifyRequest<{
+    Params: classeParamsType;
+    Body: classeTurnoBodyType;
+  }>,
+  reply: FastifyReply
+) {
+  const { classeId } = request.params;
+  const { turnos } = request.body;
+
+  const isClasseId = await getClasseId(classeId);
+
+  if (!isClasseId) throwNotFoundClasseIdError();
+
+  for (let i = 0; i < turnos.length; i++) {
+    const turnoId = turnos[i];
+    const isClasseTurnoId = await getClasseTurnoById(classeId, turnoId);
+
+    if (!isClasseTurnoId) {
+      throw new BadRequest({
+        statusCode: HttpStatusCodes.NOT_FOUND,
+        message: 'Turno inválido.',
+        errors: {
+          turnos: {
+            // TODO: SEND A APPROPRIATED MESSAGE
+            [i]: 'Não existe relação.',
+          },
+        },
+      });
+    }
+  }
+
+  const classeTurnos = await deleteMultiplesClasseTurnoBasedOnClasseId(
+    classeId,
+    turnos
+  );
+
+  // TODO: SEND A BETTER RESPONSE
+  return reply.status(HttpStatusCodes.CREATED).send(classeTurnos);
 }

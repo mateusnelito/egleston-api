@@ -4,14 +4,16 @@ import {
   getClasseSchema,
   getClasseTurmasSchema,
   postClasseSchema,
-  postClasseTurnoSchema,
+  deleteMultiplesClasseTurnoSchema,
   postTurmaToClasseSchema,
   putClasseSchema,
+  postMultiplesClasseTurnoSchema,
 } from '../schemas/classeSchemas';
 import {
   createClasse,
   createClasseTurnoController,
   createTurmaInClasseController,
+  deleteMultiplesClasseTurnoController,
   getClasse,
   getClasseTurmasController,
   updateClasse,
@@ -56,9 +58,15 @@ export const classeRoutes: FastifyPluginAsync = async (
     handler: createTurmaInClasseController,
   });
 
-  // POST ClasseTurno
+  // POST Multiples ClasseTurnos
   server.withTypeProvider<ZodTypeProvider>().post('/:classeId/turnos', {
-    schema: postClasseTurnoSchema,
+    schema: postMultiplesClasseTurnoSchema,
     handler: createClasseTurnoController,
+  });
+
+  // DELETE Multiples ClasseTurnos
+  server.withTypeProvider<ZodTypeProvider>().delete('/:classeId/turnos', {
+    schema: deleteMultiplesClasseTurnoSchema,
+    handler: deleteMultiplesClasseTurnoController,
   });
 };
