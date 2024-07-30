@@ -99,7 +99,8 @@ export async function changeAluno(id: number, data: updateAlunoBodyType) {
       nomeCompleto: data.nomeCompleto,
       nomeCompletoPai: data.nomeCompletoPai,
       nomeCompletoMae: data.nomeCompletoMae,
-      dataNascimento: data.dataNascimento,
+      // FIXME: REMOVE THIS CODE TO APPROPRIATED PLACE
+      dataNascimento: new Date(data.dataNascimento),
       genero: data.genero,
       Endereco: {
         update: {
