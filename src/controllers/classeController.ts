@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   classeParamsType,
+  classeTurnoBodyType,
   postClasseBodyType,
   postTurmaToClasseBodyType,
 } from '../schemas/classeSchemas';
@@ -22,6 +23,11 @@ import {
   saveTurma,
 } from '../services/turmaServices';
 import { getSalaId } from '../services/salaServices';
+import { getTurnoId } from '../services/turnoServices';
+import {
+  createMultiplesClasseTurnoBasedOnClasseId,
+  getClasseTurnoById,
+} from '../services/classeTurnoServices';
 
 function throwNotFoundAnoLectivoIdError() {
   throw new BadRequest({
@@ -178,4 +184,60 @@ export async function createTurmaInClasseController(
 
   const turma = await saveTurma({ nome, classeId, salaId });
   return reply.status(HttpStatusCodes.CREATED).send(turma);
+}
+
+export async function createClasseTurnoController(
+  request: FastifyRequest<{
+    Params: classeParamsType;
+    Body: classeTurnoBodyType;
+  }>,
+  reply: FastifyReply
+) {
+  const { classeId } = request.params;
+  const { turnos } = request.body;
+
+  const isClasseId = await getClasseId(classeId);
+
+  if (!isClasseId) throwNotFoundClasseIdError();
+
+  for (let i = 0; i < turnos.length; i++) {
+    const turnoId = turnos[i];
+    const [isTurnoId, isClasseTurnoId] = await Promise.all([
+      await getTurnoId(turnoId),
+      await getClasseTurnoById(classeId, turnoId),
+    ]);
+
+    // TODO: Finish the verification before send the errors, to send all invalids turnos
+    if (!isTurnoId) {
+      throw new BadRequest({
+        statusCode: HttpStatusCodes.NOT_FOUND,
+        message: 'Turno inválido.',
+        errors: {
+          turnos: {
+            [i]: 'turnoId não existe.',
+          },
+        },
+      });
+    }
+
+    if (isClasseTurnoId) {
+      throw new BadRequest({
+        statusCode: HttpStatusCodes.NOT_FOUND,
+        message: 'Turno inválido.',
+        errors: {
+          turnos: {
+            [i]: 'turnoId Já está relacionada com a classe.',
+          },
+        },
+      });
+    }
+  }
+
+  const classeTurnos = await createMultiplesClasseTurnoBasedOnClasseId(
+    classeId,
+    turnos
+  );
+
+  // TODO: SEND A BETTER RESPONSE
+  return reply.status(HttpStatusCodes.CREATED).send(turnos);
 }
