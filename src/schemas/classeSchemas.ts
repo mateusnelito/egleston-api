@@ -147,8 +147,8 @@ const classeTurnoSchema = {
 };
 
 export const postClasseTurnoSchema = {
+  ...classeTurnoSchema,
   summary: 'Associa Múltiplos turnos à uma classe',
-  classeTurnosAssociationSchema: classeTurnoSchema,
 };
 
 export type postClasseBodyType = z.infer<typeof postClasseSchema.body>;
