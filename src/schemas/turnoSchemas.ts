@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
+import {
+  complexBadRequestSchema,
+  notFoundRequestSchema,
+  simpleBadRequestSchema,
+} from './globalSchema';
 const turnoBodySchema = z.object({
   id: z
     .number({
@@ -90,5 +94,39 @@ export const getTurnosSchema = {
   },
 };
 
+const postMultiplesClassesInTurnoSchema = {
+  tags: ['turnos'],
+  summary: 'Associa um turno à várias classes.',
+  params: turnoParamsSchema,
+  body: z.object({
+    classes: z
+      .array(
+        z
+          .number({
+            message: 'O array de classes deve conter apenas números.',
+          })
+          .int({
+            message: 'O array de classes deve conter apenas números inteiros.',
+          })
+          .positive({
+            message:
+              'O array de classes deve conter apenas números inteiros positivos.',
+          }),
+        {
+          invalid_type_error:
+            'Os classes devem ser  enviadas no formato de array.',
+        }
+      )
+      .nonempty({ message: 'O array de classes não deve estar vazio.' }),
+  }),
+  response: {
+    400: complexBadRequestSchema,
+    404: complexBadRequestSchema.or(notFoundRequestSchema),
+  },
+};
+
 export type turnoBodyType = z.infer<typeof postTurnoSchema.body>;
 export type turnoParamsType = z.infer<typeof turnoParamsSchema>;
+export type postMultiplesClassesInTurnoBodyType = z.infer<
+  typeof postMultiplesClassesInTurnoSchema.body
+>;
