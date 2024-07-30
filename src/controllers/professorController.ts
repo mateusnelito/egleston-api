@@ -199,44 +199,24 @@ export async function associateProfessorWithDisciplinas(
 
     // TODO: Finish the verification before send the errors, to send all invalids disciplinas
     if (!isDisciplina) {
-      // FIXME: Send the errors in simple format:
-      // errors: {
-      //   disciplinas: {
-      //     [i]: 'disciplinaId não existe.'
-      //   },
-      // },
-
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Disciplina inválida.',
         errors: {
           disciplinas: {
-            [i]: {
-              disciplinaId: ['disciplinaId não existe.'],
-            },
+            [i]: 'disciplinaId não existe.',
           },
         },
       });
     }
 
     if (isDisciplinaProfessorAssociation) {
-      // FIXME: Send the errors in simple format:
-      // errors: {
-      //   disciplinas: {
-      //     [i]: 'disciplinaId não existe.'
-      //   },
-      // },
-
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Disciplina inválida.',
         errors: {
           disciplinas: {
-            [i]: {
-              disciplinaId: [
-                'disciplinaId Já está relacionada com o professor.',
-              ],
-            },
+            [i]: 'disciplinaId Já está relacionada com o professor.',
           },
         },
       });
