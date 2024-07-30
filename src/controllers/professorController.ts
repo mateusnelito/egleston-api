@@ -276,21 +276,13 @@ export async function deleteProfessorWithDisciplinasAssociation(
       await checkDisciplinaProfessorAssociation(professorId, disciplinaId);
 
     if (!isProfessorDisciplinaAssociation) {
-      // FIXME: Send the errors in simple format:
-      // errors: {
-      //   disciplinas: {
-      //     [i]: 'disciplinaId não existe.'
-      //   },
-      // },
-
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Disciplina inválida.',
         errors: {
           disciplinas: {
-            [i]: {
-              disciplinaId: ['Não existe relação.'],
-            },
+            // TODO: SEND A APPROPRIATED MESSAGE
+            [i]: 'Não existe relação.',
           },
         },
       });
