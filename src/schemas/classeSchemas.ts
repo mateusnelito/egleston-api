@@ -156,6 +156,23 @@ export const deleteMultiplesClasseTurnoSchema = {
   summary: 'Deleta Múltiplos turnos relacionados à uma classe',
 };
 
+export const deleteClasseTurnoSchema = {
+  summary: 'Remove associação entre classe e turno',
+  tags: ['classes'],
+  params: classeParamsSchema.extend({
+    turnoId: z.coerce
+      .number({
+        required_error: 'O id de turno é obrigatório.',
+        invalid_type_error: 'O id de turno deve ser número.',
+      })
+      .int({ message: 'O id de turno deve ser inteiro.' })
+      .positive({ message: 'O id de turno deve ser positivo.' }),
+  }),
+  response: {
+    404: notFoundRequestSchema,
+  },
+};
+
 export type postClasseBodyType = z.infer<typeof postClasseSchema.body>;
 export type classeParamsType = z.infer<typeof classeParamsSchema>;
 export type postTurmaToClasseBodyType = z.infer<
@@ -163,3 +180,6 @@ export type postTurmaToClasseBodyType = z.infer<
 >;
 
 export type classeTurnoBodyType = z.infer<typeof classeTurnoSchema.body>;
+export type deleteClasseTurnoParamsType = z.infer<
+  typeof deleteClasseTurnoSchema.params
+>;
