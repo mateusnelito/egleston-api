@@ -29,3 +29,9 @@ export async function deleteMultiplesClasseTurnoBasedOnClasseId(
 
   return classeTurnos;
 }
+
+export async function deleteClasseTurno(classeId: number, turnoId: number) {
+  return await prisma.classeTurno.delete({
+    where: { classeId_turnoId: { classeId, turnoId } },
+  });
+}
