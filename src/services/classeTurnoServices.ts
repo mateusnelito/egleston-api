@@ -35,3 +35,14 @@ export async function deleteClasseTurno(classeId: number, turnoId: number) {
     where: { classeId_turnoId: { classeId, turnoId } },
   });
 }
+
+export async function createMultiplesClasseTurnoBasedOnTurnoId(
+  turnoId: number,
+  classes: Array<number>
+) {
+  const classeTurnos = classes.map(async (classeId) => {
+    return await prisma.classeTurno.create({ data: { classeId, turnoId } });
+  });
+
+  return classeTurnos;
+}
