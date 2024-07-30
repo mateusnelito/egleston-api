@@ -61,7 +61,6 @@ function throwNotFoundAlunoIdError() {
   });
 }
 
-// TODO: Confirm if the minimum age is 14 years old
 const MINIMUM_AGE = 14;
 
 export async function createAluno(

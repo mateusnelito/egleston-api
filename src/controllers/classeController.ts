@@ -76,8 +76,7 @@ export async function createClasse(
   );
 
   if (isClasse) {
-    // TODO: Move this code to BadRequest class
-    return reply.status(HttpStatusCodes.BAD_REQUEST).send({
+    throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
       message: 'Classe já existe.',
     });
@@ -112,8 +111,7 @@ export async function updateClasse(
   const classe = await getClasseByCompostUniqueKey(nome, anoLectivoId, cursoId);
 
   if (classe && classe.id !== classeId) {
-    // TODO: Move this code to BadRequest class
-    return reply.status(HttpStatusCodes.BAD_REQUEST).send({
+    throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
       message: 'Classe já existe.',
     });

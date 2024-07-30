@@ -179,7 +179,6 @@ model DisciplinasProfessores {
 
 model AnoLectivo {
   id      Int      @id @default(autoincrement()) @db.SmallInt
-  // TODO: Confirm the correct type of this field
   nome    String   @unique @db.VarChar(9)
   inicio  DateTime @db.Date
   termino DateTime @db.Date

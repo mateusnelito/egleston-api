@@ -336,8 +336,7 @@ export async function createClasseToCurso(
   );
 
   if (isClasse) {
-    // TODO: Move this code to BadRequest class
-    return reply.status(HttpStatusCodes.BAD_REQUEST).send({
+    throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
       message: 'Classe já registada no curso.',
     });

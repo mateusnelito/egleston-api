@@ -48,13 +48,8 @@ export const postClasseSchema = {
   body: classeBodySchema.omit({ id: true }),
   response: {
     201: classeBodySchema,
-    // TODO: Move this schema to globalSchema and associate with BadRequest class
-    400: simpleBadRequestSchema.or(
-      z.object({
-        statusCode: z.number().default(400),
-        message: z.string(),
-      })
-    ),
+
+    400: simpleBadRequestSchema,
     404: simpleBadRequestSchema,
   },
 };
@@ -66,13 +61,7 @@ export const putClasseSchema = {
   body: classeBodySchema.omit({ id: true }),
   response: {
     200: classeBodySchema.omit({ id: true }),
-    // TODO: Move this schema to globalSchema and associate with BadRequest class
-    400: simpleBadRequestSchema.or(
-      z.object({
-        statusCode: z.number().default(400),
-        message: z.string(),
-      })
-    ),
+    400: simpleBadRequestSchema,
     404: simpleBadRequestSchema.or(notFoundRequestSchema),
   },
 };

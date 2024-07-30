@@ -45,10 +45,6 @@ const salaBodySchema = z.object({
     .max(255, {
       message: 'A localização deve possuir no máximo 255 caracteres.',
     }),
-  // TODO: Add appropriated regex
-  // .regex(//, {
-  //   message: 'o nome da sala deve seguir o padrão 9999-9999.',
-  // }),
 });
 
 const salaParamsSchema = z.object({
