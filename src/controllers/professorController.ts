@@ -24,7 +24,19 @@ import {
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
-import { formatDate } from '../utils/utils';
+import {
+  calculateTimeBetweenDates,
+  formatDate,
+  isBeginDateAfterEndDate,
+} from '../utils/utils';
+
+function throwInvalidDataNascimentoError(message: string) {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Data de nascimento inválida.',
+    errors: { dataNascimento: [message] },
+  });
+}
 
 function throwTelefoneBadRequest() {
   throw new BadRequest({
@@ -49,11 +61,24 @@ function throwNotFoundRequest() {
   });
 }
 
+const MAXIMUM_AGE = 80;
+
 export async function createProfessor(
   request: FastifyRequest<{ Body: professorBodyType }>,
   reply: FastifyReply
 ) {
-  const { telefone, email, disciplinas } = request.body;
+  const { telefone, email, disciplinas, dataNascimento } = request.body;
+
+  // Checking dataNascimento integrity
+  if (isBeginDateAfterEndDate(dataNascimento, new Date()))
+    throwInvalidDataNascimentoError(
+      'Data de nascimento não pôde estar no futuro.'
+    );
+
+  const age = calculateTimeBetweenDates(dataNascimento, new Date(), 'y');
+  if (age > MAXIMUM_AGE) {
+    throwInvalidDataNascimentoError(`Idade maior que ${MAXIMUM_AGE} anos.`);
+  }
 
   const isTelefone = await getTelefone(telefone);
   if (isTelefone) throwTelefoneBadRequest();
@@ -95,7 +120,18 @@ export async function updateProfessor(
   reply: FastifyReply
 ) {
   const { professorId } = request.params;
-  const { telefone, email } = request.body;
+  const { telefone, email, dataNascimento } = request.body;
+
+  // Checking dataNascimento integrity
+  if (isBeginDateAfterEndDate(dataNascimento, new Date()))
+    throwInvalidDataNascimentoError(
+      'Data de nascimento não pôde estar no futuro.'
+    );
+
+  const age = calculateTimeBetweenDates(dataNascimento, new Date(), 'y');
+  if (age > MAXIMUM_AGE) {
+    throwInvalidDataNascimentoError(`Idade maior que ${MAXIMUM_AGE} anos.`);
+  }
 
   const [isProfessor, isTelefone] = await Promise.all([
     await getProfessorId(professorId),

@@ -35,15 +35,7 @@ const professorBodySchema = z
       .date(
         'A data de nascimento deve ser uma data válida no formato AAAA-MM-DD.'
       )
-      .transform((date) => new Date(date))
-      // FIXME: Change the bases date to a dynamic logic
-      .refine((date) => date >= new Date('1900-01-01'), {
-        message:
-          'A data de nascimento não pode ser anterior a 1 de janeiro de 1900.',
-      })
-      .refine((date) => date <= new Date(Date.now()), {
-        message: 'A data de nascimento não pode estar no futuro.',
-      }),
+      .transform((date) => new Date(date)),
   })
   .merge(contactoSchema)
   .extend({
