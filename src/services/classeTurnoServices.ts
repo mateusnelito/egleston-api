@@ -5,3 +5,14 @@ export async function getClasseTurnoById(classeId: number, turnoId: number) {
     where: { classeId_turnoId: { classeId, turnoId } },
   });
 }
+
+export async function createMultiplesClasseTurnoBasedOnClasseId(
+  classeId: number,
+  turnos: Array<number>
+) {
+  const classeTurnos = turnos.map(async (turnoId) => {
+    return await prisma.classeTurno.create({ data: { classeId, turnoId } });
+  });
+
+  return classeTurnos;
+}
