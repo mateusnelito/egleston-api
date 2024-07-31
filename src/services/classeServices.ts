@@ -14,7 +14,35 @@ export async function getClasseByCompostUniqueKey(
   });
 }
 
+// TODO: REPLACE WITH Aluno TYPE *Tirado do Prisma
+interface classeType {
+  nome: '10ª' | '11ª' | '12ª' | '13ª';
+  anoLectivoId: number;
+  cursoId: number;
+}
+
 export async function saveClasse(data: postClasseBodyType) {
+  const { turnos } = data;
+
+  if (turnos) {
+    const turnosArrayObjects = turnos.map((turno) => {
+      return { turnoId: turno };
+    });
+
+    return await prisma.classe.create({
+      data: {
+        nome: data.nome,
+        anoLectivoId: data.anoLectivoId,
+        cursoId: data.cursoId,
+        ClasseTurno: {
+          createMany: {
+            data: turnosArrayObjects,
+          },
+        },
+      },
+    });
+  }
+
   return await prisma.classe.create({ data });
 }
 
