@@ -1,8 +1,8 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
-  CreateAlunoBodyType,
+  storeAlunoBodyType,
   getAlunosQueryStringType,
-  uniqueAlunoResourceParamsType,
+  alunoParamsSchema,
   updateAlunoBodyType,
 } from '../schemas/alunoSchema';
 import { getEmail, getTelefone } from '../services/alunoContactoServices';
@@ -63,7 +63,7 @@ function throwNotFoundAlunoIdError() {
 const MINIMUM_AGE = 14;
 
 export async function createAluno(
-  request: FastifyRequest<{ Body: CreateAlunoBodyType }>,
+  request: FastifyRequest<{ Body: storeAlunoBodyType }>,
   reply: FastifyReply
 ) {
   const { body: data } = request;
@@ -179,7 +179,7 @@ export async function createAluno(
 
 export async function updateAluno(
   request: FastifyRequest<{
-    Params: uniqueAlunoResourceParamsType;
+    Params: alunoParamsSchema;
     Body: updateAlunoBodyType;
   }>,
   reply: FastifyReply
@@ -253,7 +253,7 @@ export async function getAlunos(
 
 export async function getAluno(
   request: FastifyRequest<{
-    Params: uniqueAlunoResourceParamsType;
+    Params: alunoParamsSchema;
   }>,
   reply: FastifyReply
 ) {
@@ -280,7 +280,7 @@ export async function getAluno(
 
 export async function getResponsaveis(
   request: FastifyRequest<{
-    Params: uniqueAlunoResourceParamsType;
+    Params: alunoParamsSchema;
   }>,
   reply: FastifyReply
 ) {

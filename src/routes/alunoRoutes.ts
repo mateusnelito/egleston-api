@@ -8,17 +8,17 @@ import {
   updateAluno,
 } from '../controllers/alunoController';
 import {
-  postAlunoSchema,
+  storeAlunoSchema,
   getAlunoSchema,
   getAlunosSchema,
-  getResponsaveisSchema,
+  getAlunoResponsaveisSchema,
   updateAlunoSchema,
 } from '../schemas/alunoSchema';
 
 const alunosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
   // POST
   server.withTypeProvider<ZodTypeProvider>().post('/', {
-    schema: postAlunoSchema,
+    schema: storeAlunoSchema,
     handler: createAluno,
   });
 
@@ -42,7 +42,7 @@ const alunosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
 
   // GET ALL Responsaveis
   server.withTypeProvider<ZodTypeProvider>().get('/:alunoId/responsaveis', {
-    schema: getResponsaveisSchema,
+    schema: getAlunoResponsaveisSchema,
     handler: getResponsaveis,
   });
 };
