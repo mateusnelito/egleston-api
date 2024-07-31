@@ -26,7 +26,7 @@ import {
 import { getSalaId } from '../services/salaServices';
 import { getTurnoId } from '../services/turnoServices';
 import {
-  createMultiplesClasseTurnoBasedOnClasseId,
+  saveMultiplesClasseTurnoBasedOnClasseId,
   deleteClasseTurno,
   deleteMultiplesClasseTurnoBasedOnClasseId,
   getClasseTurnoById,
@@ -59,7 +59,7 @@ export async function createClasse(
   request: FastifyRequest<{ Body: postClasseBodyType }>,
   reply: FastifyReply
 ) {
-  const { nome, anoLectivoId, cursoId } = request.body;
+  const { nome, anoLectivoId, cursoId, turnos } = request.body;
 
   const [isAnoLectivo, isCurso] = await Promise.all([
     await getAnoLectivoId(anoLectivoId),
@@ -82,6 +82,27 @@ export async function createClasse(
     });
   }
 
+  if (turnos) {
+    for (let i = 0; i < turnos.length; i++) {
+      const turnoId = turnos[i];
+      const isTurnoId = await getTurnoId(turnoId);
+
+      // TODO: Finish the verification before send the errors, to send all invalids turnos
+      if (!isTurnoId) {
+        throw new BadRequest({
+          statusCode: HttpStatusCodes.NOT_FOUND,
+          message: 'Turno inválido.',
+          errors: {
+            turnos: {
+              [i]: 'turnoId não existe.',
+            },
+          },
+        });
+      }
+    }
+  }
+
+  // TODO: SEND A BETTER RESPONSE
   const classe = await saveClasse(request.body);
   return reply.status(HttpStatusCodes.CREATED).send(classe);
 }
@@ -234,7 +255,7 @@ export async function createClasseTurnoController(
     }
   }
 
-  const classeTurnos = await createMultiplesClasseTurnoBasedOnClasseId(
+  const classeTurnos = await saveMultiplesClasseTurnoBasedOnClasseId(
     classeId,
     turnos
   );
