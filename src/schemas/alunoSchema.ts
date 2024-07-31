@@ -8,7 +8,10 @@ import {
   notFoundRequestSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
-import { createResponsavelBodySchema } from './responsavelSchema';
+import {
+  createResponsavelBodySchema,
+  responsavelBodySchema,
+} from './responsavelSchema';
 
 const alunoBodySchema = z.object({
   id: z
@@ -93,21 +96,24 @@ const alunoParamsSchema = z.object({
     .positive({ message: 'O id do aluno deve ser positivo.' }),
 });
 
-export const storeAlunoSchema = {
+export const createAlunoSchema = {
   summary: 'Adiciona um novo aluno',
   tags: ['alunos'],
-  body: alunoBodySchema
-    .omit({ id: true })
-    .merge(enderecoSchema)
-    .merge(contactoSchema)
-    .extend({
-      responsaveis: z.array(createResponsavelBodySchema, {
-        invalid_type_error: 'O array de responsáveis é inválido.',
-        required_error: 'Os responsaveis são obrigatórios.',
-      }),
+  body: alunoBodySchema.omit({ id: true }).extend({
+    endereco: enderecoSchema,
+    contacto: contactoSchema,
+    responsaveis: z.array(createResponsavelBodySchema, {
+      invalid_type_error: 'O array de responsáveis é inválido.',
+      required_error: 'Os responsaveis são obrigatórios.',
     }),
+  }),
   response: {
-    201: alunoBodySchema,
+    201: alunoBodySchema.extend({
+      endereco: enderecoSchema
+        .omit({ numeroCasa: true })
+        .extend({ numeroCasa: z.string().transform(Number) }),
+      contacto: contactoSchema,
+    }),
     400: complexBadRequestSchema,
     404: complexBadRequestSchema,
   },
@@ -117,10 +123,18 @@ export const updateAlunoSchema = {
   summary: 'Atualiza um aluno existente',
   tags: ['alunos'],
   params: alunoParamsSchema,
-  body: alunoBodySchema.omit({ id: true, numeroBi: true }),
+  body: alunoBodySchema.omit({ id: true, numeroBi: true }).extend({
+    endereco: enderecoSchema,
+    contacto: contactoSchema,
+  }),
   response: {
-    200: alunoBodySchema.omit({ id: true, numeroBi: true }),
-    400: simpleBadRequestSchema,
+    200: alunoBodySchema.omit({ numeroBi: true }).extend({
+      endereco: enderecoSchema
+        .omit({ numeroCasa: true })
+        .extend({ numeroCasa: z.string().transform(Number) }),
+      contacto: contactoSchema,
+    }),
+    400: complexBadRequestSchema,
     404: notFoundRequestSchema,
   },
 };
@@ -148,11 +162,19 @@ export const getAlunoSchema = {
   params: alunoParamsSchema,
   response: {
     200: alunoBodySchema.extend({
-      bairro: z.string(),
-      rua: z.string(),
-      numeroCasa: z.string(),
-      telefone: z.string(),
-      email: z.string().optional(),
+      endereco: enderecoSchema
+        .omit({ numeroCasa: true })
+        .extend({ numeroCasa: z.string().transform(Number) }),
+      contacto: contactoSchema,
+      responsaveis: z.array(
+        responsavelBodySchema
+          .omit({ parentescoId: true })
+          .extend({ parentesco: z.string() }),
+        {
+          invalid_type_error: 'O array de responsáveis é inválido.',
+          required_error: 'Os responsaveis são obrigatórios.',
+        }
+      ),
     }),
     404: notFoundRequestSchema,
   },
@@ -175,8 +197,7 @@ export const getAlunoResponsaveisSchema = {
   },
 };
 
-// Extract the TS types from Schemas
-export type storeAlunoBodyType = z.infer<typeof storeAlunoSchema.body>;
+export type storeAlunoBodyType = z.infer<typeof createAlunoSchema.body>;
 export type updateAlunoBodyType = z.infer<typeof updateAlunoSchema.body>;
 export type alunoParamsSchema = z.infer<typeof alunoParamsSchema>;
 export type getAlunosQueryStringType = z.infer<
