@@ -1,41 +1,45 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import {
-  CreateAlunoBodyType,
+  storeAlunoBodyType,
   updateAlunoBodyType,
-} from '../schemas/alunoSchema';
+} from '../schemas/alunoSchemas';
+import { formatDate } from '../utils/utils';
 
-// Fn utils
-function createEnderecoData(bairro: string, rua: string, numeroCasa: string) {
-  return { bairro, rua, numeroCasa };
-}
-
-function createContactoData(telefone: string, email?: string, outros?: string) {
-  return { telefone, email, outros };
-}
-
-// Save aluno, responsaveis and related records (endereco, contacto)
-export async function saveAluno(data: CreateAlunoBodyType) {
+export async function saveAluno(data: storeAlunoBodyType) {
   return prisma.$transaction(async (transaction) => {
-    // Save the aluno on database
     const aluno = await transaction.aluno.create({
       data: {
         nomeCompleto: data.nomeCompleto,
         nomeCompletoPai: data.nomeCompletoPai,
         nomeCompletoMae: data.nomeCompletoMae,
         numeroBi: data.numeroBi,
-        // FIXME: Remove this functionality to appropriated place
         dataNascimento: new Date(data.dataNascimento),
         genero: data.genero,
         Endereco: {
-          create: createEnderecoData(data.bairro, data.rua, data.numeroCasa),
+          create: data.endereco,
         },
         Contacto: {
-          create: createContactoData(data.telefone, data.email),
+          create: data.contacto,
+        },
+      },
+      include: {
+        Endereco: {
+          select: {
+            bairro: true,
+            rua: true,
+            numeroCasa: true,
+          },
+        },
+        Contacto: {
+          select: {
+            telefone: true,
+            email: true,
+          },
         },
       },
     });
 
-    // Save the responsaveis, related with aluno
     for (const responsavel of data.responsaveis) {
       await transaction.responsavel.create({
         data: {
@@ -43,23 +47,33 @@ export async function saveAluno(data: CreateAlunoBodyType) {
           nomeCompleto: responsavel.nomeCompleto,
           parentescoId: responsavel.parentescoId,
           Endereco: {
-            create: createEnderecoData(
-              responsavel.bairro,
-              responsavel.rua,
-              responsavel.numeroCasa
-            ),
+            create: responsavel.endereco,
           },
           Contacto: {
-            create: createContactoData(
-              responsavel.telefone,
-              responsavel.email,
-              responsavel.outros
-            ),
+            create: responsavel.contacto,
           },
         },
       });
     }
-    return aluno;
+
+    return {
+      id: aluno.id,
+      nomeCompleto: aluno.nomeCompleto,
+      nomeCompletoPai: aluno.nomeCompletoPai,
+      nomeCompletoMae: aluno.nomeCompletoMae,
+      numeroBi: aluno.numeroBi,
+      dataNascimento: formatDate(aluno.dataNascimento),
+      genero: aluno.genero,
+      endereco: {
+        bairro: aluno.Endereco?.bairro,
+        rua: aluno.Endereco?.rua,
+        numeroCasa: aluno.Endereco?.numeroCasa,
+      },
+      contacto: {
+        telefone: aluno.Contacto?.telefone,
+        email: aluno.Contacto?.email,
+      },
+    };
   });
 }
 
@@ -71,7 +85,7 @@ export async function getAlunoNumeroBi(numeroBi: string) {
 }
 
 export async function getAlunoDetails(id: number) {
-  return await prisma.aluno.findUnique({
+  const aluno = await prisma.aluno.findUnique({
     where: { id },
     include: {
       Endereco: {
@@ -84,8 +98,47 @@ export async function getAlunoDetails(id: number) {
       Contacto: {
         select: { telefone: true, email: true },
       },
+      Responsaveis: {
+        select: {
+          id: true,
+          nomeCompleto: true,
+          Parentesco: {
+            select: { nome: true },
+          },
+        },
+      },
     },
   });
+
+  if (aluno) {
+    return {
+      id: aluno.id,
+      nomeCompleto: aluno.nomeCompleto,
+      nomeCompletoPai: aluno.nomeCompletoPai,
+      nomeCompletoMae: aluno.nomeCompletoMae,
+      numeroBi: aluno.numeroBi,
+      dataNascimento: formatDate(aluno.dataNascimento),
+      genero: aluno.genero,
+      endereco: {
+        bairro: aluno.Endereco?.bairro,
+        rua: aluno.Endereco?.rua,
+        numeroCasa: aluno.Endereco?.numeroCasa,
+      },
+      contacto: {
+        telefone: aluno.Contacto?.telefone,
+        email: aluno.Contacto?.email,
+      },
+      responsaveis: aluno.Responsaveis.map((responsavel) => {
+        return {
+          id: responsavel.id,
+          nomeCompleto: responsavel.nomeCompleto,
+          parentesco: responsavel.Parentesco.nome,
+        };
+      }),
+    };
+  } else {
+    return aluno;
+  }
 }
 
 export async function getAlunoId(id: number) {
@@ -93,30 +146,56 @@ export async function getAlunoId(id: number) {
 }
 
 export async function changeAluno(id: number, data: updateAlunoBodyType) {
-  return await prisma.aluno.update({
+  const aluno = await prisma.aluno.update({
     where: { id },
     data: {
       nomeCompleto: data.nomeCompleto,
       nomeCompletoPai: data.nomeCompletoPai,
       nomeCompletoMae: data.nomeCompletoMae,
-      // FIXME: REMOVE THIS CODE TO APPROPRIATED PLACE
       dataNascimento: new Date(data.dataNascimento),
       genero: data.genero,
       Endereco: {
-        update: {
-          bairro: data.bairro,
-          rua: data.rua,
-          numeroCasa: data.numeroCasa,
+        update: data.endereco,
+      },
+      Contacto: {
+        update: data.contacto,
+      },
+    },
+    include: {
+      Endereco: {
+        select: {
+          bairro: true,
+          rua: true,
+          numeroCasa: true,
         },
       },
       Contacto: {
-        update: {
-          telefone: data.telefone,
-          email: data.email,
+        select: {
+          telefone: true,
+          email: true,
         },
       },
     },
   });
+
+  return {
+    id: aluno.id,
+    nomeCompleto: aluno.nomeCompleto,
+    nomeCompletoPai: aluno.nomeCompletoPai,
+    nomeCompletoMae: aluno.nomeCompletoMae,
+    numeroBi: aluno.numeroBi,
+    dataNascimento: formatDate(aluno.dataNascimento),
+    genero: aluno.genero,
+    endereco: {
+      bairro: aluno.Endereco?.bairro,
+      rua: aluno.Endereco?.rua,
+      numeroCasa: aluno.Endereco?.numeroCasa,
+    },
+    contacto: {
+      telefone: aluno.Contacto?.telefone,
+      email: aluno.Contacto?.email,
+    },
+  };
 }
 
 export async function getAlunos(
@@ -133,7 +212,7 @@ export async function getAlunos(
       }
     : {};
 
-  return await prisma.aluno.findMany({
+  const alunos = await prisma.aluno.findMany({
     where: whereClause,
     select: {
       id: true,
@@ -144,6 +223,16 @@ export async function getAlunos(
     },
     take: limit,
     orderBy: { id: 'desc' },
+  });
+
+  return alunos.map((aluno) => {
+    return {
+      id: aluno.id,
+      nomeCompleto: aluno.nomeCompleto,
+      numeroBi: aluno.numeroBi,
+      dataNascimento: formatDate(aluno.dataNascimento),
+      genero: aluno.genero,
+    };
   });
 }
 
