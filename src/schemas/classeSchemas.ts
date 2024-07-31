@@ -45,12 +45,33 @@ const classeParamsSchema = z.object({
 export const postClasseSchema = {
   summary: 'Adiciona uma nova classe',
   tags: ['classes'],
-  body: classeBodySchema.omit({ id: true }),
+  body: classeBodySchema.omit({ id: true }).extend({
+    turnos: z
+      .array(
+        z
+          .number({
+            message: 'O array de turnos deve conter apenas números.',
+          })
+          .int({
+            message: 'O array de turnos deve conter apenas números inteiros.',
+          })
+          .positive({
+            message:
+              'O array de turnos deve conter apenas números inteiros positivos.',
+          }),
+        {
+          invalid_type_error:
+            'Os turnos devem ser  enviadas no formato de array.',
+          required_error: 'Os turnos são necessários.',
+        }
+      )
+      .nonempty({ message: 'O array de turnos não deve estar vazio.' })
+      .optional(),
+  }),
   response: {
     201: classeBodySchema,
-
-    400: simpleBadRequestSchema,
-    404: simpleBadRequestSchema,
+    400: complexBadRequestSchema,
+    404: complexBadRequestSchema,
   },
 };
 
@@ -122,6 +143,7 @@ const classeTurnoSchema = {
         {
           invalid_type_error:
             'Os turnos devem ser  enviadas no formato de array.',
+          required_error: 'Os turnos são necessários.',
         }
       )
       .nonempty({ message: 'O array de turnos não deve estar vazio.' }),
