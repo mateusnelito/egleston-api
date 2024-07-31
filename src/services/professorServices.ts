@@ -3,6 +3,7 @@ import { professorBodyType } from '../schemas/professorSchemas';
 import { formatDate } from '../utils/utils';
 
 export async function saveProfessor(data: professorBodyType) {
+  // TODO: CREATE THIS DATA WITH TRANSACTION
   const professor = await prisma.professor.create({
     data: {
       nomeCompleto: data.nomeCompleto,
