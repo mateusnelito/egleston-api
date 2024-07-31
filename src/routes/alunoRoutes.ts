@@ -8,18 +8,17 @@ import {
   updateAluno,
 } from '../controllers/alunoController';
 import {
-  createAlunoSchema,
+  postAlunoSchema,
   getAlunoSchema,
   getAlunosSchema,
   getResponsaveisSchema,
   updateAlunoSchema,
 } from '../schemas/alunoSchema';
 
-// Create all alunos sub-routes
 const alunosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
   // POST
-  server.withTypeProvider<ZodTypeProvider>().post('/create', {
-    schema: createAlunoSchema,
+  server.withTypeProvider<ZodTypeProvider>().post('/', {
+    schema: postAlunoSchema,
     handler: createAluno,
   });
 
