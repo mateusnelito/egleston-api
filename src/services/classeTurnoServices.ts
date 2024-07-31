@@ -6,7 +6,7 @@ export async function getClasseTurnoById(classeId: number, turnoId: number) {
   });
 }
 
-export async function createMultiplesClasseTurnoBasedOnClasseId(
+export async function saveMultiplesClasseTurnoBasedOnClasseId(
   classeId: number,
   turnos: Array<number>
 ) {
@@ -36,7 +36,7 @@ export async function deleteClasseTurno(classeId: number, turnoId: number) {
   });
 }
 
-export async function createMultiplesClasseTurnoBasedOnTurnoId(
+export async function saveMultiplesClasseTurnoBasedOnTurnoId(
   turnoId: number,
   classes: Array<number>
 ) {

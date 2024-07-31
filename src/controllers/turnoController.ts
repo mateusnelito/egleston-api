@@ -21,7 +21,7 @@ import {
   isBeginDateAfterEndDate,
 } from '../utils/utils';
 import {
-  createMultiplesClasseTurnoBasedOnTurnoId,
+  saveMultiplesClasseTurnoBasedOnTurnoId,
   getClasseTurnoById,
 } from '../services/classeTurnoServices';
 import { getClasseId } from '../services/classeServices';
@@ -219,7 +219,7 @@ export async function createMultiplesClasseTurnoController(
     }
   }
 
-  const classeTurnos = await createMultiplesClasseTurnoBasedOnTurnoId(
+  const classeTurnos = await saveMultiplesClasseTurnoBasedOnTurnoId(
     turnoId,
     classes
   );
