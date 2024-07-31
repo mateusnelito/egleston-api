@@ -1,46 +1,46 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
-  createAluno,
-  getAluno,
-  getAlunos,
+  createAlunoController,
+  getAlunoController,
+  getAlunosController,
   getResponsaveis,
-  updateAluno,
+  updateAlunoController,
 } from '../controllers/alunoController';
 import {
-  storeAlunoSchema,
+  createAlunoSchema,
+  getAlunoResponsaveisSchema,
   getAlunoSchema,
   getAlunosSchema,
-  getAlunoResponsaveisSchema,
   updateAlunoSchema,
-} from '../schemas/alunoSchema';
+} from '../schemas/alunoSchemas';
 
 const alunosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
   // POST
   server.withTypeProvider<ZodTypeProvider>().post('/', {
-    schema: storeAlunoSchema,
-    handler: createAluno,
+    schema: createAlunoSchema,
+    handler: createAlunoController,
   });
 
   // PUT
   server.withTypeProvider<ZodTypeProvider>().put('/:alunoId', {
     schema: updateAlunoSchema,
-    handler: updateAluno,
+    handler: updateAlunoController,
   });
 
-  // GET ALL RESOURCE
+  // GET
   server.withTypeProvider<ZodTypeProvider>().get('/', {
     schema: getAlunosSchema,
-    handler: getAlunos,
+    handler: getAlunosController,
   });
 
-  // GET UNIQUE RESOURCE
+  // GET
   server.withTypeProvider<ZodTypeProvider>().get('/:alunoId', {
     schema: getAlunoSchema,
-    handler: getAluno,
+    handler: getAlunoController,
   });
 
-  // GET ALL Responsaveis
+  // GET
   server.withTypeProvider<ZodTypeProvider>().get('/:alunoId/responsaveis', {
     schema: getAlunoResponsaveisSchema,
     handler: getResponsaveis,

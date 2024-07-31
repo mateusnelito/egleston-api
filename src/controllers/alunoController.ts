@@ -1,15 +1,18 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
-  storeAlunoBodyType,
-  getAlunosQueryStringType,
   alunoParamsSchema,
+  getAlunosQueryStringType,
+  storeAlunoBodyType,
   updateAlunoBodyType,
-} from '../schemas/alunoSchema';
-import { getEmail, getTelefone } from '../services/alunoContactoServices';
+} from '../schemas/alunoSchemas';
+import {
+  getAlunoEmail,
+  getAlunoTelefone,
+} from '../services/alunoContactoServices';
 import {
   changeAluno,
-  getAlunos as getAllAlunos,
-  getAlunoResponsaveis as getAllResponsaveis,
+  getAlunos,
+  getAlunoResponsaveis,
   getAlunoDetails,
   getAlunoId,
   getAlunoNumeroBi,
@@ -17,15 +20,14 @@ import {
 } from '../services/alunoServices';
 import { getParentescoById } from '../services/parentescoServices';
 import {
-  getEmail as getResponsavelEmail,
-  getTelefone as getResponsavelTelefone,
+  getResponsavelEmail,
+  getResponsavelTelefone,
 } from '../services/responsavelContactoServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
 import {
   calculateTimeBetweenDates,
-  formatDate,
   isBeginDateAfterEndDate,
 } from '../utils/utils';
 
@@ -41,7 +43,9 @@ function throwInvalidTelefoneError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Número de telefone inválido.',
-    errors: { telefone: ['O número de telefone já está sendo usado.'] },
+    errors: {
+      contacto: { telefone: ['O número de telefone já está sendo usado.'] },
+    },
   });
 }
 
@@ -49,7 +53,9 @@ function throwInvalidEmailError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Endereço de email inválido.',
-    errors: { email: ['O endereço de email já está sendo usado.'] },
+    errors: {
+      contacto: { email: ['O endereço de email já está sendo usado.'] },
+    },
   });
 }
 
@@ -62,39 +68,33 @@ function throwNotFoundAlunoIdError() {
 
 const MINIMUM_AGE = 14;
 
-export async function createAluno(
+export async function createAlunoController(
   request: FastifyRequest<{ Body: storeAlunoBodyType }>,
   reply: FastifyReply
 ) {
   const { body: data } = request;
   const { responsaveis } = data;
 
-  // Checking data integrity
-  // -> Aluno
-  const {
-    dataNascimento: DataNascimentoString,
-    numeroBi,
-    telefone,
-    email,
-  } = data;
-  const dataNascimento = new Date(DataNascimentoString);
+  const { dataNascimento, numeroBi } = data;
+  const { telefone, email } = data.contacto;
+  const dataNascimentoDate = new Date(dataNascimento);
 
-  if (isBeginDateAfterEndDate(dataNascimento, new Date()))
+  if (isBeginDateAfterEndDate(dataNascimentoDate, new Date()))
     throwInvalidDataNascimentoError(
       'Data de nascimento não pôde estar no futuro.'
     );
 
-  const age = calculateTimeBetweenDates(dataNascimento, new Date(), 'y');
+  const age = calculateTimeBetweenDates(dataNascimentoDate, new Date(), 'y');
   if (age < MINIMUM_AGE) {
     throwInvalidDataNascimentoError(`Idade inferior a ${MINIMUM_AGE} anos.`);
   }
 
-  const [isNumeroBi, isTelefone] = await Promise.all([
+  const [alunoNumeroBi, alunoContactoTelefone] = await Promise.all([
     await getAlunoNumeroBi(numeroBi),
-    await getTelefone(telefone),
+    await getAlunoTelefone(telefone),
   ]);
 
-  if (isNumeroBi) {
+  if (alunoNumeroBi) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
       message: 'Número de BI inválido.',
@@ -102,24 +102,26 @@ export async function createAluno(
     });
   }
 
-  if (isTelefone) throwInvalidTelefoneError();
+  if (alunoContactoTelefone) throwInvalidTelefoneError();
 
   if (email) {
-    const isEmail = await getEmail(email);
-    if (isEmail) throwInvalidEmailError();
+    const alunoContactoEmail = await getAlunoEmail(email);
+    if (alunoContactoEmail) throwInvalidEmailError();
   }
 
-  // -> Responsaveis
+  // TODO: ADD A LIMIT FOR RESPONSAVEIS
   for (let i = 0; i < responsaveis.length; i++) {
     const responsavel = responsaveis[i];
+    const { telefone, email } = responsavel.contacto;
+    const { parentescoId } = responsavel;
 
-    const { parentescoId, telefone, email } = responsavel;
-    const [isParentesco, isTelefone] = await Promise.all([
-      await getParentescoById(parentescoId),
-      await getResponsavelTelefone(telefone),
-    ]);
+    const [responsavelParentescoId, responsavelContactoTelefone] =
+      await Promise.all([
+        await getParentescoById(parentescoId),
+        await getResponsavelTelefone(telefone),
+      ]);
 
-    if (!isParentesco) {
+    if (!responsavelParentescoId) {
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Parentesco inválido.',
@@ -133,14 +135,16 @@ export async function createAluno(
       });
     }
 
-    if (isTelefone) {
+    if (responsavelContactoTelefone) {
       throw new BadRequest({
         statusCode: HttpStatusCodes.BAD_REQUEST,
         message: 'Número de telefone inválido.',
         errors: {
           responsaveis: {
             [i]: {
-              telefone: ['O número de telefone já está sendo usado.'],
+              contacto: {
+                telefone: ['O número de telefone já está sendo usado.'],
+              },
             },
           },
         },
@@ -148,15 +152,17 @@ export async function createAluno(
     }
 
     if (email) {
-      const isEmail = await getResponsavelEmail(email);
-      if (isEmail) {
+      const responsavelContactoEmail = await getResponsavelEmail(email);
+      if (responsavelContactoEmail) {
         throw new BadRequest({
           statusCode: HttpStatusCodes.BAD_REQUEST,
           message: 'Endereço de email inválido.',
           errors: {
             responsaveis: {
               [i]: {
-                email: ['O endereço de email já está sendo usado.'],
+                contacto: {
+                  email: ['O endereço de email já está sendo usado.'],
+                },
               },
             },
           },
@@ -166,18 +172,10 @@ export async function createAluno(
   }
 
   const aluno = await saveAluno(data);
-  return reply.status(HttpStatusCodes.CREATED).send({
-    id: aluno.id,
-    nomeCompleto: aluno.nomeCompleto,
-    nomeCompletoPai: aluno.nomeCompletoPai,
-    nomeCompletoMae: aluno.nomeCompletoMae,
-    numeroBi: aluno.numeroBi,
-    dataNascimento: formatDate(aluno.dataNascimento),
-    genero: aluno.genero,
-  });
+  return reply.status(HttpStatusCodes.CREATED).send(aluno);
 }
 
-export async function updateAluno(
+export async function updateAlunoController(
   request: FastifyRequest<{
     Params: alunoParamsSchema;
     Body: updateAlunoBodyType;
@@ -185,73 +183,59 @@ export async function updateAluno(
   reply: FastifyReply
 ) {
   const { alunoId } = request.params;
-  const {
-    dataNascimento: DataNascimentoString,
-    telefone,
-    email,
-  } = request.body;
-  const dataNascimento = new Date(DataNascimentoString);
+  const { body: data } = request;
 
-  if (isBeginDateAfterEndDate(dataNascimento, new Date()))
+  const { dataNascimento } = data;
+  const { telefone, email } = data.contacto;
+  const dataNascimentoDate = new Date(dataNascimento);
+
+  if (isBeginDateAfterEndDate(dataNascimentoDate, new Date()))
     throwInvalidDataNascimentoError(
       'Data de nascimento não pôde estar no futuro.'
     );
 
-  const age = calculateTimeBetweenDates(dataNascimento, new Date(), 'y');
+  const age = calculateTimeBetweenDates(dataNascimentoDate, new Date(), 'y');
   if (age < MINIMUM_AGE) {
     throwInvalidDataNascimentoError(`Idade inferior a ${MINIMUM_AGE} anos.`);
   }
 
-  const [isAlunoId, isTelefone] = await Promise.all([
+  const [isAlunoId, alunoContactoTelefone] = await Promise.all([
     await getAlunoId(alunoId),
-    await getTelefone(telefone, alunoId),
+    await getAlunoTelefone(telefone),
   ]);
 
   if (!isAlunoId) throwNotFoundAlunoIdError();
-  if (isTelefone) throwInvalidTelefoneError();
+  if (alunoContactoTelefone && alunoContactoTelefone.alunoId !== alunoId)
+    throwInvalidTelefoneError();
 
   if (email) {
-    const isEmail = await getEmail(email, alunoId);
-    if (isEmail) throwInvalidEmailError();
+    const alunoContactoEmail = await getAlunoEmail(email);
+    if (alunoContactoEmail && alunoContactoEmail.alunoId !== alunoId)
+      throwInvalidEmailError();
   }
 
-  const aluno = await changeAluno(alunoId, request.body);
-  return reply.send({
-    nomeCompleto: aluno.nomeCompleto,
-    nomeCompletoPai: aluno.nomeCompletoPai,
-    nomeCompletoMae: aluno.nomeCompletoMae,
-    dataNascimento: formatDate(aluno.dataNascimento),
-    genero: aluno.genero,
-  });
+  const aluno = await changeAluno(alunoId, data);
+  return reply.send(aluno);
 }
 
-export async function getAlunos(
+export async function getAlunosController(
   request: FastifyRequest<{ Querystring: getAlunosQueryStringType }>,
   reply: FastifyReply
 ) {
   const { cursor, page_size } = request.query;
-  const alunos = await getAllAlunos(page_size, cursor);
-  const data = alunos.map((aluno) => {
-    return {
-      id: aluno.id,
-      nomeCompleto: aluno.nomeCompleto,
-      numeroBi: aluno.numeroBi,
-      dataNascimento: formatDate(aluno.dataNascimento),
-      genero: aluno.genero,
-    };
-  });
+  const alunos = await getAlunos(page_size, cursor);
 
   // Determine the next cursor
   let next_cursor =
     alunos.length === page_size ? alunos[alunos.length - 1].id : undefined;
 
   return reply.send({
-    data,
+    data: alunos,
     next_cursor,
   });
 }
 
-export async function getAluno(
+export async function getAlunoController(
   request: FastifyRequest<{
     Params: alunoParamsSchema;
   }>,
@@ -262,20 +246,7 @@ export async function getAluno(
   const aluno = await getAlunoDetails(alunoId);
   if (!aluno) throwNotFoundAlunoIdError();
 
-  return reply.send({
-    id: aluno?.id,
-    nomeCompleto: aluno?.nomeCompleto,
-    nomeCompletoPai: aluno?.nomeCompletoPai,
-    nomeCompletoMae: aluno?.nomeCompletoMae,
-    numeroBi: aluno?.numeroBi,
-    dataNascimento: aluno?.dataNascimento.toISOString().slice(0, 10),
-    genero: aluno?.genero,
-    bairro: aluno?.Endereco?.bairro,
-    rua: aluno?.Endereco?.rua,
-    numeroCasa: aluno?.Endereco?.numeroCasa,
-    telefone: aluno?.Contacto?.telefone,
-    email: aluno?.Contacto?.email,
-  });
+  return reply.send(aluno);
 }
 
 export async function getResponsaveis(
@@ -289,6 +260,6 @@ export async function getResponsaveis(
   const isAluno = await getAlunoId(alunoId);
   if (!isAluno) throwNotFoundAlunoIdError();
 
-  const responsaveis = await getAllResponsaveis(alunoId);
+  const responsaveis = await getAlunoResponsaveis(alunoId);
   return reply.send({ data: responsaveis });
 }
