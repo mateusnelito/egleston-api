@@ -40,29 +40,9 @@ export const responsavelBodySchema = z.object({
     .positive({ message: 'O id do parentesco deve ser positivo.' }),
 });
 
-export const responsavelParamsSchema = z.object({
-  responsavelId: z.coerce
-    .number({
-      required_error: 'O id do responsavel é obrigatório.',
-      invalid_type_error: 'O id do responsavel deve ser número.',
-    })
-    .int({ message: 'O id do responsavel deve ser inteiro.' })
-    .positive({ message: 'O id do responsavel deve ser positivo.' }),
-});
-
-export const createResponsavelSchema = {
-  summary: 'Adiciona um novo responsavel para um aluno especifico',
-  tags: ['responsaveis'],
-  params: z.object({
-    alunoId: z.coerce
-      .number({
-        required_error: 'O id do aluno é obrigatório.',
-        invalid_type_error: 'O id do aluno deve ser número.',
-      })
-      .int({ message: 'O id do aluno deve ser inteiro.' })
-      .positive({ message: 'O id do aluno deve ser positivo.' }),
-  }),
-  body: responsavelBodySchema.omit({ id: true }).extend({
+export const createResponsavelBodySchema = responsavelBodySchema
+  .omit({ id: true })
+  .extend({
     endereco: enderecoSchema,
     contacto: contactoSchema.extend({
       outros: z
@@ -77,16 +57,17 @@ export const createResponsavelSchema = {
         })
         .optional(),
     }),
-  }),
-  response: {
-    201: z.object({
-      id: z.number().int().positive(),
-      nomeCompleto: z.string(),
-    }),
-    400: simpleBadRequestSchema,
-    404: notFoundRequestSchema,
-  },
-};
+  });
+
+export const responsavelParamsSchema = z.object({
+  responsavelId: z.coerce
+    .number({
+      required_error: 'O id do responsavel é obrigatório.',
+      invalid_type_error: 'O id do responsavel deve ser número.',
+    })
+    .int({ message: 'O id do responsavel deve ser inteiro.' })
+    .positive({ message: 'O id do responsavel deve ser positivo.' }),
+});
 
 export const updateResponsavelSchema = {
   summary: 'Atualiza um responsavel existente',
@@ -141,11 +122,9 @@ export const getResponsavelSchema = {
   },
 };
 
-export const createResponsavelBodySchema = createResponsavelSchema.body;
-export type responsavelBodyType = z.infer<typeof createResponsavelSchema.body>;
-export type createResponsavelParamsType = z.infer<
-  typeof createResponsavelSchema.params
->;
 export type uniqueResponsavelResourceParamsType = z.infer<
   typeof responsavelParamsSchema
+>;
+export type createResponsavelBodyType = z.infer<
+  typeof createResponsavelBodySchema
 >;

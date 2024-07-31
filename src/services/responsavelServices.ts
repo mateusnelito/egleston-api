@@ -1,9 +1,9 @@
 import { prisma } from '../lib/prisma';
-import { responsavelBodyType } from '../schemas/responsavelSchema';
+import { createResponsavelBodyType } from '../schemas/responsavelSchema';
 
 export async function saveResponsavel(
   alunoId: number,
-  data: responsavelBodyType
+  data: createResponsavelBodyType
 ) {
   return await prisma.responsavel.create({
     data: {
@@ -11,18 +11,10 @@ export async function saveResponsavel(
       nomeCompleto: data.nomeCompleto,
       parentescoId: data.parentescoId,
       Endereco: {
-        create: {
-          bairro: data.bairro,
-          rua: data.rua,
-          numeroCasa: data.numeroCasa,
-        },
+        create: data.endereco,
       },
       Contacto: {
-        create: {
-          telefone: data.telefone,
-          email: data.email,
-          outros: data.outros,
-        },
+        create: data.contacto,
       },
     },
   });

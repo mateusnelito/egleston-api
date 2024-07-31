@@ -1,13 +1,11 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
-  createResponsavel,
   destroyResponsavel,
   getResponsavel,
   updateResponsavel,
 } from '../controllers/responsavelController';
 import {
-  createResponsavelSchema,
   deleteResponsavelSchema,
   getResponsavelSchema,
   updateResponsavelSchema,
@@ -17,12 +15,6 @@ import {
 const responsaveisRoutes: FastifyPluginAsync = async (
   server: FastifyInstance
 ) => {
-  // POST
-  server.withTypeProvider<ZodTypeProvider>().post('/:alunoId/create', {
-    schema: createResponsavelSchema,
-    handler: createResponsavel,
-  });
-
   // PUT
   server.withTypeProvider<ZodTypeProvider>().put('/:responsavelId', {
     schema: updateResponsavelSchema,

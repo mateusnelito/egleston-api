@@ -6,7 +6,6 @@ import {
   complexBadRequestSchema,
   getAllResourcesParamsSchema,
   notFoundRequestSchema,
-  simpleBadRequestSchema,
 } from './globalSchema';
 import {
   createResponsavelBodySchema,
@@ -193,6 +192,22 @@ export const getAlunoResponsaveisSchema = {
         })
       ),
     }),
+    404: notFoundRequestSchema,
+  },
+};
+
+export const createAlunoResponsavelSchema = {
+  summary: 'Adiciona um novo responsavel para um aluno',
+  tags: ['alunos'],
+  params: alunoParamsSchema,
+  body: createResponsavelBodySchema,
+  response: {
+    // TODO: SEND A BETTER RESPONSE
+    // 201: z.object({
+    //   id: z.number().int().positive(),
+    //   nomeCompleto: z.string(),
+    // }),
+    400: complexBadRequestSchema,
     404: notFoundRequestSchema,
   },
 };

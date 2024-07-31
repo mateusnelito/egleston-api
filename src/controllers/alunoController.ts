@@ -30,6 +30,8 @@ import {
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
 } from '../utils/utils';
+import { createResponsavelBodyType } from '../schemas/responsavelSchema';
+import { saveResponsavel } from '../services/responsavelServices';
 
 function throwInvalidDataNascimentoError(message: string) {
   throw new BadRequest({
@@ -262,4 +264,47 @@ export async function getResponsaveis(
 
   const responsaveis = await getAlunoResponsaveis(alunoId);
   return reply.send({ data: responsaveis });
+}
+
+export async function createAlunoResponsavelController(
+  request: FastifyRequest<{
+    Params: alunoParamsSchema;
+    Body: createResponsavelBodyType;
+  }>,
+  reply: FastifyReply
+) {
+  const { alunoId } = request.params;
+  const { body: data } = request;
+
+  const { parentescoId } = request.body;
+  const { telefone, email } = data.contacto;
+
+  const [aluno, parentesco, responsavelContactoTelefone] = await Promise.all([
+    await getAlunoId(alunoId),
+    await getParentescoById(parentescoId),
+    await getResponsavelTelefone(telefone),
+  ]);
+
+  if (!aluno) throwNotFoundAlunoIdError();
+
+  // TODO: Add a responsaveis limit like only 3 responsaveis for a time
+  // TODO: Verify if already exist a father or mother in db for the current aluno
+  // TODO: 'Cause nobody has 2 fathers or mothers
+  // TODO: search for better way to validate parentesco and avoid duplication
+  if (!parentesco) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.NOT_FOUND,
+      message: 'Parentesco inválido.',
+      errors: { parentescoId: ['parentescoId não existe.'] },
+    });
+  }
+  if (responsavelContactoTelefone) throwInvalidTelefoneError();
+
+  if (email) {
+    const responsavelContactoEmail = await getResponsavelEmail(email);
+    if (responsavelContactoEmail) throwInvalidEmailError();
+  }
+
+  const responsavel = await saveResponsavel(alunoId, request.body);
+  return reply.status(HttpStatusCodes.CREATED).send(responsavel);
 }
