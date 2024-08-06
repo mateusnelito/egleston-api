@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   alunoParamsSchema,
   getAlunosQueryStringType,
-  storeAlunoBodyType,
+  createAlunoBodyType,
   updateAlunoBodyType,
 } from '../schemas/alunoSchemas';
 import { createResponsavelBodyType } from '../schemas/responsavelSchema';
@@ -86,7 +86,7 @@ const MINIMUM_AGE = 14;
 const MINIMUM_RESPONSAVEIS = 4;
 
 export async function createAlunoController(
-  request: FastifyRequest<{ Body: storeAlunoBodyType }>,
+  request: FastifyRequest<{ Body: createAlunoBodyType }>,
   reply: FastifyReply
 ) {
   const { body: data } = request;

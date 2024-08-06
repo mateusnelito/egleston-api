@@ -5,7 +5,7 @@ import {
   createAlunoResponsavelController,
   getAlunoController,
   getAlunosController,
-  getResponsaveis,
+  getAlunoResponsaveisController,
   updateAlunoController,
 } from '../controllers/alunoController';
 import {
@@ -45,7 +45,7 @@ const alunosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
   // GET
   server.withTypeProvider<ZodTypeProvider>().get('/:alunoId/responsaveis', {
     schema: getAlunoResponsaveisSchema,
-    handler: getResponsaveis,
+    handler: getAlunoResponsaveisController,
   });
 
   // POST

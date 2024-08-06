@@ -215,7 +215,7 @@ export const createAlunoResponsavelSchema = {
   },
 };
 
-export type storeAlunoBodyType = z.infer<typeof createAlunoSchema.body>;
+export type createAlunoBodyType = z.infer<typeof createAlunoSchema.body>;
 export type updateAlunoBodyType = z.infer<typeof updateAlunoSchema.body>;
 export type alunoParamsSchema = z.infer<typeof alunoParamsSchema>;
 export type getAlunosQueryStringType = z.infer<
