@@ -7,28 +7,14 @@ export async function getClasseByCompostUniqueKey(
   cursoId: number
 ) {
   return await prisma.classe.findUnique({
-    where: {
-      nome_anoLectivoId_cursoId: { nome, anoLectivoId, cursoId },
-    },
+    where: { nome_anoLectivoId_cursoId: { nome, anoLectivoId, cursoId } },
     select: { id: true },
   });
 }
 
-// TODO: REPLACE WITH Aluno TYPE *Tirado do Prisma
-interface classeType {
-  nome: '10ª' | '11ª' | '12ª' | '13ª';
-  anoLectivoId: number;
-  cursoId: number;
-}
-
 export async function createClasse(data: createClasseBodyType) {
   const { turnos } = data;
-
   if (turnos) {
-    const turnosArrayObjects = turnos.map((turno) => {
-      return { turnoId: turno };
-    });
-
     return await prisma.classe.create({
       data: {
         nome: data.nome,
@@ -36,7 +22,9 @@ export async function createClasse(data: createClasseBodyType) {
         cursoId: data.cursoId,
         ClasseTurno: {
           createMany: {
-            data: turnosArrayObjects,
+            data: turnos.map((turnoId) => {
+              return { turnoId };
+            }),
           },
         },
       },
@@ -101,7 +89,7 @@ export async function getClassesByAnoLectivo(anoLectivoId: number) {
 }
 
 export async function getClassesByCurso(cursoId: number) {
-  return await prisma.classe.findMany({
+  const classes = await prisma.classe.findMany({
     where: { cursoId },
     select: {
       id: true,
@@ -116,4 +104,14 @@ export async function getClassesByCurso(cursoId: number) {
       AnoLectivo: { nome: 'desc' },
     },
   });
+
+  return {
+    data: classes.map((classe) => {
+      return {
+        id: classe.id,
+        nome: classe.nome,
+        anoLectivo: classe.AnoLectivo.nome,
+      };
+    }),
+  };
 }
