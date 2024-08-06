@@ -5,17 +5,18 @@ import {
   storeAlunoBodyType,
   updateAlunoBodyType,
 } from '../schemas/alunoSchemas';
+import { createResponsavelBodyType } from '../schemas/responsavelSchema';
 import {
   getAlunoEmail,
   getAlunoTelefone,
 } from '../services/alunoContactoServices';
 import {
   changeAluno,
-  getAlunos,
-  getAlunoResponsaveis,
   getAlunoDetails,
   getAlunoId,
   getAlunoNumeroBi,
+  getAlunoResponsaveis,
+  getAlunos,
   saveAluno,
 } from '../services/alunoServices';
 import { getParentescoById } from '../services/parentescoServices';
@@ -23,15 +24,15 @@ import {
   getResponsavelEmail,
   getResponsavelTelefone,
 } from '../services/responsavelContactoServices';
+import { saveResponsavel } from '../services/responsavelServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
 import {
+  arrayHasDuplicatedValue,
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
 } from '../utils/utils';
-import { createResponsavelBodyType } from '../schemas/responsavelSchema';
-import { saveResponsavel } from '../services/responsavelServices';
 
 function throwInvalidDataNascimentoError(message: string) {
   throw new BadRequest({
@@ -68,7 +69,18 @@ function throwNotFoundAlunoIdError() {
   });
 }
 
+function throwInvalidResponsaveisContactos() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Responsaveis inválidos.',
+    errors: {
+      responsaveis: ['responsaveis não podem conter contactos duplicados.'],
+    },
+  });
+}
+
 const MINIMUM_AGE = 14;
+const MINIMUM_RESPONSAVEIS = 4;
 
 export async function createAlunoController(
   request: FastifyRequest<{ Body: storeAlunoBodyType }>,
@@ -76,6 +88,23 @@ export async function createAlunoController(
 ) {
   const { body: data } = request;
   const { responsaveis } = data;
+
+  // Check if in responsaveis array has contact data duplicated
+  // TODO: CHECK IF THERE'S DUPLICATED RESPONSAVEIS OBJECT, NOT ONLY DUPLICATED CONTACTS
+  const responsaveisTelefone = responsaveis.map((responsavel) => {
+    return responsavel.contacto.telefone;
+  });
+
+  const responsaveisEmails = responsaveis.map((responsavel) => {
+    return responsavel.contacto?.email;
+  });
+
+  if (
+    arrayHasDuplicatedValue(responsaveisTelefone) ||
+    arrayHasDuplicatedValue(responsaveisEmails)
+  ) {
+    throwInvalidResponsaveisContactos();
+  }
 
   const { dataNascimento, numeroBi } = data;
   const { telefone, email } = data.contacto;
@@ -111,7 +140,6 @@ export async function createAlunoController(
     if (alunoContactoEmail) throwInvalidEmailError();
   }
 
-  // TODO: ADD A LIMIT FOR RESPONSAVEIS
   for (let i = 0; i < responsaveis.length; i++) {
     const responsavel = responsaveis[i];
     const { telefone, email } = responsavel.contacto;
