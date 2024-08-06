@@ -1,10 +1,10 @@
 import { z } from 'zod';
-import { FULL_NAME_REGEX, NUMERO_BI_REGEX } from '../utils/regexPatterns';
+import { fullNameRegEx, numeroBiRegEx } from '../utils/regexPatterns';
 import { contactoSchema } from './contactoSchema';
 import { enderecoSchema } from './enderecoSchema';
 import {
   complexBadRequestSchema,
-  getAllResourcesParamsSchema,
+  getAllResourcesQueriesSchema,
   notFoundRequestSchema,
 } from './globalSchema';
 import {
@@ -32,7 +32,7 @@ const alunoBodySchema = z.object({
     .max(100, {
       message: 'O nome completo deve possuir no máximo 100 caracteres.',
     })
-    .regex(FULL_NAME_REGEX, {
+    .regex(fullNameRegEx, {
       message:
         'O nome completo deve possuir apenas caracteres alfabéticos e espaços.',
     }),
@@ -48,7 +48,7 @@ const alunoBodySchema = z.object({
     .max(100, {
       message: 'O nome completo do pai deve possuir no máximo 100 caracteres.',
     })
-    .regex(FULL_NAME_REGEX, {
+    .regex(fullNameRegEx, {
       message:
         'O nome completo do pai deve possuir apenas caracteres alfabéticos e espaços.',
     }),
@@ -64,7 +64,7 @@ const alunoBodySchema = z.object({
     .max(100, {
       message: 'O nome completo da mãe deve possuir no máximo 100 caracteres.',
     })
-    .regex(FULL_NAME_REGEX, {
+    .regex(fullNameRegEx, {
       message:
         'O nome completo da mãe deve possuir apenas caracteres alfabéticos e espaços.',
     }),
@@ -75,7 +75,7 @@ const alunoBodySchema = z.object({
     })
     .trim()
     .length(14, { message: 'O número de BI deve possuir 14 caracteres.' })
-    .regex(NUMERO_BI_REGEX, {
+    .regex(numeroBiRegEx, {
       message: 'O número de BI é inválido.',
     }),
   dataNascimento: z
@@ -101,10 +101,13 @@ export const createAlunoSchema = {
   body: alunoBodySchema.omit({ id: true }).extend({
     endereco: enderecoSchema,
     contacto: contactoSchema,
-    responsaveis: z.array(createResponsavelBodySchema, {
-      invalid_type_error: 'O array de responsáveis é inválido.',
-      required_error: 'Os responsaveis são obrigatórios.',
-    }),
+    responsaveis: z
+      .array(createResponsavelBodySchema, {
+        invalid_type_error: 'O array de responsáveis é inválido.',
+        required_error: 'Os responsaveis são obrigatórios.',
+      })
+      .max(4, { message: 'O máximo de responsaveis é 4.' })
+      .nonempty({ message: 'Os responsaveis devem ser enviados.' }),
   }),
   response: {
     201: alunoBodySchema.extend({
@@ -141,7 +144,7 @@ export const updateAlunoSchema = {
 export const getAlunosSchema = {
   summary: 'Retorna todos os alunos',
   tags: ['alunos'],
-  querystring: getAllResourcesParamsSchema,
+  querystring: getAllResourcesQueriesSchema,
   response: {
     200: z.object({
       data: z.array(
@@ -156,7 +159,7 @@ export const getAlunosSchema = {
 };
 
 export const getAlunoSchema = {
-  summary: 'Busca aluno pelo Id',
+  summary: 'Retorna um aluno',
   tags: ['alunos'],
   params: alunoParamsSchema,
   response: {

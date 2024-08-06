@@ -11,13 +11,13 @@ import {
   getAlunoTelefone,
 } from '../services/alunoContactoServices';
 import {
-  changeAluno,
+  updateAluno,
   getAlunoDetails,
   getAlunoId,
   getAlunoNumeroBi,
   getAlunoResponsaveis,
   getAlunos,
-  saveAluno,
+  createAluno,
 } from '../services/alunoServices';
 import { getParentescoById } from '../services/parentescoServices';
 import {
@@ -202,7 +202,7 @@ export async function createAlunoController(
     }
   }
 
-  const aluno = await saveAluno(data);
+  const aluno = await createAluno(data);
   return reply.status(HttpStatusCodes.CREATED).send(aluno);
 }
 
@@ -245,7 +245,7 @@ export async function updateAlunoController(
       throwInvalidEmailError();
   }
 
-  const aluno = await changeAluno(alunoId, data);
+  const aluno = await updateAluno(alunoId, data);
   return reply.send(aluno);
 }
 
