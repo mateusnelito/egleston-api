@@ -1,6 +1,5 @@
 generator client {
   provider        = "prisma-client-js"
-  // Ative the multiSchema preview feature
   previewFeatures = ["multiSchema"]
 }
 
@@ -10,7 +9,6 @@ datasource db {
   schemas  = ["cadastro", "academico", "financeiro"]
 }
 
-// Enum definition
 enum Genero {
   M
   F
