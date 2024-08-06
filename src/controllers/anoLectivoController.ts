@@ -1,16 +1,16 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   anoLectivoParamsType,
-  postAnoLectivoBodyType,
-  postClasseToAnoLectivoBodyType,
+  createAnoLectivoBodyType,
+  createClasseToAnoLectivoBodyType,
 } from '../schemas/anoLectivoSchema';
 import {
-  changeAnoLectivo,
+  updateAnoLectivo,
   getAnoLectivoId,
   getAnoLectivoNome,
-  recoveryAnoLectivo,
-  recoveryAnoLectivos,
-  saveAnoLectivo,
+  getAnoLectivo,
+  getAnoLectivos,
+  createAnoLectivo,
 } from '../services/anoLectivoServices';
 import {
   getClasseByCompostUniqueKey,
@@ -27,7 +27,7 @@ import {
   isBeginDateAfterEndDate,
 } from '../utils/utils';
 
-function throwInicioBadRequest() {
+function throwInvalidInicioError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Data de início inválida.',
@@ -35,7 +35,7 @@ function throwInicioBadRequest() {
   });
 }
 
-function throwYearLengthBadRequest() {
+function throwInvalidYearLengthError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Ano lectivo inválido',
@@ -43,24 +43,24 @@ function throwYearLengthBadRequest() {
   });
 }
 
-function throwAnoLectivoAlreadyExistBadRequest() {
+function throwAnoLectivoAlreadyExistError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'O ano lectivo já existe.',
   });
 }
 
-function throwNotFoundRequest() {
+function throwNotFoundAnoLectivoIdError() {
   throw new NotFoundRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
     message: 'ID do ano lectivo não existe.',
   });
 }
 
-const YEAR_LENGTH = 11;
+const YEAR_MONTH_LENGTH = 11;
 
-export async function createAnoLectivo(
-  request: FastifyRequest<{ Body: postAnoLectivoBodyType }>,
+export async function createAnoLectivoController(
+  request: FastifyRequest<{ Body: createAnoLectivoBodyType }>,
   reply: FastifyReply
 ) {
   const { inicio: inicioString, termino: terminoString } = request.body;
@@ -68,19 +68,18 @@ export async function createAnoLectivo(
   const termino = new Date(terminoString);
 
   // Validating dates
-  if (isBeginDateAfterEndDate(inicio, termino)) throwInicioBadRequest();
+  if (isBeginDateAfterEndDate(inicio, termino)) throwInvalidInicioError();
 
   // FIXME: O dia de inicio do mês não começa em 01 caso for dado com 01.
   // e.g: 2024-09-01 -> 2024-08-31
   const yearMonthLength = calculateTimeBetweenDates(inicio, termino, 'M');
-  if (yearMonthLength !== YEAR_LENGTH) throwYearLengthBadRequest();
+  if (yearMonthLength !== YEAR_MONTH_LENGTH) throwInvalidYearLengthError();
 
   const nome = `${inicio.getFullYear()}-${termino.getFullYear()}`;
-
   const isAnoLectivoNome = await getAnoLectivoNome(nome);
-  if (isAnoLectivoNome) throwAnoLectivoAlreadyExistBadRequest();
+  if (isAnoLectivoNome) throwAnoLectivoAlreadyExistError();
 
-  const anoLectivo = await saveAnoLectivo({ nome, inicio, termino });
+  const anoLectivo = await createAnoLectivo({ nome, inicio, termino });
   return reply.status(HttpStatusCodes.CREATED).send({
     id: anoLectivo.id,
     nome: anoLectivo.nome,
@@ -89,63 +88,64 @@ export async function createAnoLectivo(
   });
 }
 
-export async function updateAnoLectivo(
+export async function updateAnoLectivoController(
   request: FastifyRequest<{
     Params: anoLectivoParamsType;
-    Body: postAnoLectivoBodyType;
+    Body: createAnoLectivoBodyType;
   }>,
   reply: FastifyReply
 ) {
   const { inicio: inicioString, termino: terminoString } = request.body;
+  const { anoLectivoId } = request.params;
   const inicio = new Date(inicioString);
   const termino = new Date(terminoString);
 
   // Validating dates
-  if (isBeginDateAfterEndDate(inicio, termino)) throwInicioBadRequest();
+  if (isBeginDateAfterEndDate(inicio, termino)) throwInvalidInicioError();
 
   const yearMonthLength = calculateTimeBetweenDates(inicio, termino, 'M');
-  if (yearMonthLength !== YEAR_LENGTH) throwYearLengthBadRequest();
+  if (yearMonthLength !== YEAR_MONTH_LENGTH) throwInvalidYearLengthError();
 
-  const { anoLectivoId } = request.params;
   const nome = `${inicio.getFullYear()}-${termino.getFullYear()}`;
-
-  const [isAnoLectivo, isAnoLectivoNome] = await Promise.all([
+  const [isAnoLectivo, anoLectivo] = await Promise.all([
     getAnoLectivoId(anoLectivoId),
-    getAnoLectivoNome(nome, anoLectivoId),
+    getAnoLectivoNome(nome),
   ]);
 
-  if (!isAnoLectivo) throwNotFoundRequest();
-  if (isAnoLectivoNome) throwAnoLectivoAlreadyExistBadRequest();
+  if (!isAnoLectivo) throwNotFoundAnoLectivoIdError();
+  if (anoLectivo && anoLectivo.id !== anoLectivoId)
+    throwAnoLectivoAlreadyExistError();
 
-  const anoLectivo = await changeAnoLectivo(anoLectivoId, {
+  const anoLectivoUpdated = await updateAnoLectivo(anoLectivoId, {
     nome,
     inicio,
     termino,
   });
+
   return reply.send({
-    nome: anoLectivo.nome,
-    inicio: formatDate(anoLectivo.inicio),
-    termino: formatDate(anoLectivo.termino),
+    id: anoLectivoUpdated.id,
+    nome: anoLectivoUpdated.nome,
+    inicio: formatDate(anoLectivoUpdated.inicio),
+    termino: formatDate(anoLectivoUpdated.termino),
   });
 }
 
-export async function getAnoLectivos(
-  request: FastifyRequest,
+export async function getAnoLectivosController(
+  _request: FastifyRequest,
   reply: FastifyReply
 ) {
-  const data = await recoveryAnoLectivos();
-  return reply.send({ data });
+  return reply.send(await getAnoLectivos());
 }
 
-export async function getAnoLectivo(
+export async function getAnoLectivoController(
   request: FastifyRequest<{ Params: anoLectivoParamsType }>,
   reply: FastifyReply
 ) {
   const { anoLectivoId } = request.params;
-  const anoLectivo = await recoveryAnoLectivo(anoLectivoId);
+  const anoLectivo = await getAnoLectivo(anoLectivoId);
 
   if (!anoLectivo) {
-    throwNotFoundRequest();
+    throwNotFoundAnoLectivoIdError();
   } else {
     return reply.send({
       id: anoLectivo.id,
@@ -156,14 +156,14 @@ export async function getAnoLectivo(
   }
 }
 
-export async function getAnoLectivoClasses(
+export async function getAnoLectivoClassesController(
   request: FastifyRequest<{ Params: anoLectivoParamsType }>,
   reply: FastifyReply
 ) {
   const { anoLectivoId } = request.params;
   const anoLectivo = await getAnoLectivoId(anoLectivoId);
 
-  if (!anoLectivo) throwNotFoundRequest();
+  if (!anoLectivo) throwNotFoundAnoLectivoIdError();
 
   const classes = await getClassesByAnoLectivo(anoLectivoId);
   const data = classes.map((classe) => {
@@ -177,23 +177,23 @@ export async function getAnoLectivoClasses(
   return reply.send({ data });
 }
 
-export async function addClasseToAnoLectivo(
+export async function createClasseToAnoLectivoController(
   request: FastifyRequest<{
     Params: anoLectivoParamsType;
-    Body: postClasseToAnoLectivoBodyType;
+    Body: createClasseToAnoLectivoBodyType;
   }>,
   reply: FastifyReply
 ) {
   const { anoLectivoId } = request.params;
   const { nome, cursoId } = request.body;
 
-  const [isAnoLectivo, isCurso] = await Promise.all([
+  const [isAnoLectivoId, isCursoId] = await Promise.all([
     await getAnoLectivoId(anoLectivoId),
     await getCursoId(cursoId),
   ]);
 
-  if (!isAnoLectivo) throwNotFoundRequest();
-  if (!isCurso) {
+  if (!isAnoLectivoId) throwNotFoundAnoLectivoIdError();
+  if (!isCursoId) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.NOT_FOUND,
       message: 'Curso inválido',

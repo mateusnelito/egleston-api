@@ -6,23 +6,14 @@ interface anoLectivoInterface {
   termino: Date;
 }
 
-export async function saveAnoLectivo(data: anoLectivoInterface) {
-  return await prisma.anoLectivo.create({
-    data,
-  });
+export async function createAnoLectivo(data: anoLectivoInterface) {
+  return await prisma.anoLectivo.create({ data });
 }
 
-export async function getAnoLectivoNome(nome: string, id?: number) {
-  const whereClause = id
-    ? {
-        id: { not: id },
-        nome,
-      }
-    : { nome };
-
-  return await prisma.anoLectivo.findFirst({
-    where: whereClause,
-    select: { nome: true },
+export async function getAnoLectivoNome(nome: string) {
+  return await prisma.anoLectivo.findUnique({
+    where: { nome },
+    select: { id: true },
   });
 }
 
@@ -33,20 +24,22 @@ export async function getAnoLectivoId(id: number) {
   });
 }
 
-export async function changeAnoLectivo(id: number, data: anoLectivoInterface) {
+export async function updateAnoLectivo(id: number, data: anoLectivoInterface) {
   return await prisma.anoLectivo.update({
     where: { id },
     data,
   });
 }
 
-export async function recoveryAnoLectivos() {
-  return await prisma.anoLectivo.findMany({
-    select: { id: true, nome: true },
-    orderBy: { id: 'desc' },
-  });
+export async function getAnoLectivos() {
+  return {
+    data: await prisma.anoLectivo.findMany({
+      select: { id: true, nome: true },
+      orderBy: { id: 'desc' },
+    }),
+  };
 }
 
-export async function recoveryAnoLectivo(id: number) {
+export async function getAnoLectivo(id: number) {
   return await prisma.anoLectivo.findUnique({ where: { id } });
 }

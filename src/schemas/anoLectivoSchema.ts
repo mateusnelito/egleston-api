@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
 import { classeBodySchema } from './classeSchemas';
+
 const anoLectivoBodySchema = z.object({
   id: z
     .number({
@@ -50,7 +51,7 @@ const anoLectivoParamsSchema = z.object({
     .positive({ message: 'O id do ano lectivo deve ser positivo.' }),
 });
 
-export const postAnoLectivoSchema = {
+export const createAnoLectivoSchema = {
   summary: 'Adiciona um ano lectivo ',
   tags: ['ano-lectivo'],
   body: anoLectivoBodySchema.omit({ id: true, nome: true }),
@@ -60,13 +61,13 @@ export const postAnoLectivoSchema = {
   },
 };
 
-export const putAnoLectivoSchema = {
+export const updateAnoLectivoSchema = {
   summary: 'Atualiza um ano lectivo existente',
   tags: ['ano-lectivo'],
   params: anoLectivoParamsSchema,
   body: anoLectivoBodySchema.omit({ id: true, nome: true }),
   response: {
-    200: anoLectivoBodySchema.omit({ id: true }),
+    200: anoLectivoBodySchema,
     404: notFoundRequestSchema,
     400: simpleBadRequestSchema,
   },
@@ -109,7 +110,7 @@ export const getAnoLectivoClassesSchema = {
   },
 };
 
-export const postClasseToAnoLectivoSchema = {
+export const createClasseToAnoLectivoSchema = {
   summary: 'Adiciona uma classe ao ano lectivo',
   tags: ['ano-lectivo'],
   params: anoLectivoParamsSchema,
@@ -121,8 +122,10 @@ export const postClasseToAnoLectivoSchema = {
   },
 };
 
-export type postAnoLectivoBodyType = z.infer<typeof postAnoLectivoSchema.body>;
+export type createAnoLectivoBodyType = z.infer<
+  typeof createAnoLectivoSchema.body
+>;
 export type anoLectivoParamsType = z.infer<typeof anoLectivoParamsSchema>;
-export type postClasseToAnoLectivoBodyType = z.infer<
-  typeof postClasseToAnoLectivoSchema.body
+export type createClasseToAnoLectivoBodyType = z.infer<
+  typeof createClasseToAnoLectivoSchema.body
 >;
