@@ -122,12 +122,12 @@ export async function createAlunoController(
     throwInvalidDataNascimentoError(`Idade inferior a ${MINIMUM_AGE} anos.`);
   }
 
-  const [alunoNumeroBi, alunoContactoTelefone] = await Promise.all([
+  const [isAlunoNumeroBi, isAlunoTelefone] = await Promise.all([
     await getAlunoNumeroBi(numeroBi),
     await getAlunoTelefone(telefone),
   ]);
 
-  if (alunoNumeroBi) {
+  if (isAlunoNumeroBi) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
       message: 'Número de BI inválido.',
@@ -135,11 +135,11 @@ export async function createAlunoController(
     });
   }
 
-  if (alunoContactoTelefone) throwInvalidTelefoneError();
+  if (isAlunoTelefone) throwInvalidTelefoneError();
 
   if (email) {
-    const alunoContactoEmail = await getAlunoEmail(email);
-    if (alunoContactoEmail) throwInvalidEmailError();
+    const isAlunoEmail = await getAlunoEmail(email);
+    if (isAlunoEmail) throwInvalidEmailError();
   }
 
   for (let i = 0; i < responsaveis.length; i++) {
@@ -147,13 +147,12 @@ export async function createAlunoController(
     const { telefone, email } = responsavel.contacto;
     const { parentescoId } = responsavel;
 
-    const [responsavelParentescoId, responsavelContactoTelefone] =
-      await Promise.all([
-        await getParentescoById(parentescoId),
-        await getResponsavelTelefone(telefone),
-      ]);
+    const [isParentescoId, isResponsavelTelefone] = await Promise.all([
+      await getParentescoById(parentescoId),
+      await getResponsavelTelefone(telefone),
+    ]);
 
-    if (!responsavelParentescoId) {
+    if (!isParentescoId) {
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Parentesco inválido.',
@@ -167,7 +166,7 @@ export async function createAlunoController(
       });
     }
 
-    if (responsavelContactoTelefone) {
+    if (isResponsavelTelefone) {
       throw new BadRequest({
         statusCode: HttpStatusCodes.BAD_REQUEST,
         message: 'Número de telefone inválido.',
@@ -184,8 +183,8 @@ export async function createAlunoController(
     }
 
     if (email) {
-      const responsavelContactoEmail = await getResponsavelEmail(email);
-      if (responsavelContactoEmail) {
+      const isResponsavelEmail = await getResponsavelEmail(email);
+      if (isResponsavelEmail) {
         throw new BadRequest({
           statusCode: HttpStatusCodes.BAD_REQUEST,
           message: 'Endereço de email inválido.',
@@ -231,18 +230,18 @@ export async function updateAlunoController(
     throwInvalidDataNascimentoError(`Idade inferior a ${MINIMUM_AGE} anos.`);
   }
 
-  const [isAlunoId, alunoContactoTelefone] = await Promise.all([
+  const [isAlunoId, isAlunoTelefone] = await Promise.all([
     await getAlunoId(alunoId),
     await getAlunoTelefone(telefone),
   ]);
 
   if (!isAlunoId) throwNotFoundAlunoIdError();
-  if (alunoContactoTelefone && alunoContactoTelefone.alunoId !== alunoId)
+  if (isAlunoTelefone && isAlunoTelefone.alunoId !== alunoId)
     throwInvalidTelefoneError();
 
   if (email) {
-    const alunoContactoEmail = await getAlunoEmail(email);
-    if (alunoContactoEmail && alunoContactoEmail.alunoId !== alunoId)
+    const isAlunoEmail = await getAlunoEmail(email);
+    if (isAlunoEmail && isAlunoEmail.alunoId !== alunoId)
       throwInvalidEmailError();
   }
 
@@ -289,8 +288,8 @@ export async function getAlunoResponsaveisController(
 ) {
   const { alunoId } = request.params;
 
-  const isAluno = await getAlunoId(alunoId);
-  if (!isAluno) throwNotFoundAlunoIdError();
+  const isAlunoId = await getAlunoId(alunoId);
+  if (!isAlunoId) throwNotFoundAlunoIdError();
 
   const responsaveis = await getAlunoResponsaveis(alunoId);
   return reply.send({ data: responsaveis });
@@ -310,10 +309,10 @@ export async function createAlunoResponsavelController(
   const { telefone, email } = data.contacto;
 
   const [
-    aluno,
+    isAlunoId,
     alunoTotalResponsaveis,
-    parentesco,
-    responsavelContactoTelefone,
+    isParentescoId,
+    isResponsavelTelefone,
   ] = await Promise.all([
     await getAlunoId(alunoId),
     await getTotalAlunoResponsaveis(alunoId),
@@ -321,7 +320,7 @@ export async function createAlunoResponsavelController(
     await getResponsavelTelefone(telefone),
   ]);
 
-  if (!aluno) throwNotFoundAlunoIdError();
+  if (!isAlunoId) throwNotFoundAlunoIdError();
 
   if (alunoTotalResponsaveis >= MINIMUM_RESPONSAVEIS) {
     throw new BadRequest({
@@ -334,18 +333,18 @@ export async function createAlunoResponsavelController(
   // 'Cause nobody has 2 fathers or mothers
 
   // TODO: search for better way to validate parentesco and avoid duplication
-  if (!parentesco) {
+  if (!isParentescoId) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.NOT_FOUND,
       message: 'Parentesco inválido.',
       errors: { parentescoId: ['parentescoId não existe.'] },
     });
   }
-  if (responsavelContactoTelefone) throwInvalidTelefoneError();
+  if (isResponsavelTelefone) throwInvalidTelefoneError();
 
   if (email) {
-    const responsavelContactoEmail = await getResponsavelEmail(email);
-    if (responsavelContactoEmail) throwInvalidEmailError();
+    const isResponsavelEmail = await getResponsavelEmail(email);
+    if (isResponsavelEmail) throwInvalidEmailError();
   }
 
   const responsavel = await saveResponsavel(alunoId, request.body);
