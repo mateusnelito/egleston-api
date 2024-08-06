@@ -4,17 +4,17 @@ import {
   getAnoLectivoClassesSchema,
   getAnoLectivoSchema,
   getAnoLectivosSchema,
-  postAnoLectivoSchema,
-  postClasseToAnoLectivoSchema,
-  putAnoLectivoSchema,
+  createAnoLectivoSchema,
+  createClasseToAnoLectivoSchema,
+  updateAnoLectivoSchema,
 } from '../schemas/anoLectivoSchema';
 import {
-  addClasseToAnoLectivo,
-  createAnoLectivo,
-  getAnoLectivo,
-  getAnoLectivoClasses,
-  getAnoLectivos,
-  updateAnoLectivo,
+  createClasseToAnoLectivoController,
+  createAnoLectivoController,
+  getAnoLectivoController,
+  getAnoLectivoClassesController,
+  getAnoLectivosController,
+  updateAnoLectivoController,
 } from '../controllers/anoLectivoController';
 
 export const anoLectivoRoutes: FastifyPluginAsync = async (
@@ -22,37 +22,37 @@ export const anoLectivoRoutes: FastifyPluginAsync = async (
 ) => {
   // POST
   server.withTypeProvider<ZodTypeProvider>().post('/', {
-    schema: postAnoLectivoSchema,
-    handler: createAnoLectivo,
+    schema: createAnoLectivoSchema,
+    handler: createAnoLectivoController,
   });
 
   // PUT
   server.withTypeProvider<ZodTypeProvider>().put('/:anoLectivoId', {
-    schema: putAnoLectivoSchema,
-    handler: updateAnoLectivo,
+    schema: updateAnoLectivoSchema,
+    handler: updateAnoLectivoController,
   });
 
   // GET
   server.withTypeProvider<ZodTypeProvider>().get('/', {
     schema: getAnoLectivosSchema,
-    handler: getAnoLectivos,
+    handler: getAnoLectivosController,
   });
 
   // GET UNIQUE
   server.withTypeProvider<ZodTypeProvider>().get('/:anoLectivoId', {
     schema: getAnoLectivoSchema,
-    handler: getAnoLectivo,
+    handler: getAnoLectivoController,
   });
 
   // GET Classes
   server.withTypeProvider<ZodTypeProvider>().get('/:anoLectivoId/classes', {
     schema: getAnoLectivoClassesSchema,
-    handler: getAnoLectivoClasses,
+    handler: getAnoLectivoClassesController,
   });
 
   // POST classe in ano lectivo
   server.withTypeProvider<ZodTypeProvider>().post('/:anoLectivoId/classes', {
-    schema: postClasseToAnoLectivoSchema,
-    handler: addClasseToAnoLectivo,
+    schema: createClasseToAnoLectivoSchema,
+    handler: createClasseToAnoLectivoController,
   });
 };
