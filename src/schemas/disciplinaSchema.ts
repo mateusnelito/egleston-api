@@ -1,20 +1,27 @@
 import { z } from 'zod';
-import { CURSO_NOME_REGEX, DESCRICAO_REGEX } from '../utils/regexPatterns';
+import { cursoNomeRegEx, descricaoRegEx } from '../utils/regexPatterns';
 import {
   complexBadRequestSchema,
-  getAllResourcesParamsSchema,
+  getAllResourcesQueriesSchema,
   notFoundRequestSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
 
 const disciplinaBodySchema = z.object({
+  id: z
+    .number({
+      required_error: 'O id de disciplina é obrigatório.',
+      invalid_type_error: 'O id de disciplina deve ser número.',
+    })
+    .int({ message: 'O id de disciplina deve ser inteiro.' })
+    .positive({ message: 'O id de disciplina deve ser positivo.' }),
   nome: z
     .string({
       required_error: 'O nome da disciplina é obrigatório.',
       invalid_type_error: 'O nome da disciplina deve ser uma string.',
     })
     .trim()
-    .regex(CURSO_NOME_REGEX, {
+    .regex(cursoNomeRegEx, {
       message:
         'O nome da disciplina deve começar com uma letra, pode conter apenas letras, números, espaços, hífens e apóstrofos, e deve ter entre 3 e 50 caracteres.',
     }),
@@ -24,7 +31,7 @@ const disciplinaBodySchema = z.object({
       invalid_type_error: 'A descrição da disciplina deve ser uma string.',
     })
     .trim()
-    .regex(DESCRICAO_REGEX, {
+    .regex(descricaoRegEx, {
       message:
         'A descrição da disciplina deve conter apenas letras, números, espaços e pontuação básica, com comprimento entre 10 e 500 caracteres.',
     }),
@@ -40,18 +47,12 @@ const disciplinaParamsSchema = z.object({
     .positive({ message: 'O id de disciplina deve ser positivo.' }),
 });
 
-const disciplinaOkResponseSchema = z.object({
-  id: z.number().int().positive(),
-  nome: z.string(),
-  descricao: z.string(),
-});
-
 export const createDisciplinaSchema = {
   summary: 'Adiciona uma nova disciplina',
   tags: ['disciplinas'],
-  body: disciplinaBodySchema,
+  body: disciplinaBodySchema.omit({ id: true }),
   response: {
-    201: disciplinaOkResponseSchema,
+    201: disciplinaBodySchema,
     400: simpleBadRequestSchema,
   },
 };
@@ -60,9 +61,9 @@ export const updateDisciplinaSchema = {
   summary: 'Atualiza uma disciplina existente',
   tags: ['disciplinas'],
   params: disciplinaParamsSchema,
-  body: disciplinaBodySchema,
+  body: disciplinaBodySchema.omit({ id: true }),
   response: {
-    200: disciplinaOkResponseSchema.omit({ id: true }),
+    200: disciplinaBodySchema,
     400: simpleBadRequestSchema,
     404: notFoundRequestSchema,
   },
@@ -71,26 +72,26 @@ export const updateDisciplinaSchema = {
 export const getDisciplinasSchema = {
   summary: 'Retorna todas as disciplinas',
   tags: ['disciplinas'],
-  querystring: getAllResourcesParamsSchema,
+  querystring: getAllResourcesQueriesSchema,
   response: {
     200: z.object({
-      data: z.array(disciplinaOkResponseSchema.omit({ descricao: true })),
+      data: z.array(disciplinaBodySchema.omit({ descricao: true })),
       next_cursor: z.number().optional(),
     }),
   },
 };
 
 export const getDisciplinaSchema = {
-  summary: 'Busca disciplina pelo id',
+  summary: 'Retorna uma disciplina',
   tags: ['disciplinas'],
   params: disciplinaParamsSchema,
   response: {
-    200: disciplinaOkResponseSchema,
+    200: disciplinaBodySchema,
     404: notFoundRequestSchema,
   },
 };
 
-export const associateCursosWithDisciplinaSchema = {
+export const createMultiplesCursoDisciplinaSchema = {
   summary: 'Associa Múltiplos cursos à uma disciplina',
   tags: ['disciplinas'],
   params: disciplinaParamsSchema,
@@ -129,14 +130,12 @@ export type updateDisciplinaBodyType = z.infer<
   typeof updateDisciplinaSchema.body
 >;
 
-export type uniqueDisciplinaResourceParamsType = z.infer<
-  typeof updateDisciplinaSchema.params
->;
+export type disciplinaParamsType = z.infer<typeof disciplinaParamsSchema>;
 
 export type getDisciplinasQueryStringType = z.infer<
   typeof getDisciplinasSchema.querystring
 >;
 
-export type associateCursosWithDisciplinaBodyType = z.infer<
-  typeof associateCursosWithDisciplinaSchema.body
+export type createCursoDisciplinaBodyType = z.infer<
+  typeof createMultiplesCursoDisciplinaSchema.body
 >;

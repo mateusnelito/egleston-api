@@ -1,36 +1,37 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
-  associateCursosWithDisciplinaBodyType,
+  createCursoDisciplinaBodyType,
   createDisciplinaBodyType,
+  disciplinaParamsType,
   getDisciplinasQueryStringType,
-  uniqueDisciplinaResourceParamsType,
   updateDisciplinaBodyType,
 } from '../schemas/disciplinaSchema';
 import {
-  changeDisciplina,
-  getDisciplinaDetails,
+  createMultiplesCursoDisciplinaByDisciplina,
+  getCursoDisciplina,
+} from '../services/cursosDisciplinasServices';
+import { getCursoId } from '../services/cursoServices';
+import {
+  createDisciplina,
+  getDisciplina,
   getDisciplinaId,
   getDisciplinaNome,
-  getDisciplinas as getDisciplinasService,
-  saveDisciplina,
+  getDisciplinas,
+  updateDisciplina,
 } from '../services/disciplinaServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
-import {
-  checkCursoDisciplinaAssociation,
-  associateCursosWithDisciplina as associateCursosWithDisciplinaService,
-} from '../services/cursosDisciplinasServices';
-import { getCursoId } from '../services/cursoServices';
+import { arrayHasDuplicatedValue } from '../utils/utils';
 
-function throwNotFoundRequest() {
+function throwNotDisciplinaIdError() {
   throw new NotFoundRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'Id da disciplina não existe.',
+    message: 'ID da disciplina não existe.',
   });
 }
 
-function throwNomeBadRequest() {
+function throwInvalidNomeError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Nome da disciplina inválido.',
@@ -38,22 +39,22 @@ function throwNomeBadRequest() {
   });
 }
 
-export async function createDisciplina(
+export async function createDisciplinaController(
   request: FastifyRequest<{ Body: createDisciplinaBodyType }>,
   reply: FastifyReply
 ) {
   const { nome } = request.body;
 
   const isDisciplinaNome = await getDisciplinaNome(nome);
-  if (isDisciplinaNome) throwNomeBadRequest();
+  if (isDisciplinaNome) throwInvalidNomeError();
 
-  const curso = await saveDisciplina(request.body);
-  return reply.status(HttpStatusCodes.CREATED).send(curso);
+  const disciplina = await createDisciplina(request.body);
+  return reply.status(HttpStatusCodes.CREATED).send(disciplina);
 }
 
-export async function updateDisciplina(
+export async function updateDisciplinaController(
   request: FastifyRequest<{
-    Params: uniqueDisciplinaResourceParamsType;
+    Params: disciplinaParamsType;
     Body: updateDisciplinaBodyType;
   }>,
   reply: FastifyReply
@@ -61,41 +62,38 @@ export async function updateDisciplina(
   const { disciplinaId } = request.params;
   const { nome } = request.body;
 
-  const [isDisciplina, isDisciplinaNome] = await Promise.all([
+  const [isDisciplinaId, disciplina] = await Promise.all([
     await getDisciplinaId(disciplinaId),
-    await getDisciplinaNome(nome, disciplinaId),
+    await getDisciplinaNome(nome),
   ]);
 
-  if (!isDisciplina) throwNotFoundRequest();
-  if (isDisciplinaNome) throwNomeBadRequest();
+  if (!isDisciplinaId) throwNotDisciplinaIdError();
+  if (disciplina && disciplina.id !== disciplinaId) throwInvalidNomeError();
 
-  const disciplina = await changeDisciplina(disciplinaId, request.body);
-  return reply.send({
-    nome: disciplina.nome,
-    descricao: disciplina.descricao,
-  });
+  const disciplinaUpdated = await updateDisciplina(disciplinaId, request.body);
+  return reply.send(disciplinaUpdated);
 }
 
-export async function getDisciplina(
+export async function getDisciplinaController(
   request: FastifyRequest<{
-    Params: uniqueDisciplinaResourceParamsType;
+    Params: disciplinaParamsType;
   }>,
   reply: FastifyReply
 ) {
   const { disciplinaId } = request.params;
-  const disciplina = await getDisciplinaDetails(disciplinaId);
-  if (!disciplina) throwNotFoundRequest();
-  return reply.send(disciplina);
+  const isDisciplinaId = await getDisciplina(disciplinaId);
+  if (!isDisciplinaId) throwNotDisciplinaIdError();
+  return reply.send(isDisciplinaId);
 }
 
-export async function getDisciplinas(
+export async function getDisciplinasController(
   request: FastifyRequest<{
     Querystring: getDisciplinasQueryStringType;
   }>,
   reply: FastifyReply
 ) {
   const { cursor, page_size } = request.query;
-  const cursos = await getDisciplinasService(page_size, cursor);
+  const cursos = await getDisciplinas(page_size, cursor);
 
   let next_cursor =
     cursos.length === page_size ? cursos[cursos.length - 1].id : undefined;
@@ -106,54 +104,64 @@ export async function getDisciplinas(
   });
 }
 
-export async function associateDisciplinaWithCursos(
+export async function createMultiplesCursoDisciplinaByDisciplinaController(
   request: FastifyRequest<{
-    Body: associateCursosWithDisciplinaBodyType;
-    Params: uniqueDisciplinaResourceParamsType;
+    Body: createCursoDisciplinaBodyType;
+    Params: disciplinaParamsType;
   }>,
   reply: FastifyReply
 ) {
   const { disciplinaId } = request.params;
   const { cursos } = request.body;
 
-  const isDisciplina = await getDisciplinaId(disciplinaId);
-  if (!isDisciplina) throwNotFoundRequest();
+  if (arrayHasDuplicatedValue(cursos)) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+      message: 'Cursos inválidos.',
+      errors: {
+        cursos: ['O array de cursos não pode conter items duplicados.'],
+      },
+    });
+  }
+
+  const isDisciplinaId = await getDisciplinaId(disciplinaId);
+  if (!isDisciplinaId) throwNotDisciplinaIdError();
 
   for (let i = 0; i < cursos.length; i++) {
     const cursoId = cursos[i];
 
-    const [isCurso, isCursoDisciplinaAssociation] = await Promise.all([
+    const [isCursoId, isCursoDisciplina] = await Promise.all([
       await getCursoId(cursoId),
-      await checkCursoDisciplinaAssociation(cursoId, disciplinaId),
+      await getCursoDisciplina(cursoId, disciplinaId),
     ]);
 
     // TODO: Finish the verification before send the errors, to send all invalids cursos
-    if (!isCurso) {
+    if (!isCursoId) {
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Curso inválido.',
         errors: {
           cursos: {
-            [i]: 'cursoId não existe.',
+            [i]: 'ID do curso não existe.',
           },
         },
       });
     }
 
-    if (isCursoDisciplinaAssociation) {
+    if (isCursoDisciplina) {
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Curso inválido.',
         errors: {
           cursos: {
-            [i]: 'cursoId Já está relacionada com a disciplina.',
+            [i]: 'cursoId Já está registrado com a disciplina.',
           },
         },
       });
     }
   }
 
-  const cursoDisciplinas = await associateCursosWithDisciplinaService(
+  const cursoDisciplinas = await createMultiplesCursoDisciplinaByDisciplina(
     disciplinaId,
     cursos
   );

@@ -1,11 +1,10 @@
 import { prisma } from '../lib/prisma';
 import { createDisciplinaBodyType } from '../schemas/disciplinaSchema';
 
-export async function getDisciplinaNome(nome: string, id?: number) {
-  const whereClause = id ? { id: { not: id }, nome } : { nome };
+export async function getDisciplinaNome(nome: string) {
   return await prisma.disciplina.findFirst({
-    where: whereClause,
-    select: { nome: true },
+    where: { nome },
+    select: { id: true },
   });
 }
 
@@ -16,15 +15,15 @@ export async function getDisciplinaId(id: number) {
   });
 }
 
-export async function getDisciplinaDetails(id: number) {
+export async function getDisciplina(id: number) {
   return await prisma.disciplina.findUnique({ where: { id } });
 }
 
-export async function saveDisciplina(data: createDisciplinaBodyType) {
+export async function createDisciplina(data: createDisciplinaBodyType) {
   return await prisma.disciplina.create({ data });
 }
 
-export async function changeDisciplina(
+export async function updateDisciplina(
   id: number,
   data: createDisciplinaBodyType
 ) {

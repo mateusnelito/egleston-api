@@ -1,14 +1,14 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
-  associateDisciplinaWithCursos,
-  createDisciplina,
-  getDisciplina,
-  getDisciplinas,
-  updateDisciplina,
+  createMultiplesCursoDisciplinaByDisciplinaController,
+  createDisciplinaController,
+  getDisciplinaController,
+  getDisciplinasController,
+  updateDisciplinaController,
 } from '../controllers/disciplinaController';
 import {
-  associateCursosWithDisciplinaSchema,
+  createMultiplesCursoDisciplinaSchema,
   createDisciplinaSchema,
   getDisciplinaSchema,
   getDisciplinasSchema,
@@ -21,31 +21,31 @@ const disciplinaRoutes: FastifyPluginAsync = async (
   // POST
   server.withTypeProvider<ZodTypeProvider>().post('/create', {
     schema: createDisciplinaSchema,
-    handler: createDisciplina,
+    handler: createDisciplinaController,
   });
 
   // PUT
   server.withTypeProvider<ZodTypeProvider>().put('/:disciplinaId', {
     schema: updateDisciplinaSchema,
-    handler: updateDisciplina,
+    handler: updateDisciplinaController,
   });
 
   // GET UNIQUE RESOURCE
   server.withTypeProvider<ZodTypeProvider>().get('/:disciplinaId', {
     schema: getDisciplinaSchema,
-    handler: getDisciplina,
+    handler: getDisciplinaController,
   });
 
   // GET ALL RESOURCES
   server.withTypeProvider<ZodTypeProvider>().get('/', {
     schema: getDisciplinasSchema,
-    handler: getDisciplinas,
+    handler: getDisciplinasController,
   });
 
   // POST ASSOCIATION BETWEEN MULTIPLES CURSO AND ONE DISCIPLINA
   server.withTypeProvider<ZodTypeProvider>().post('/:disciplinaId/cursos', {
-    schema: associateCursosWithDisciplinaSchema,
-    handler: associateDisciplinaWithCursos,
+    schema: createMultiplesCursoDisciplinaSchema,
+    handler: createMultiplesCursoDisciplinaByDisciplinaController,
   });
 };
 

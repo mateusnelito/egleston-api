@@ -47,11 +47,14 @@ export async function createMultiplesCursoDisciplinaByDisciplina(
   disciplinaId: number,
   cursos: Array<number>
 ) {
-  for (const cursoId of cursos) {
-    await prisma.cursosDisciplinas.create({
-      data: { disciplinaId, cursoId },
-    });
-  }
+  return await prisma.cursosDisciplinas.createMany({
+    data: cursos.map((cursoId) => {
+      return {
+        disciplinaId,
+        cursoId,
+      };
+    }),
+  });
 }
 
 export async function deleteCursoDisciplina(
