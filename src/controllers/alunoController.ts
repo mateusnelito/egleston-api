@@ -24,7 +24,10 @@ import {
   getResponsavelEmail,
   getResponsavelTelefone,
 } from '../services/responsavelContactoServices';
-import { saveResponsavel } from '../services/responsavelServices';
+import {
+  getTotalAlunoResponsaveis,
+  saveResponsavel,
+} from '../services/responsavelServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
@@ -88,16 +91,18 @@ export async function createAlunoController(
 ) {
   const { body: data } = request;
   const { responsaveis } = data;
+  const { dataNascimento, numeroBi } = data;
+  const { telefone, email } = data.contacto;
+  const dataNascimentoDate = new Date(dataNascimento);
 
-  // Check if in responsaveis array has contact data duplicated
   // TODO: CHECK IF THERE'S DUPLICATED RESPONSAVEIS OBJECT, NOT ONLY DUPLICATED CONTACTS
-  const responsaveisTelefone = responsaveis.map((responsavel) => {
-    return responsavel.contacto.telefone;
-  });
+  const responsaveisTelefone = responsaveis.map(
+    (responsavel) => responsavel.contacto.telefone
+  );
 
-  const responsaveisEmails = responsaveis.map((responsavel) => {
-    return responsavel.contacto?.email;
-  });
+  const responsaveisEmails = responsaveis.map(
+    (responsavel) => responsavel.contacto?.email
+  );
 
   if (
     arrayHasDuplicatedValue(responsaveisTelefone) ||
@@ -106,14 +111,11 @@ export async function createAlunoController(
     throwInvalidResponsaveisContactos();
   }
 
-  const { dataNascimento, numeroBi } = data;
-  const { telefone, email } = data.contacto;
-  const dataNascimentoDate = new Date(dataNascimento);
-
-  if (isBeginDateAfterEndDate(dataNascimentoDate, new Date()))
+  if (isBeginDateAfterEndDate(dataNascimentoDate, new Date())) {
     throwInvalidDataNascimentoError(
       'Data de nascimento não pôde estar no futuro.'
     );
+  }
 
   const age = calculateTimeBetweenDates(dataNascimentoDate, new Date(), 'y');
   if (age < MINIMUM_AGE) {
@@ -279,7 +281,7 @@ export async function getAlunoController(
   return reply.send(aluno);
 }
 
-export async function getResponsaveis(
+export async function getAlunoResponsaveisController(
   request: FastifyRequest<{
     Params: alunoParamsSchema;
   }>,
@@ -307,17 +309,30 @@ export async function createAlunoResponsavelController(
   const { parentescoId } = request.body;
   const { telefone, email } = data.contacto;
 
-  const [aluno, parentesco, responsavelContactoTelefone] = await Promise.all([
+  const [
+    aluno,
+    alunoTotalResponsaveis,
+    parentesco,
+    responsavelContactoTelefone,
+  ] = await Promise.all([
     await getAlunoId(alunoId),
+    await getTotalAlunoResponsaveis(alunoId),
     await getParentescoById(parentescoId),
     await getResponsavelTelefone(telefone),
   ]);
 
   if (!aluno) throwNotFoundAlunoIdError();
 
-  // TODO: Add a responsaveis limit like only 3 responsaveis for a time
+  if (alunoTotalResponsaveis >= MINIMUM_RESPONSAVEIS) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+      message: 'Número máximo de responsaveis atingido.',
+    });
+  }
+
   // TODO: Verify if already exist a father or mother in db for the current aluno
-  // TODO: 'Cause nobody has 2 fathers or mothers
+  // 'Cause nobody has 2 fathers or mothers
+
   // TODO: search for better way to validate parentesco and avoid duplication
   if (!parentesco) {
     throw new BadRequest({
