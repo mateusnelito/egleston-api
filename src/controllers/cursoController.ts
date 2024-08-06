@@ -1,45 +1,46 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
+  createClasseToCursoBodyType,
   createCursoBodyType,
-  cursoDisciplinasAssociationBodyType,
-  deleteCursoDisciplinaAssociationParamsType,
-  postClasseToCursoBodyType,
-  uniqueCursoResourceParamsType,
+  cursoDisciplinaAssociationBodyType,
+  cursoParamsType,
+  deleteCursoDisciplinaParamsType,
   updateCursoBodyType,
 } from '../schemas/cursoSchema';
+import { getAnoLectivoId } from '../services/anoLectivoServices';
 import {
-  changeCurso,
-  getCursoDetails,
+  createClasse,
+  getClasseByCompostUniqueKey,
+  getClassesByCurso,
+} from '../services/classeServices';
+import {
+  createCurso,
+  getCurso,
   getCursoId,
   getCursoNome,
-  getCursos as getCursosService,
-  saveCurso,
+  getCursos,
+  updateCurso,
 } from '../services/cursoServices';
 import {
-  associateDisciplinasWithCurso,
-  checkCursoDisciplinaAssociation,
+  createMultiplesCursoDisciplinaByCurso,
+  getCursoDisciplina,
   deleteCursoDisciplina,
-  deleteDisciplinasWithCursoAssociation,
+  deleteMultiplesCursoDisciplinasByCursoId,
 } from '../services/cursosDisciplinasServices';
 import { getDisciplinaId } from '../services/disciplinaServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
-import {
-  getClasseByCompostUniqueKey,
-  getClassesByCurso,
-  saveClasse,
-} from '../services/classeServices';
-import { getAnoLectivoId } from '../services/anoLectivoServices';
+import { arrayHasDuplicatedValue } from '../utils/utils';
 
-function throwNotFoundRequest() {
+function throwNotFoundCursoIdError() {
   throw new NotFoundRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
     message: 'Id de curso não existe.',
   });
 }
 
-function throwNomeBadRequest() {
+function throwInvalidNomeError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Nome de curso inválido.',
@@ -47,28 +48,43 @@ function throwNomeBadRequest() {
   });
 }
 
-export async function createCurso(
+function throwInvalidDisciplinasError() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Disciplinas inválidas.',
+    errors: {
+      disciplinas: [
+        'o array de disciplinas não podem conter items duplicados.',
+      ],
+    },
+  });
+}
+
+export async function createCursoController(
   request: FastifyRequest<{ Body: createCursoBodyType }>,
   reply: FastifyReply
 ) {
   const { nome, disciplinas } = request.body;
 
+  if (disciplinas && arrayHasDuplicatedValue(disciplinas))
+    throwInvalidDisciplinasError();
+
   const isCursoNome = await getCursoNome(nome);
-  if (isCursoNome) throwNomeBadRequest();
+  if (isCursoNome) throwInvalidNomeError();
 
   if (disciplinas) {
     for (let i = 0; i < disciplinas.length; i++) {
-      const disciplina = disciplinas[i];
-      const isDisciplina = await getDisciplinaId(disciplina);
+      const disciplinaId = disciplinas[i];
+      const isDisciplinaId = await getDisciplinaId(disciplinaId);
 
       // TODO: Finish the verification before send the errors, to send all invalids disciplinas
-      if (!isDisciplina) {
+      if (!isDisciplinaId) {
         throw new BadRequest({
           statusCode: HttpStatusCodes.NOT_FOUND,
           message: 'Disciplina inválida.',
           errors: {
             disciplinas: {
-              [i]: 'disciplinaId não existe.',
+              [i]: 'ID da disciplina não existe.',
             },
           },
         });
@@ -76,74 +92,75 @@ export async function createCurso(
     }
   }
 
-  const curso = await saveCurso(request.body);
+  const curso = await createCurso(request.body);
   return reply.status(HttpStatusCodes.CREATED).send(curso);
 }
 
-export async function updateCurso(
+export async function updateCursoController(
   request: FastifyRequest<{
     Body: updateCursoBodyType;
-    Params: uniqueCursoResourceParamsType;
+    Params: cursoParamsType;
   }>,
   reply: FastifyReply
 ) {
   const { cursoId } = request.params;
   const { nome } = request.body;
 
-  const [isCurso, isCursoNome] = await Promise.all([
+  const [isCursoId, curso] = await Promise.all([
     await getCursoId(cursoId),
-    await getCursoNome(nome, cursoId),
+    await getCursoNome(nome),
   ]);
 
-  if (!isCurso) throwNotFoundRequest();
-  if (isCursoNome) throwNomeBadRequest();
+  if (!isCursoId) throwNotFoundCursoIdError();
+  if (curso && curso.id !== cursoId) throwInvalidNomeError();
 
-  const curso = await changeCurso(cursoId, request.body);
-  return reply.send({
-    nome: curso.nome,
-    descricao: curso.descricao,
-    duracao: curso.duracao,
-  });
+  const cursoUpdated = await updateCurso(cursoId, request.body);
+  return reply.send(cursoUpdated);
 }
 
-export async function getCursos(request: FastifyRequest, reply: FastifyReply) {
-  const cursos = await getCursosService();
-  return reply.send({ data: cursos });
+export async function getCursosController(
+  _request: FastifyRequest,
+  reply: FastifyReply
+) {
+  const data = await getCursos();
+  return reply.send({ data });
 }
 
-export async function getCurso(
+export async function getCursoController(
   request: FastifyRequest<{
-    Params: uniqueCursoResourceParamsType;
+    Params: cursoParamsType;
   }>,
   reply: FastifyReply
 ) {
   const { cursoId } = request.params;
 
-  const curso = await getCursoDetails(cursoId);
-  if (!curso) throwNotFoundRequest();
+  const curso = await getCurso(cursoId);
+  if (!curso) throwNotFoundCursoIdError();
 
   return reply.send(curso);
 }
 
-export async function associateCursoWithDisciplinas(
+export async function createMultiplesCursoDisciplinaController(
   request: FastifyRequest<{
-    Body: cursoDisciplinasAssociationBodyType;
-    Params: uniqueCursoResourceParamsType;
+    Body: cursoDisciplinaAssociationBodyType;
+    Params: cursoParamsType;
   }>,
   reply: FastifyReply
 ) {
   const { cursoId } = request.params;
   const { disciplinas } = request.body;
 
-  const isCurso = await getCursoId(cursoId);
-  if (!isCurso) throwNotFoundRequest();
+  if (arrayHasDuplicatedValue(disciplinas)) throwInvalidDisciplinasError();
+
+  const isCursoId = await getCursoId(cursoId);
+  if (!isCursoId) throwNotFoundCursoIdError();
 
   for (let i = 0; i < disciplinas.length; i++) {
     const disciplinaId = disciplinas[i];
 
-    const [isDisciplinaId, isCursoDisciplinaAssociation] = await Promise.all([
+    const [isDisciplinaId, isCursoDisciplina] = await Promise.all([
       await getDisciplinaId(disciplinaId),
-      await checkCursoDisciplinaAssociation(cursoId, disciplinaId),
+      await getCursoDisciplina(cursoId, disciplinaId),
     ]);
 
     // TODO: Finish the verification before send the errors, to send all invalids disciplinas
@@ -153,26 +170,26 @@ export async function associateCursoWithDisciplinas(
         message: 'Disciplina inválida.',
         errors: {
           disciplinas: {
-            [i]: 'disciplinaId não existe.',
+            [i]: 'ID da disciplina não existe.',
           },
         },
       });
     }
 
-    if (isCursoDisciplinaAssociation) {
+    if (isCursoDisciplina) {
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Disciplina inválida.',
         errors: {
           disciplinas: {
-            [i]: 'disciplinaId Já está relacionada com o curso.',
+            [i]: 'Disciplina já registrada no curso.',
           },
         },
       });
     }
   }
 
-  const cursoDisciplinas = await associateDisciplinasWithCurso(
+  const cursoDisciplinas = await createMultiplesCursoDisciplinaByCurso(
     cursoId,
     disciplinas
   );
@@ -181,63 +198,61 @@ export async function associateCursoWithDisciplinas(
   return reply.send(cursoDisciplinas);
 }
 
-export async function destroyCursoDisciplina(
+export async function deleteCursoDisciplinaController(
   request: FastifyRequest<{
-    Params: deleteCursoDisciplinaAssociationParamsType;
+    Params: deleteCursoDisciplinaParamsType;
   }>,
   reply: FastifyReply
 ) {
   const { cursoId, disciplinaId } = request.params;
-  const isCursoDisciplinaRelation = await checkCursoDisciplinaAssociation(
-    cursoId,
-    disciplinaId
-  );
+  const isCursoDisciplina = await getCursoDisciplina(cursoId, disciplinaId);
 
-  if (!isCursoDisciplinaRelation) {
+  if (!isCursoDisciplina) {
     throw new NotFoundRequest({
       statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Associação não existe.',
+      message: 'Disciplina não registrada no curso.',
     });
   }
   const cursoDisciplina = await deleteCursoDisciplina(cursoId, disciplinaId);
+
+  // TODO: SEND A BETTE RESPONSE
   return reply.send(cursoDisciplina);
 }
 
-export async function deleteCursoWithDisciplinasAssociation(
+export async function deleteMultiplesCursoDisciplinasController(
   request: FastifyRequest<{
-    Body: cursoDisciplinasAssociationBodyType;
-    Params: uniqueCursoResourceParamsType;
+    Body: cursoDisciplinaAssociationBodyType;
+    Params: cursoParamsType;
   }>,
   reply: FastifyReply
 ) {
   const { cursoId } = request.params;
   const { disciplinas } = request.body;
 
-  const isCurso = await getCursoId(cursoId);
-  if (!isCurso) throwNotFoundRequest();
+  if (arrayHasDuplicatedValue(disciplinas)) throwInvalidDisciplinasError();
+
+  const isCursoId = await getCursoId(cursoId);
+  if (!isCursoId) throwNotFoundCursoIdError();
 
   for (let i = 0; i < disciplinas.length; i++) {
     const disciplinaId = disciplinas[i];
 
-    const isCursoDisciplinaAssociation = await checkCursoDisciplinaAssociation(
-      cursoId,
-      disciplinaId
-    );
+    const isCursoDisciplina = await getCursoDisciplina(cursoId, disciplinaId);
 
-    if (!isCursoDisciplinaAssociation) {
+    if (!isCursoDisciplina) {
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Disciplina inválida.',
         errors: {
           disciplinas: {
-            [i]: 'Não existe relação.',
+            [i]: 'Disciplina não registrada no curso.',
           },
         },
       });
     }
   }
 
-  const cursoDisciplinas = await deleteDisciplinasWithCursoAssociation(
+  const cursoDisciplinas = await deleteMultiplesCursoDisciplinasByCursoId(
     cursoId,
     disciplinas
   );
@@ -246,46 +261,39 @@ export async function deleteCursoWithDisciplinasAssociation(
   return reply.send(cursoDisciplinas);
 }
 
-export async function getCursoClasses(
+// TODO: CHECK IF THIS ENDPOINT SHOULD EXIST
+export async function getCursoClassesController(
   request: FastifyRequest<{
-    Params: uniqueCursoResourceParamsType;
+    Params: cursoParamsType;
   }>,
   reply: FastifyReply
 ) {
   const { cursoId } = request.params;
 
-  const curso = await getCursoId(cursoId);
-  if (!curso) throwNotFoundRequest();
+  const isCursoId = await getCursoId(cursoId);
+  if (!isCursoId) throwNotFoundCursoIdError();
 
   const classes = await getClassesByCurso(cursoId);
-  const data = classes.map((classe) => {
-    return {
-      id: classe.id,
-      nome: classe.nome,
-      anoLectivo: classe.AnoLectivo.nome,
-    };
-  });
-
-  return reply.send({ data });
+  return reply.send(classes);
 }
 
-export async function createClasseToCurso(
+export async function createClasseToCursoController(
   request: FastifyRequest<{
-    Params: uniqueCursoResourceParamsType;
-    Body: postClasseToCursoBodyType;
+    Params: cursoParamsType;
+    Body: createClasseToCursoBodyType;
   }>,
   reply: FastifyReply
 ) {
   const { cursoId } = request.params;
   const { nome, anoLectivoId } = request.body;
 
-  const [isCurso, isAnoLectivo] = await Promise.all([
+  const [isCursoId, isAnoLectivoId] = await Promise.all([
     await getCursoId(cursoId),
     await getAnoLectivoId(anoLectivoId),
   ]);
 
-  if (!isCurso) throwNotFoundRequest();
-  if (!isAnoLectivo) {
+  if (!isCursoId) throwNotFoundCursoIdError();
+  if (!isAnoLectivoId) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.NOT_FOUND,
       message: 'Ano lectivo inválido',
@@ -306,7 +314,7 @@ export async function createClasseToCurso(
     });
   }
 
-  const classe = await saveClasse({ nome, anoLectivoId, cursoId });
+  const classe = await createClasse({ nome, anoLectivoId, cursoId });
   // TODO: Send a appropriate response
   return reply.status(HttpStatusCodes.CREATED).send(classe);
 }

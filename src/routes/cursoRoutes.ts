@@ -1,83 +1,83 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
-  associateCursoWithDisciplinas,
-  createClasseToCurso,
-  createCurso,
-  deleteCursoWithDisciplinasAssociation,
-  destroyCursoDisciplina,
-  getCurso,
-  getCursoClasses,
-  getCursos,
-  updateCurso,
+  createMultiplesCursoDisciplinaController,
+  createClasseToCursoController,
+  createCursoController,
+  deleteMultiplesCursoDisciplinasController,
+  deleteCursoDisciplinaController,
+  getCursoController,
+  getCursoClassesController,
+  getCursosController,
+  updateCursoController,
 } from '../controllers/cursoController';
 import {
-  createCursoDisciplinasAssociationSchema,
+  createMultiplesCursoDisciplinaSchema,
   createCursoSchema,
-  deleteCursoDisciplinasAssociationSchema,
-  deleteCursoDisciplinaAssociationSchema,
+  deleteMultiplesCursoDisciplinaSchema,
+  deleteCursoDisciplinaSchema,
   getCursoClassesSchema,
   getCursoSchema,
   getCursosSchema,
   updateCursoSchema,
-  postClasseToCursoSchema,
+  createClasseToCursoSchema,
 } from '../schemas/cursoSchema';
 
 const cursosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
   // POST
   server.withTypeProvider<ZodTypeProvider>().post('/create', {
     schema: createCursoSchema,
-    handler: createCurso,
+    handler: createCursoController,
   });
 
   // PUT
   server.withTypeProvider<ZodTypeProvider>().put('/:cursoId', {
     schema: updateCursoSchema,
-    handler: updateCurso,
+    handler: updateCursoController,
   });
 
   // GET ALL RESOURCE
   server.withTypeProvider<ZodTypeProvider>().get('/', {
     schema: getCursosSchema,
-    handler: getCursos,
+    handler: getCursosController,
   });
 
   // GET UNIQUE RESOURCE
   server.withTypeProvider<ZodTypeProvider>().get('/:cursoId', {
     schema: getCursoSchema,
-    handler: getCurso,
+    handler: getCursoController,
   });
 
   // POST ASSOCIATION BETWEEN MULTIPLES DISCIPLINAS AND ONE CURSO
   server.withTypeProvider<ZodTypeProvider>().post('/:cursoId/disciplinas', {
-    schema: createCursoDisciplinasAssociationSchema,
-    handler: associateCursoWithDisciplinas,
+    schema: createMultiplesCursoDisciplinaSchema,
+    handler: createMultiplesCursoDisciplinaController,
   });
 
   // DELETE ASSOCIATION BETWEEN CURSO AND DISCIPLINA
   server
     .withTypeProvider<ZodTypeProvider>()
     .delete('/:cursoId/disciplinas/:disciplinaId', {
-      schema: deleteCursoDisciplinaAssociationSchema,
-      handler: destroyCursoDisciplina,
+      schema: deleteCursoDisciplinaSchema,
+      handler: deleteCursoDisciplinaController,
     });
 
   // DELETE ASSOCIATIONS BETWEEN MULTIPLES DISCIPLINAS AND ONE CURSO
   server.withTypeProvider<ZodTypeProvider>().delete('/:cursoId/disciplinas', {
-    schema: deleteCursoDisciplinasAssociationSchema,
-    handler: deleteCursoWithDisciplinasAssociation,
+    schema: deleteMultiplesCursoDisciplinaSchema,
+    handler: deleteMultiplesCursoDisciplinasController,
   });
 
   // GET All Classes
   server.withTypeProvider<ZodTypeProvider>().get('/:cursoId/classes', {
     schema: getCursoClassesSchema,
-    handler: getCursoClasses,
+    handler: getCursoClassesController,
   });
 
   // POST a classe to curso
   server.withTypeProvider<ZodTypeProvider>().post('/:cursoId/classes', {
-    schema: postClasseToCursoSchema,
-    handler: createClasseToCurso,
+    schema: createClasseToCursoSchema,
+    handler: createClasseToCursoController,
   });
 };
 

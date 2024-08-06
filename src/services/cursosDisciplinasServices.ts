@@ -1,31 +1,31 @@
 import { prisma } from '../lib/prisma';
 
-export async function checkCursoDisciplinaAssociation(
+export async function getCursoDisciplina(
   cursoId: number,
   disciplinaId: number
 ) {
   return await prisma.cursosDisciplinas.findUnique({
-    where: {
-      cursoId_disciplinaId: { cursoId, disciplinaId },
-    },
+    where: { cursoId_disciplinaId: { cursoId, disciplinaId } },
   });
 }
 
-export async function associateDisciplinasWithCurso(
+export async function createMultiplesCursoDisciplinaByCurso(
   cursoId: number,
   disciplinas: Array<number>
 ) {
-  for (const disciplinaId of disciplinas) {
-    await prisma.cursosDisciplinas.create({
-      data: { cursoId, disciplinaId },
-    });
-  }
+  // Create multiples CursoDisciplinas without save in variable
+  await prisma.cursosDisciplinas.createMany({
+    data: disciplinas.map((disciplinaId) => {
+      return {
+        cursoId,
+        disciplinaId,
+      };
+    }),
+  });
+
   const cursoDisciplina = await prisma.curso.findUnique({
     where: { id: cursoId },
-    select: {
-      nome: true,
-      descricao: true,
-      duracao: true,
+    include: {
       CursosDisciplinas: {
         select: { disciplinaId: true },
       },
@@ -33,6 +33,7 @@ export async function associateDisciplinasWithCurso(
   });
 
   return {
+    id: cursoDisciplina?.id,
     nome: cursoDisciplina?.nome,
     descricao: cursoDisciplina?.descricao,
     duracao: cursoDisciplina?.duracao,
@@ -42,7 +43,7 @@ export async function associateDisciplinasWithCurso(
   };
 }
 
-export async function associateCursosWithDisciplina(
+export async function createMultiplesCursoDisciplinaByDisciplina(
   disciplinaId: number,
   cursos: Array<number>
 ) {
@@ -58,13 +59,11 @@ export async function deleteCursoDisciplina(
   disciplinaId: number
 ) {
   return await prisma.cursosDisciplinas.delete({
-    where: {
-      cursoId_disciplinaId: { cursoId, disciplinaId },
-    },
+    where: { cursoId_disciplinaId: { cursoId, disciplinaId } },
   });
 }
 
-export async function deleteDisciplinasWithCursoAssociation(
+export async function deleteMultiplesCursoDisciplinasByCursoId(
   cursoId: number,
   disciplinas: Array<number>
 ) {
@@ -73,4 +72,24 @@ export async function deleteDisciplinasWithCursoAssociation(
       where: { cursoId_disciplinaId: { cursoId, disciplinaId } },
     });
   }
+
+  // FIXME: SOLVE THIS GAMBIARRA
+  const cursoDisciplina = await prisma.curso.findUnique({
+    where: { id: cursoId },
+    include: {
+      CursosDisciplinas: {
+        select: { disciplinaId: true },
+      },
+    },
+  });
+
+  return {
+    id: cursoDisciplina?.id,
+    nome: cursoDisciplina?.nome,
+    descricao: cursoDisciplina?.descricao,
+    duracao: cursoDisciplina?.duracao,
+    disciplinas: cursoDisciplina?.CursosDisciplinas?.map(
+      ({ disciplinaId }) => disciplinaId
+    ),
+  };
 }
