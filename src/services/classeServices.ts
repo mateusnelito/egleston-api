@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma';
-import { postClasseBodyType } from '../schemas/classeSchemas';
+import { createClasseBodyType } from '../schemas/classeSchemas';
 
 export async function getClasseByCompostUniqueKey(
   nome: string,
@@ -21,7 +21,7 @@ interface classeType {
   cursoId: number;
 }
 
-export async function saveClasse(data: postClasseBodyType) {
+export async function createClasse(data: createClasseBodyType) {
   const { turnos } = data;
 
   if (turnos) {
@@ -53,12 +53,12 @@ export async function getClasseId(id: number) {
   });
 }
 
-export async function changeClasse(id: number, data: postClasseBodyType) {
+export async function updateClasse(id: number, data: createClasseBodyType) {
   return await prisma.classe.update({ where: { id }, data });
 }
 
 export async function getClasse(id: number) {
-  return await prisma.classe.findUnique({
+  const classe = await prisma.classe.findUnique({
     where: { id },
     select: {
       id: true,
@@ -73,6 +73,13 @@ export async function getClasse(id: number) {
       },
     },
   });
+
+  return {
+    id: classe?.id,
+    nome: classe?.nome,
+    anoLectivo: classe?.AnoLectivo?.nome,
+    curso: classe?.Curso?.nome,
+  };
 }
 
 export async function getClassesByAnoLectivo(anoLectivoId: number) {

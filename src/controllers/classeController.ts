@@ -3,18 +3,18 @@ import {
   classeParamsType,
   classeTurnoBodyType,
   deleteClasseTurnoParamsType,
-  postClasseBodyType,
-  postTurmaToClasseBodyType,
+  createClasseBodyType,
+  createTurmaToClasseBodyType,
 } from '../schemas/classeSchemas';
 import { getAnoLectivoId } from '../services/anoLectivoServices';
 import { getCursoId } from '../services/cursoServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import {
-  changeClasse,
+  updateClasse,
   getClasseByCompostUniqueKey,
   getClasseId,
-  saveClasse,
+  createClasse,
   getClasse as getClasseService,
 } from '../services/classeServices';
 import NotFoundRequest from '../utils/NotFoundRequest';
@@ -31,6 +31,7 @@ import {
   deleteMultiplesClasseTurnoBasedOnClasseId,
   getClasseTurnoById,
 } from '../services/classeTurnoServices';
+import { arrayHasDuplicatedValue } from '../utils/utils';
 
 function throwNotFoundAnoLectivoIdError() {
   throw new BadRequest({
@@ -55,27 +56,39 @@ function throwNotFoundClasseIdError() {
   });
 }
 
-export async function createClasse(
-  request: FastifyRequest<{ Body: postClasseBodyType }>,
+function throwInvalidTurnosArrayError() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Turnos inválidos.',
+    errors: {
+      turnos: ['turnos não podem conter items duplicados.'],
+    },
+  });
+}
+
+export async function createClasseController(
+  request: FastifyRequest<{ Body: createClasseBodyType }>,
   reply: FastifyReply
 ) {
   const { nome, anoLectivoId, cursoId, turnos } = request.body;
 
-  const [isAnoLectivo, isCurso] = await Promise.all([
+  if (turnos && arrayHasDuplicatedValue(turnos)) throwInvalidTurnosArrayError();
+
+  const [isAnoLectivoId, isCursoId] = await Promise.all([
     await getAnoLectivoId(anoLectivoId),
     await getCursoId(cursoId),
   ]);
 
-  if (!isAnoLectivo) throwNotFoundAnoLectivoIdError();
-  if (!isCurso) throwNotFoundCursoIdError();
+  if (!isAnoLectivoId) throwNotFoundAnoLectivoIdError();
+  if (!isCursoId) throwNotFoundCursoIdError();
 
-  const isClasse = await getClasseByCompostUniqueKey(
+  const isClasseId = await getClasseByCompostUniqueKey(
     nome,
     anoLectivoId,
     cursoId
   );
 
-  if (isClasse) {
+  if (isClasseId) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
       message: 'Classe já existe.',
@@ -103,31 +116,30 @@ export async function createClasse(
   }
 
   // TODO: SEND A BETTER RESPONSE
-  const classe = await saveClasse(request.body);
+  const classe = await createClasse(request.body);
   return reply.status(HttpStatusCodes.CREATED).send(classe);
 }
 
-export async function updateClasse(
+export async function updateClasseController(
   request: FastifyRequest<{
     Params: classeParamsType;
-    Body: postClasseBodyType;
+    Body: createClasseBodyType;
   }>,
   reply: FastifyReply
 ) {
   const { classeId } = request.params;
   const { nome, anoLectivoId, cursoId } = request.body;
 
-  const isClasse = await getClasseId(classeId);
+  const isClasseId = await getClasseId(classeId);
+  if (!isClasseId) throwNotFoundClasseIdError();
 
-  if (!isClasse) throwNotFoundClasseIdError();
-
-  const [isAnoLectivo, isCurso] = await Promise.all([
+  const [isAnoLectivoId, isCursoId] = await Promise.all([
     await getAnoLectivoId(anoLectivoId),
     await getCursoId(cursoId),
   ]);
 
-  if (!isAnoLectivo) throwNotFoundAnoLectivoIdError();
-  if (!isCurso) throwNotFoundCursoIdError();
+  if (!isAnoLectivoId) throwNotFoundAnoLectivoIdError();
+  if (!isCursoId) throwNotFoundCursoIdError();
 
   const classe = await getClasseByCompostUniqueKey(nome, anoLectivoId, cursoId);
 
@@ -138,11 +150,11 @@ export async function updateClasse(
     });
   }
 
-  const updatedClasse = await changeClasse(classeId, request.body);
+  const updatedClasse = await updateClasse(classeId, request.body);
   return reply.send(updatedClasse);
 }
 
-export async function getClasse(
+export async function getClasseController(
   request: FastifyRequest<{ Params: classeParamsType }>,
   reply: FastifyReply
 ) {
@@ -151,12 +163,7 @@ export async function getClasse(
 
   if (!classe) throwNotFoundClasseIdError();
 
-  return reply.send({
-    id: classe?.id,
-    nome: classe?.nome,
-    anoLectivo: classe?.AnoLectivo?.nome,
-    curso: classe?.Curso?.nome,
-  });
+  return reply.send(classe);
 }
 
 export async function getClasseTurmasController(
@@ -168,20 +175,20 @@ export async function getClasseTurmasController(
 
   if (!isClasseId) throwNotFoundClasseIdError();
   const turmas = await getTurmasByClasse(classeId);
-  return reply.send({ data: turmas });
+  return reply.send(turmas);
 }
 
 export async function createTurmaInClasseController(
   request: FastifyRequest<{
     Params: classeParamsType;
-    Body: postTurmaToClasseBodyType;
+    Body: createTurmaToClasseBodyType;
   }>,
   reply: FastifyReply
 ) {
   const { classeId } = request.params;
   const { nome, salaId } = request.body;
 
-  const [isClasseId, isSalaId, isTurma] = await Promise.all([
+  const [isClasseId, isSalaId, isTurmaId] = await Promise.all([
     await getClasseId(classeId),
     await getSalaId(salaId),
     await getTurmaByUniqueCompostKey(nome, classeId, salaId),
@@ -197,7 +204,7 @@ export async function createTurmaInClasseController(
     });
   }
 
-  if (isTurma) {
+  if (isTurmaId) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
       message: 'Turma já registada na classe.',

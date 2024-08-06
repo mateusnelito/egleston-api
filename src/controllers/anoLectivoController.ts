@@ -15,7 +15,7 @@ import {
 import {
   getClasseByCompostUniqueKey,
   getClassesByAnoLectivo,
-  saveClasse,
+  createClasse,
 } from '../services/classeServices';
 import { getCursoId } from '../services/cursoServices';
 import BadRequest from '../utils/BadRequest';
@@ -214,7 +214,7 @@ export async function createClasseToAnoLectivoController(
     });
   }
 
-  const classe = await saveClasse({
+  const classe = await createClasse({
     nome,
     anoLectivoId,
     cursoId,

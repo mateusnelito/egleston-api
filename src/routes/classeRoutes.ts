@@ -3,22 +3,22 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
   getClasseSchema,
   getClasseTurmasSchema,
-  postClasseSchema,
+  createClasseSchema,
   deleteMultiplesClasseTurnoSchema,
-  postTurmaToClasseSchema,
-  putClasseSchema,
-  postMultiplesClasseTurnoSchema,
+  createTurmaToClasseSchema,
+  updateClasseSchema,
+  createMultiplesClasseTurnoSchema,
   deleteClasseTurnoSchema,
 } from '../schemas/classeSchemas';
 import {
-  createClasse,
+  createClasseController,
   createClasseTurnoController,
   createTurmaInClasseController,
   deleteClasseTurnoController,
   deleteMultiplesClasseTurnoController,
-  getClasse,
+  getClasseController,
   getClasseTurmasController,
-  updateClasse,
+  updateClasseController,
 } from '../controllers/classeController';
 
 export const classeRoutes: FastifyPluginAsync = async (
@@ -26,14 +26,14 @@ export const classeRoutes: FastifyPluginAsync = async (
 ) => {
   // POST
   server.withTypeProvider<ZodTypeProvider>().post('/', {
-    schema: postClasseSchema,
-    handler: createClasse,
+    schema: createClasseSchema,
+    handler: createClasseController,
   });
 
   // PUT
   server.withTypeProvider<ZodTypeProvider>().put('/:classeId', {
-    schema: putClasseSchema,
-    handler: updateClasse,
+    schema: updateClasseSchema,
+    handler: updateClasseController,
   });
 
   // // GET
@@ -45,7 +45,7 @@ export const classeRoutes: FastifyPluginAsync = async (
   // GET UNIQUE
   server.withTypeProvider<ZodTypeProvider>().get('/:classeId', {
     schema: getClasseSchema,
-    handler: getClasse,
+    handler: getClasseController,
   });
 
   // GET Turmas
@@ -56,13 +56,13 @@ export const classeRoutes: FastifyPluginAsync = async (
 
   // POST Turma
   server.withTypeProvider<ZodTypeProvider>().post('/:classeId/turmas', {
-    schema: postTurmaToClasseSchema,
+    schema: createTurmaToClasseSchema,
     handler: createTurmaInClasseController,
   });
 
   // POST Multiples ClasseTurnos
   server.withTypeProvider<ZodTypeProvider>().post('/:classeId/turnos', {
-    schema: postMultiplesClasseTurnoSchema,
+    schema: createMultiplesClasseTurnoSchema,
     handler: createClasseTurnoController,
   });
 

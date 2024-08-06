@@ -42,7 +42,7 @@ const classeParamsSchema = z.object({
     .positive({ message: 'O id da classe deve ser positivo.' }),
 });
 
-export const postClasseSchema = {
+export const createClasseSchema = {
   summary: 'Adiciona uma nova classe',
   tags: ['classes'],
   body: classeBodySchema.omit({ id: true }).extend({
@@ -75,7 +75,7 @@ export const postClasseSchema = {
   },
 };
 
-export const putClasseSchema = {
+export const updateClasseSchema = {
   summary: 'Atualiza uma classe existente',
   tags: ['classes'],
   params: classeParamsSchema,
@@ -111,7 +111,7 @@ export const getClasseTurmasSchema = {
   },
 };
 
-export const postTurmaToClasseSchema = {
+export const createTurmaToClasseSchema = {
   summary: 'Adiciona uma turma a classe',
   tags: ['classes'],
   params: classeParamsSchema,
@@ -157,7 +157,7 @@ const classeTurnoSchema = {
   },
 };
 
-export const postMultiplesClasseTurnoSchema = {
+export const createMultiplesClasseTurnoSchema = {
   ...classeTurnoSchema,
   summary: 'Associa Múltiplos turnos à uma classe',
 };
@@ -184,10 +184,10 @@ export const deleteClasseTurnoSchema = {
   },
 };
 
-export type postClasseBodyType = z.infer<typeof postClasseSchema.body>;
+export type createClasseBodyType = z.infer<typeof createClasseSchema.body>;
 export type classeParamsType = z.infer<typeof classeParamsSchema>;
-export type postTurmaToClasseBodyType = z.infer<
-  typeof postTurmaToClasseSchema.body
+export type createTurmaToClasseBodyType = z.infer<
+  typeof createTurmaToClasseSchema.body
 >;
 
 export type classeTurnoBodyType = z.infer<typeof classeTurnoSchema.body>;
