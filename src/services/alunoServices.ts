@@ -13,7 +13,7 @@ export async function createAluno(data: createAlunoBodyType) {
         nomeCompletoPai: data.nomeCompletoPai,
         nomeCompletoMae: data.nomeCompletoMae,
         numeroBi: data.numeroBi,
-        dataNascimento: new Date(data.dataNascimento),
+        dataNascimento: data.dataNascimento,
         genero: data.genero,
         Endereco: {
           create: data.endereco,
@@ -152,7 +152,7 @@ export async function updateAluno(id: number, data: updateAlunoBodyType) {
       nomeCompleto: data.nomeCompleto,
       nomeCompletoPai: data.nomeCompletoPai,
       nomeCompletoMae: data.nomeCompletoMae,
-      dataNascimento: new Date(data.dataNascimento),
+      dataNascimento: data.dataNascimento,
       genero: data.genero,
       Endereco: {
         update: data.endereco,

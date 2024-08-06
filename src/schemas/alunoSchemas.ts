@@ -4,7 +4,7 @@ import { contactoSchema } from './contactoSchema';
 import { enderecoSchema } from './enderecoSchema';
 import {
   complexBadRequestSchema,
-  getAllResourcesQueriesSchema,
+  getResourcesDefaultQueriesSchema,
   notFoundRequestSchema,
 } from './globalSchema';
 import {
@@ -81,7 +81,8 @@ const alunoBodySchema = z.object({
   dataNascimento: z
     .string({ required_error: 'A data de nascimento é obrigatória.' })
     .trim()
-    .date('A data de nascimento inválida.'),
+    .date('A data de nascimento inválida.')
+    .transform((birthDate) => new Date(birthDate)),
   genero: z.enum(['M', 'F'], { message: 'O género deve ser "M" ou "F".' }),
 });
 
@@ -111,6 +112,7 @@ export const createAlunoSchema = {
   }),
   response: {
     201: alunoBodySchema.extend({
+      dataNascimento: z.string().date(),
       endereco: enderecoSchema
         .omit({ numeroCasa: true })
         .extend({ numeroCasa: z.string().transform(Number) }),
@@ -131,6 +133,7 @@ export const updateAlunoSchema = {
   }),
   response: {
     200: alunoBodySchema.omit({ numeroBi: true }).extend({
+      dataNascimento: z.string().date(),
       endereco: enderecoSchema
         .omit({ numeroCasa: true })
         .extend({ numeroCasa: z.string().transform(Number) }),
@@ -144,14 +147,18 @@ export const updateAlunoSchema = {
 export const getAlunosSchema = {
   summary: 'Retorna todos os alunos',
   tags: ['alunos'],
-  querystring: getAllResourcesQueriesSchema,
+  querystring: getResourcesDefaultQueriesSchema,
   response: {
     200: z.object({
       data: z.array(
-        alunoBodySchema.omit({
-          nomeCompletoPai: true,
-          nomeCompletoMae: true,
-        })
+        alunoBodySchema
+          .extend({
+            dataNascimento: z.string().date(),
+          })
+          .omit({
+            nomeCompletoPai: true,
+            nomeCompletoMae: true,
+          })
       ),
       next_cursor: z.number().int().optional(),
     }),
@@ -164,6 +171,7 @@ export const getAlunoSchema = {
   params: alunoParamsSchema,
   response: {
     200: alunoBodySchema.extend({
+      dataNascimento: z.string().date(),
       endereco: enderecoSchema
         .omit({ numeroCasa: true })
         .extend({ numeroCasa: z.string().transform(Number) }),

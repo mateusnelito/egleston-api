@@ -19,7 +19,7 @@ import {
   getAlunos,
   createAluno,
 } from '../services/alunoServices';
-import { getParentescoById } from '../services/parentescoServices';
+import { getParentescoId } from '../services/parentescoServices';
 import {
   getResponsavelEmail,
   getResponsavelTelefone,
@@ -93,7 +93,6 @@ export async function createAlunoController(
   const { responsaveis } = data;
   const { dataNascimento, numeroBi } = data;
   const { telefone, email } = data.contacto;
-  const dataNascimentoDate = new Date(dataNascimento);
 
   // TODO: CHECK IF THERE'S DUPLICATED RESPONSAVEIS OBJECT, NOT ONLY DUPLICATED CONTACTS
   const responsaveisTelefone = responsaveis.map(
@@ -111,13 +110,13 @@ export async function createAlunoController(
     throwInvalidResponsaveisContactos();
   }
 
-  if (isBeginDateAfterEndDate(dataNascimentoDate, new Date())) {
+  if (isBeginDateAfterEndDate(dataNascimento, new Date())) {
     throwInvalidDataNascimentoError(
       'Data de nascimento não pôde estar no futuro.'
     );
   }
 
-  const age = calculateTimeBetweenDates(dataNascimentoDate, new Date(), 'y');
+  const age = calculateTimeBetweenDates(dataNascimento, new Date(), 'y');
   if (age < MINIMUM_AGE) {
     throwInvalidDataNascimentoError(`Idade inferior a ${MINIMUM_AGE} anos.`);
   }
@@ -148,7 +147,7 @@ export async function createAlunoController(
     const { parentescoId } = responsavel;
 
     const [isParentescoId, isResponsavelTelefone] = await Promise.all([
-      await getParentescoById(parentescoId),
+      await getParentescoId(parentescoId),
       await getResponsavelTelefone(telefone),
     ]);
 
@@ -316,7 +315,7 @@ export async function createAlunoResponsavelController(
   ] = await Promise.all([
     await getAlunoId(alunoId),
     await getTotalAlunoResponsaveis(alunoId),
-    await getParentescoById(parentescoId),
+    await getParentescoId(parentescoId),
     await getResponsavelTelefone(telefone),
   ]);
 
