@@ -1,11 +1,14 @@
 import { z } from 'zod';
-import {
-  getAllResourcesParamsSchema,
-  notFoundRequestSchema,
-  simpleBadRequestSchema,
-} from './globalSchema';
+import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
 
 const parentescoBodySchema = z.object({
+  id: z
+    .number({
+      required_error: 'O id de parentesco é obrigatório.',
+      invalid_type_error: 'O id de parentesco deve ser número.',
+    })
+    .int({ message: 'O id de parentesco deve ser inteiro.' })
+    .positive({ message: 'O id de parentesco deve ser positivo.' }),
   nome: z
     .string({
       required_error: 'O nome de parentesco é obrigatório.',
@@ -34,17 +37,12 @@ const parentescoParamsSchema = z.object({
     .positive({ message: 'O id de parentesco deve ser positivo.' }),
 });
 
-const parentescoOkResponseSchema = z.object({
-  id: z.number().int().positive(),
-  nome: z.string(),
-});
-
 export const createParentescoSchema = {
   summary: 'Adiciona um novo parentesco',
   tags: ['parentescos'],
-  body: parentescoBodySchema,
+  body: parentescoBodySchema.omit({ id: true }),
   response: {
-    201: parentescoOkResponseSchema,
+    201: parentescoBodySchema,
     400: simpleBadRequestSchema,
   },
 };
@@ -53,9 +51,9 @@ export const updateParentescoSchema = {
   summary: 'Atualiza um parentesco existente',
   tags: ['parentescos'],
   params: parentescoParamsSchema,
-  body: parentescoBodySchema,
+  body: parentescoBodySchema.omit({ id: true }),
   response: {
-    200: parentescoOkResponseSchema.omit({ id: true }),
+    200: parentescoBodySchema.omit({ id: true }),
     400: simpleBadRequestSchema,
     404: notFoundRequestSchema,
   },
@@ -66,7 +64,7 @@ export const getParentescosSchema = {
   tags: ['parentescos'],
   response: {
     200: z.object({
-      data: z.array(parentescoOkResponseSchema),
+      data: z.array(parentescoBodySchema),
     }),
   },
 };
@@ -76,7 +74,7 @@ export const getParentescoSchema = {
   tags: ['parentescos'],
   params: parentescoParamsSchema,
   response: {
-    200: parentescoOkResponseSchema,
+    200: parentescoBodySchema,
     404: notFoundRequestSchema,
   },
 };
@@ -88,6 +86,4 @@ export type updateParentescoBodyType = z.infer<
   typeof updateParentescoSchema.body
 >;
 
-export type uniqueParentescoResourceParamsType = z.infer<
-  typeof updateParentescoSchema.params
->;
+export type parentescoParamsType = z.infer<typeof parentescoParamsSchema>;

@@ -1,10 +1,10 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
-  createParentesco,
-  getParentesco,
-  getParentescos,
-  updateParentesco,
+  createParentescoController,
+  getParentescoController,
+  getParentescosController,
+  updateParentescoController,
 } from '../controllers/parentescoController';
 import {
   createParentescoSchema,
@@ -20,25 +20,25 @@ const parentescosRoutes: FastifyPluginAsync = async (
   // POST
   server.withTypeProvider<ZodTypeProvider>().post('/create', {
     schema: createParentescoSchema,
-    handler: createParentesco,
+    handler: createParentescoController,
   });
 
   // PUT
   server.withTypeProvider<ZodTypeProvider>().put('/:parentescoId', {
     schema: updateParentescoSchema,
-    handler: updateParentesco,
+    handler: updateParentescoController,
   });
 
   // GET ALL RESOURCES
   server.withTypeProvider<ZodTypeProvider>().get('/', {
     schema: getParentescosSchema,
-    handler: getParentescos,
+    handler: getParentescosController,
   });
 
   // GET UNIQUE RESOURCE
   server.withTypeProvider<ZodTypeProvider>().get('/:parentescoId', {
     schema: getParentescoSchema,
-    handler: getParentesco,
+    handler: getParentescoController,
   });
 };
 export default parentescosRoutes;
