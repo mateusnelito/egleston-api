@@ -1,12 +1,11 @@
-import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import {
-  storeAlunoBodyType,
+  createAlunoBodyType,
   updateAlunoBodyType,
 } from '../schemas/alunoSchemas';
 import { formatDate } from '../utils/utils';
 
-export async function saveAluno(data: storeAlunoBodyType) {
+export async function createAluno(data: createAlunoBodyType) {
   return prisma.$transaction(async (transaction) => {
     const aluno = await transaction.aluno.create({
       data: {
@@ -111,6 +110,7 @@ export async function getAlunoDetails(id: number) {
   });
 
   if (aluno) {
+    // TODO: MAKE A FN TO FORMAT ALUNO DATA
     return {
       id: aluno.id,
       nomeCompleto: aluno.nomeCompleto,
@@ -145,7 +145,7 @@ export async function getAlunoId(id: number) {
   return await prisma.aluno.findUnique({ where: { id }, select: { id: true } });
 }
 
-export async function changeAluno(id: number, data: updateAlunoBodyType) {
+export async function updateAluno(id: number, data: updateAlunoBodyType) {
   const aluno = await prisma.aluno.update({
     where: { id },
     data: {
