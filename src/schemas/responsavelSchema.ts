@@ -1,11 +1,8 @@
 import { z } from 'zod';
-import {
-  FULL_NAME_REGEX,
-  OUTROS_CONTACTOS_REGEX,
-} from '../utils/regexPatterns';
+import { fullNameRegEx } from '../utils/regexPatterns';
 import { contactoSchema } from './contactoSchema';
 import { enderecoSchema } from './enderecoSchema';
-import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
+import { complexBadRequestSchema, notFoundRequestSchema } from './globalSchema';
 
 export const responsavelBodySchema = z.object({
   id: z
@@ -15,6 +12,13 @@ export const responsavelBodySchema = z.object({
     })
     .int({ message: 'O id do responsavel deve ser inteiro.' })
     .positive({ message: 'O id do responsavel deve ser positivo.' }),
+  alunoId: z
+    .number({
+      required_error: 'O id do aluno é obrigatório.',
+      invalid_type_error: 'O id do aluno deve ser número.',
+    })
+    .int({ message: 'O id do aluno deve ser inteiro.' })
+    .positive({ message: 'O id do aluno deve ser positivo.' }),
   nomeCompleto: z
     .string({
       required_error: 'O nome completo é obrigatório.',
@@ -27,11 +31,11 @@ export const responsavelBodySchema = z.object({
     .max(100, {
       message: 'O nome completo deve possuir no máximo 100 caracteres.',
     })
-    .regex(FULL_NAME_REGEX, {
+    .regex(fullNameRegEx, {
       message:
         'O nome completo deve possuir apenas caracteres alfabéticos e espaços.',
     }),
-  parentescoId: z.coerce
+  parentescoId: z
     .number({
       required_error: 'O id de parentesco é obrigatório.',
       invalid_type_error: 'O id do parentesco deve ser número.',
@@ -41,22 +45,10 @@ export const responsavelBodySchema = z.object({
 });
 
 export const createResponsavelBodySchema = responsavelBodySchema
-  .omit({ id: true })
+  .omit({ id: true, alunoId: true })
   .extend({
     endereco: enderecoSchema,
-    contacto: contactoSchema.extend({
-      outros: z
-        .string({
-          invalid_type_error:
-            'Outros contactos devem estar em formato de string.',
-        })
-        .trim()
-        .regex(OUTROS_CONTACTOS_REGEX, {
-          message:
-            'Outros contactos deve possuir entre 5 e 255 caracteres e conter apenas letras, números, espaços, e os caracteres especiais comuns (.,;:\'"-())',
-        })
-        .optional(),
-    }),
+    contacto: contactoSchema,
   });
 
 export const responsavelParamsSchema = z.object({
@@ -73,12 +65,18 @@ export const updateResponsavelSchema = {
   summary: 'Atualiza um responsavel existente',
   tags: ['responsaveis'],
   params: responsavelParamsSchema,
-  body: responsavelBodySchema,
+  body: createResponsavelBodySchema,
   response: {
-    200: z.object({
-      nomeCompleto: z.string(),
-    }),
-    400: simpleBadRequestSchema,
+    200: responsavelBodySchema
+      .omit({ alunoId: true, parentescoId: true })
+      .extend({
+        parentesco: z.string(),
+        endereco: enderecoSchema.extend({
+          numeroCasa: z.string(),
+        }),
+        contacto: contactoSchema,
+      }),
+    400: complexBadRequestSchema,
     404: notFoundRequestSchema,
   },
 };
@@ -88,12 +86,15 @@ export const deleteResponsavelSchema = {
   tags: ['responsaveis'],
   params: responsavelParamsSchema,
   response: {
-    200: z.object({
-      id: z.number().int().positive(),
-      alunoId: z.number().int().positive(),
-      nomeCompleto: z.string(),
-      parentescoId: z.number().int().positive(),
-    }),
+    200: responsavelBodySchema
+      .omit({ parentescoId: true, alunoId: true })
+      .extend({
+        parentesco: z.string(),
+        endereco: enderecoSchema.extend({
+          numeroCasa: z.string(),
+        }),
+        contacto: contactoSchema,
+      }),
     404: notFoundRequestSchema,
   },
 };
@@ -103,28 +104,20 @@ export const getResponsavelSchema = {
   tags: ['responsaveis'],
   params: responsavelParamsSchema,
   response: {
-    200: z.object({
-      id: z.number().int().positive(),
-      nomeCompleto: z.string(),
-      parentesco: z.string(),
-      endereco: z.object({
-        bairro: z.string(),
-        rua: z.string(),
-        numeroCasa: z.string(),
+    200: responsavelBodySchema
+      .omit({ parentescoId: true, alunoId: true })
+      .extend({
+        parentesco: z.string(),
+        endereco: enderecoSchema.extend({
+          numeroCasa: z.string(),
+        }),
+        contacto: contactoSchema,
       }),
-      contacto: z.object({
-        telefone: z.string(),
-        email: z.string().email().nullable(),
-        outros: z.string().nullable(),
-      }),
-    }),
     404: notFoundRequestSchema,
   },
 };
 
-export type uniqueResponsavelResourceParamsType = z.infer<
-  typeof responsavelParamsSchema
->;
+export type responsavelParamsType = z.infer<typeof responsavelParamsSchema>;
 export type createResponsavelBodyType = z.infer<
   typeof createResponsavelBodySchema
 >;

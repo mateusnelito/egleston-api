@@ -1,7 +1,7 @@
 import { prisma } from '../lib/prisma';
 import { createResponsavelBodyType } from '../schemas/responsavelSchema';
 
-export async function saveResponsavel(
+export async function createResponsavel(
   alunoId: number,
   data: createResponsavelBodyType
 ) {
@@ -20,8 +20,8 @@ export async function saveResponsavel(
   });
 }
 
-export async function getResponsavelDetails(id: number) {
-  return await prisma.responsavel.findUnique({
+export async function getResponsavel(id: number) {
+  const responsavel = await prisma.responsavel.findUnique({
     where: { id },
     include: {
       Parentesco: {
@@ -43,6 +43,25 @@ export async function getResponsavelDetails(id: number) {
       },
     },
   });
+
+  if (responsavel) {
+    // TODO: REMOVE THIS DUPLICATED CODE
+    return {
+      id: responsavel.id,
+      nomeCompleto: responsavel.nomeCompleto,
+      parentesco: responsavel.Parentesco.nome,
+      endereco: {
+        bairro: responsavel?.Endereco?.bairro,
+        rua: responsavel?.Endereco?.rua,
+        numeroCasa: responsavel?.Endereco?.numeroCasa,
+      },
+      contacto: {
+        telefone: responsavel?.Contacto?.telefone,
+        email: responsavel?.Contacto?.email,
+        outros: responsavel?.Contacto?.outros,
+      },
+    };
+  }
 }
 
 export async function getResponsavelId(id: number) {
@@ -52,30 +71,103 @@ export async function getResponsavelId(id: number) {
   });
 }
 
-export async function changeResponsavel(id: number, data: responsavelBodyType) {
-  return await prisma.responsavel.update({
+export async function updateResponsavel(
+  id: number,
+  data: createResponsavelBodyType
+) {
+  const responsavel = await prisma.responsavel.update({
     where: { id },
     data: {
       nomeCompleto: data.nomeCompleto,
       parentescoId: data.parentescoId,
       Endereco: {
-        update: {
-          bairro: data.bairro,
-          rua: data.rua,
-          numeroCasa: data.numeroCasa,
+        update: data.endereco,
+      },
+      Contacto: {
+        update: data.contacto,
+      },
+    },
+    include: {
+      Parentesco: {
+        select: { nome: true },
+      },
+      Endereco: {
+        select: {
+          bairro: true,
+          rua: true,
+          numeroCasa: true,
         },
       },
       Contacto: {
-        update: {
-          telefone: data.telefone,
-          email: data.email,
-          outros: data.outros,
+        select: {
+          telefone: true,
+          email: true,
+          outros: true,
         },
       },
     },
   });
+
+  return {
+    id: responsavel.id,
+    nomeCompleto: responsavel.nomeCompleto,
+    parentesco: responsavel.Parentesco.nome,
+    endereco: {
+      bairro: responsavel?.Endereco?.bairro,
+      rua: responsavel?.Endereco?.rua,
+      numeroCasa: responsavel?.Endereco?.numeroCasa,
+    },
+    contacto: {
+      telefone: responsavel?.Contacto?.telefone,
+      email: responsavel?.Contacto?.email,
+      outros: responsavel?.Contacto?.outros,
+    },
+  };
 }
 
 export async function deleteResponsavel(id: number) {
-  return await prisma.responsavel.delete({ where: { id } });
+  const responsavel = await prisma.responsavel.delete({
+    where: { id },
+    include: {
+      Parentesco: {
+        select: { nome: true },
+      },
+      Endereco: {
+        select: {
+          bairro: true,
+          rua: true,
+          numeroCasa: true,
+        },
+      },
+      Contacto: {
+        select: {
+          telefone: true,
+          email: true,
+          outros: true,
+        },
+      },
+    },
+  });
+
+  return {
+    id: responsavel.id,
+    nomeCompleto: responsavel.nomeCompleto,
+    parentesco: responsavel.Parentesco.nome,
+    endereco: {
+      bairro: responsavel?.Endereco?.bairro,
+      rua: responsavel?.Endereco?.rua,
+      numeroCasa: responsavel?.Endereco?.numeroCasa,
+    },
+    contacto: {
+      telefone: responsavel?.Contacto?.telefone,
+      email: responsavel?.Contacto?.email,
+      outros: responsavel?.Contacto?.outros,
+    },
+  };
+}
+
+export async function getTotalAlunoResponsaveis(alunoId: number) {
+  return await prisma.responsavel.count({
+    where: { alunoId },
+  });
 }

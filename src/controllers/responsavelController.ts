@@ -1,24 +1,24 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   createResponsavelBodyType,
-  uniqueResponsavelResourceParamsType,
+  responsavelParamsType,
 } from '../schemas/responsavelSchema';
-import { getParentescoById } from '../services/parentescoServices';
+import { getParentescoId } from '../services/parentescoServices';
 import {
   getResponsavelEmail,
   getResponsavelTelefone,
 } from '../services/responsavelContactoServices';
 import {
-  changeResponsavel,
+  updateResponsavel,
   deleteResponsavel,
-  getResponsavelDetails,
+  getResponsavel,
   getResponsavelId,
 } from '../services/responsavelServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
 
-function throwNotFoundParentesco() {
+function throwNotFoundParentescoIdError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
     message: 'Parentesco inválido.',
@@ -26,7 +26,7 @@ function throwNotFoundParentesco() {
   });
 }
 
-function throwTelefoneBadRequest() {
+function throwInvalidTelefoneError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Número de telefone inválido.',
@@ -36,7 +36,7 @@ function throwTelefoneBadRequest() {
   });
 }
 
-function throwEmailBadRequest() {
+function throwInvalidEmailError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Endereço de email inválido.',
@@ -46,87 +46,80 @@ function throwEmailBadRequest() {
   });
 }
 
-function throwNotFoundRequest() {
+function throwNotFoundResponsavelId() {
   throw new NotFoundRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'Id de responsavel não existe.',
+    message: 'ID de responsavel não existe.',
   });
 }
 
-export async function updateResponsavel(
+export async function updateResponsavelController(
   request: FastifyRequest<{
-    Params: uniqueResponsavelResourceParamsType;
+    Params: responsavelParamsType;
     Body: createResponsavelBodyType;
   }>,
   reply: FastifyReply
 ) {
   const { responsavelId } = request.params;
-  const { parentescoId, telefone, email } = request.body;
+  const { body: data } = request;
+  const { parentescoId } = data;
+  const { telefone, email } = data.contacto;
 
-  const [isResponsavel, isParentesco, isTelefone] = await Promise.all([
-    await getResponsavelId(responsavelId),
-    await getParentescoById(parentescoId),
-    await getResponsavelTelefone(telefone, responsavelId),
-  ]);
+  const [isResponsavelId, isParentescoId, responsavelTelefone] =
+    await Promise.all([
+      await getResponsavelId(responsavelId),
+      await getParentescoId(parentescoId),
+      await getResponsavelTelefone(telefone),
+    ]);
 
-  if (!isResponsavel) throwNotFoundRequest();
+  if (!isResponsavelId) throwNotFoundResponsavelId();
 
   // TODO: Verify if already exist a father or mother in db for the current aluno
-  // TODO: 'Cause nobody has 2 fathers or mothers
+  // 'Cause nobody has 2 fathers or mothers
   // TODO: search for better way to validate parentesco and avoid duplication
-  if (!isParentesco) throwNotFoundParentesco();
-  if (isTelefone) throwTelefoneBadRequest();
+  if (!isParentescoId) throwNotFoundParentescoIdError();
+
+  if (
+    responsavelTelefone &&
+    responsavelTelefone.responsavelId !== responsavelId
+  )
+    throwInvalidTelefoneError();
 
   if (email) {
-    const isEmail = await getResponsavelEmail(email, responsavelId);
-    if (isEmail) throwEmailBadRequest();
+    const responsavelEmail = await getResponsavelEmail(email);
+    if (responsavelEmail && responsavelEmail.responsavelId !== responsavelId)
+      throwInvalidEmailError();
   }
 
-  const responsavel = await changeResponsavel(responsavelId, request.body);
-  return reply
-    .status(HttpStatusCodes.OK)
-    .send({ nomeCompleto: responsavel.nomeCompleto });
+  const responsavel = await updateResponsavel(responsavelId, data);
+  return reply.send(responsavel);
 }
 
-export async function destroyResponsavel(
+export async function deleteResponsavelController(
   request: FastifyRequest<{
-    Params: uniqueResponsavelResourceParamsType;
+    Params: responsavelParamsType;
   }>,
   reply: FastifyReply
 ) {
   const { responsavelId } = request.params;
 
-  const isResponsavel = await getResponsavelId(responsavelId);
-  if (!isResponsavel) throwNotFoundRequest();
+  const isResponsavelId = await getResponsavelId(responsavelId);
+  if (!isResponsavelId) throwNotFoundResponsavelId();
 
   const responsavel = await deleteResponsavel(responsavelId);
   return reply.send(responsavel);
 }
 
-export async function getResponsavel(
+export async function getResponsavelController(
   request: FastifyRequest<{
-    Params: uniqueResponsavelResourceParamsType;
+    Params: responsavelParamsType;
   }>,
   reply: FastifyReply
 ) {
   const { responsavelId } = request.params;
 
-  const responsavel = await getResponsavelDetails(responsavelId);
-  if (!responsavel) throwNotFoundRequest();
+  const responsavel = await getResponsavel(responsavelId);
+  if (!responsavel) throwNotFoundResponsavelId();
 
-  return reply.send({
-    id: responsavel?.id,
-    nomeCompleto: responsavel?.nomeCompleto,
-    parentesco: responsavel?.Parentesco?.nome,
-    endereco: {
-      bairro: responsavel?.Endereco?.bairro,
-      rua: responsavel?.Endereco?.rua,
-      numeroCasa: responsavel?.Endereco?.numeroCasa,
-    },
-    contacto: {
-      telefone: responsavel?.Contacto?.telefone,
-      email: responsavel?.Contacto?.email,
-      outros: responsavel?.Contacto?.outros,
-    },
-  });
+  return reply.send(responsavel);
 }

@@ -1,9 +1,9 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
-  destroyResponsavel,
-  getResponsavel,
-  updateResponsavel,
+  deleteResponsavelController,
+  getResponsavelController,
+  updateResponsavelController,
 } from '../controllers/responsavelController';
 import {
   deleteResponsavelSchema,
@@ -18,19 +18,19 @@ const responsaveisRoutes: FastifyPluginAsync = async (
   // PUT
   server.withTypeProvider<ZodTypeProvider>().put('/:responsavelId', {
     schema: updateResponsavelSchema,
-    handler: updateResponsavel,
+    handler: updateResponsavelController,
   });
 
   // // DELETE UNIQUE RESOURCE
   server.withTypeProvider<ZodTypeProvider>().delete('/:responsavelId', {
     schema: deleteResponsavelSchema,
-    handler: destroyResponsavel,
+    handler: deleteResponsavelController,
   });
 
   // GET UNIQUE RESOURCE
   server.withTypeProvider<ZodTypeProvider>().get('/:responsavelId', {
     schema: getResponsavelSchema,
-    handler: getResponsavel,
+    handler: getResponsavelController,
   });
 };
 export default responsaveisRoutes;
