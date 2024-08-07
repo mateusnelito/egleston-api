@@ -1,32 +1,33 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
-  postMultiplesClassesInTurnoBodyType,
+  createMultiplesClassesInTurnoBodyType,
   turnoBodyType,
   turnoParamsType,
 } from '../schemas/turnoSchemas';
+import { getClasseId } from '../services/classeServices';
 import {
-  changeTurno,
+  getClasseTurnoById,
+  createMultiplesClasseTurnoByTurno,
+} from '../services/classeTurnoServices';
+import {
+  createTurno,
   getTurno,
   getTurnoByInicioAndTermino,
   getTurnoByNome,
   getTurnoId,
   getTurnos,
-  saveTurno,
+  updateTurno,
 } from '../services/turnoServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
 import {
+  arrayHasDuplicatedValue,
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
 } from '../utils/utils';
-import {
-  saveMultiplesClasseTurnoBasedOnTurnoId,
-  getClasseTurnoById,
-} from '../services/classeTurnoServices';
-import { getClasseId } from '../services/classeServices';
 
-function throwTurnoNomeAlreadyExist() {
+function throwTurnoNomeAlreadyError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Nome inválido',
@@ -34,7 +35,7 @@ function throwTurnoNomeAlreadyExist() {
   });
 }
 
-function throwInicioBadRequest() {
+function throwInvalidInicioError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Hora de início inválida.',
@@ -42,21 +43,21 @@ function throwInicioBadRequest() {
   });
 }
 
-function throwTurnoAlreadyExistBadRequest() {
+function throwTurnoAlreadyExistError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Turno já existe.',
   });
 }
 
-function throwNotFoundTurno() {
+function throwNotFoundTurnoIdError() {
   throw new NotFoundRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
     message: 'ID do turno não existe.',
   });
 }
 
-function throwDurationBadRequest(message: string) {
+function throwInvalidYearDurationError(message: string) {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message,
@@ -77,7 +78,8 @@ export async function createTurnoController(
   const inicioDate = new Date(`${BASE_DATE} ${inicio}`);
   const terminoDate = new Date(`${BASE_DATE} ${termino}`);
 
-  if (isBeginDateAfterEndDate(inicioDate, terminoDate)) throwInicioBadRequest();
+  if (isBeginDateAfterEndDate(inicioDate, terminoDate))
+    throwInvalidInicioError();
 
   const turnoDurationHours = calculateTimeBetweenDates(
     inicioDate,
@@ -86,24 +88,24 @@ export async function createTurnoController(
   );
 
   if (turnoDurationHours < MINIMUM_DURATION_HOURS)
-    throwDurationBadRequest(
+    throwInvalidYearDurationError(
       `A duração do turno deve ser no minimo de ${MINIMUM_DURATION_HOURS}h.`
     );
 
   if (turnoDurationHours > MAXIMUM_DURATION_HOURS)
-    throwDurationBadRequest(
+    throwInvalidYearDurationError(
       `A duração do turno deve ser no maximo de ${MAXIMUM_DURATION_HOURS}h.`
     );
 
-  const [isTurnoNome, isTurno] = await Promise.all([
+  const [isTurnoNome, isTurnoId] = await Promise.all([
     await getTurnoByNome(nome),
     await getTurnoByInicioAndTermino(inicio, termino),
   ]);
 
-  if (isTurnoNome) throwTurnoNomeAlreadyExist();
-  if (isTurno) throwTurnoAlreadyExistBadRequest();
+  if (isTurnoNome) throwTurnoNomeAlreadyError();
+  if (isTurnoId) throwTurnoAlreadyExistError();
 
-  const turno = await saveTurno({ nome, inicio, termino });
+  const turno = await createTurno({ nome, inicio, termino });
   return reply.status(HttpStatusCodes.CREATED).send(turno);
 }
 
@@ -116,7 +118,8 @@ export async function updateTurnoController(
   const inicioDate = new Date(`${BASE_DATE} ${inicio}`);
   const terminoDate = new Date(`${BASE_DATE} ${termino}`);
 
-  if (isBeginDateAfterEndDate(inicioDate, terminoDate)) throwInicioBadRequest();
+  if (isBeginDateAfterEndDate(inicioDate, terminoDate))
+    throwInvalidInicioError();
 
   const turnoDurationHours = calculateTimeBetweenDates(
     inicioDate,
@@ -125,28 +128,28 @@ export async function updateTurnoController(
   );
 
   if (turnoDurationHours < MINIMUM_DURATION_HOURS)
-    throwDurationBadRequest(
+    throwInvalidYearDurationError(
       `A duração do turno deve ser no minimo de ${MINIMUM_DURATION_HOURS}h.`
     );
 
   if (turnoDurationHours > MAXIMUM_DURATION_HOURS)
-    throwDurationBadRequest(
+    throwInvalidYearDurationError(
       `A duração do turno deve ser no maximo de ${MAXIMUM_DURATION_HOURS}h.`
     );
 
   const { turnoId } = request.params;
 
-  const [isTurnoId, isTurnoNome, turno] = await Promise.all([
+  const [isTurnoId, turnoNome, turno] = await Promise.all([
     await getTurnoId(turnoId),
-    await getTurnoByNome(nome, turnoId),
+    await getTurnoByNome(nome),
     await getTurnoByInicioAndTermino(inicio, termino),
   ]);
 
-  if (!isTurnoId) throwNotFoundTurno();
-  if (isTurnoNome) throwTurnoNomeAlreadyExist();
-  if (turno && turno.id !== turnoId) throwTurnoAlreadyExistBadRequest();
+  if (!isTurnoId) throwNotFoundTurnoIdError();
+  if (turnoNome && turnoNome.id !== turnoId) throwTurnoNomeAlreadyError();
+  if (turno && turno.id !== turnoId) throwTurnoAlreadyExistError();
 
-  const turnoUpdated = await changeTurno(turnoId, { nome, inicio, termino });
+  const turnoUpdated = await updateTurno(turnoId, { nome, inicio, termino });
   return reply.send(turnoUpdated);
 }
 
@@ -155,10 +158,9 @@ export async function getTurnoController(
   reply: FastifyReply
 ) {
   const { turnoId } = request.params;
-
   const turno = await getTurno(turnoId);
 
-  if (!turno) throwNotFoundTurno();
+  if (!turno) throwNotFoundTurnoIdError();
   return reply.send(turno);
 }
 
@@ -166,25 +168,33 @@ export async function getTurnosController(
   request: FastifyRequest,
   reply: FastifyReply
 ) {
-  const data = await getTurnos();
-  return reply.send({ data });
+  const turnos = await getTurnos();
+  return reply.send(turnos);
 }
 
-export async function createMultiplesClasseTurnoController(
+export async function createMultiplesClasseTurnoByTurnoController(
   request: FastifyRequest<{
     Params: turnoParamsType;
-    Body: postMultiplesClassesInTurnoBodyType;
+    Body: createMultiplesClassesInTurnoBodyType;
   }>,
   reply: FastifyReply
 ) {
   const { turnoId } = request.params;
   const { classes } = request.body;
 
+  if (arrayHasDuplicatedValue(classes)) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+      message: 'Classes inválidas.',
+      errors: {
+        cursos: ['O array de classes não pode conter items duplicados.'],
+      },
+    });
+  }
+
   const isTurnoId = await getTurnoId(turnoId);
+  if (!isTurnoId) throwNotFoundTurnoIdError();
 
-  if (!isTurnoId) throwNotFoundTurno();
-
-  // FIXME: VERIFY IF IN ARRAY EXIST DUPLICATED ENTRY
   for (let i = 0; i < classes.length; i++) {
     const classeId = classes[i];
 
@@ -200,7 +210,7 @@ export async function createMultiplesClasseTurnoController(
         message: 'Classe inválida.',
         errors: {
           classes: {
-            [i]: 'classeId não existe.',
+            [i]: 'ID da classe não existe.',
           },
         },
       });
@@ -212,14 +222,14 @@ export async function createMultiplesClasseTurnoController(
         message: 'Classe inválida.',
         errors: {
           turnos: {
-            [i]: 'classe Já está relacionada com o turno.',
+            [i]: 'classe Já está registrada ao turno.',
           },
         },
       });
     }
   }
 
-  const classeTurnos = await saveMultiplesClasseTurnoBasedOnTurnoId(
+  const classeTurnos = await createMultiplesClasseTurnoByTurno(
     turnoId,
     classes
   );

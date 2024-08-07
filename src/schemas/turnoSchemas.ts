@@ -4,6 +4,7 @@ import {
   notFoundRequestSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
+
 const turnoBodySchema = z.object({
   id: z
     .number({
@@ -25,9 +26,6 @@ const turnoBodySchema = z.object({
       message: 'O nome do turno deve possuir no máximo 30 caracteres.',
     }),
   // TODO: Add appropriated regex
-  // .regex(//, {
-  //   message: 'o nome do turno deve seguir o padrão 9999-9999.',
-  // }),
   inicio: z
     .string({
       required_error: 'O inicio é obrigatório.',
@@ -52,7 +50,7 @@ const turnoParamsSchema = z.object({
     .positive({ message: 'O id do turno deve ser positivo.' }),
 });
 
-export const postTurnoSchema = {
+export const createTurnoSchema = {
   summary: 'Adiciona um novo turno',
   tags: ['turnos'],
   body: turnoBodySchema.omit({ id: true }),
@@ -62,13 +60,13 @@ export const postTurnoSchema = {
   },
 };
 
-export const putTurnoSchema = {
+export const updateTurnoSchema = {
   summary: 'Atualiza um turno existente',
   tags: ['turnos'],
   params: turnoParamsSchema,
   body: turnoBodySchema.omit({ id: true }),
   response: {
-    200: turnoBodySchema.omit({ id: true }),
+    200: turnoBodySchema,
     404: notFoundRequestSchema,
     400: simpleBadRequestSchema,
   },
@@ -94,7 +92,7 @@ export const getTurnosSchema = {
   },
 };
 
-export const postMultiplesClassesInTurnoSchema = {
+export const createMultiplesClassesInTurnoSchema = {
   tags: ['turnos'],
   summary: 'Associa um turno à várias classes.',
   params: turnoParamsSchema,
@@ -125,8 +123,8 @@ export const postMultiplesClassesInTurnoSchema = {
   },
 };
 
-export type turnoBodyType = z.infer<typeof postTurnoSchema.body>;
+export type turnoBodyType = z.infer<typeof createTurnoSchema.body>;
 export type turnoParamsType = z.infer<typeof turnoParamsSchema>;
-export type postMultiplesClassesInTurnoBodyType = z.infer<
-  typeof postMultiplesClassesInTurnoSchema.body
+export type createMultiplesClassesInTurnoBodyType = z.infer<
+  typeof createMultiplesClassesInTurnoSchema.body
 >;
