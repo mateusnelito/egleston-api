@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma';
-import { postSalaBodyType } from '../schemas/salaSchemas';
+import { createSalaBodyType } from '../schemas/salaSchemas';
 
 export async function getSalaByNome(nome: string) {
   return await prisma.sala.findUnique({
@@ -8,7 +8,7 @@ export async function getSalaByNome(nome: string) {
   });
 }
 
-export async function saveSala(data: postSalaBodyType) {
+export async function createSala(data: createSalaBodyType) {
   return await prisma.sala.create({ data });
 }
 
@@ -16,11 +16,10 @@ export async function getSalaId(id: number) {
   return await prisma.sala.findUnique({ where: { id }, select: { id: true } });
 }
 
-export async function changeSala(id: number, data: postSalaBodyType) {
+export async function updateSala(id: number, data: createSalaBodyType) {
   return await prisma.sala.update({
     where: { id },
     data,
-    select: { nome: true, capacidade: true, localizacao: true },
   });
 }
 
@@ -29,8 +28,10 @@ export async function getSala(id: number) {
 }
 
 export async function getSalas() {
-  return await prisma.sala.findMany({
-    select: { id: true, nome: true },
-    orderBy: { id: 'desc' },
-  });
+  return {
+    data: await prisma.sala.findMany({
+      select: { id: true, nome: true },
+      orderBy: { id: 'desc' },
+    }),
+  };
 }

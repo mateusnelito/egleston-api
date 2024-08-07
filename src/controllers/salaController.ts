@@ -1,28 +1,28 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
-  postSalaBodyType,
-  postTurmaToSalaBodyType,
+  createSalaBodyType,
+  createTurmaToSalaBodyType,
   salaParamsType,
 } from '../schemas/salaSchemas';
+import { getClasseId } from '../services/classeServices';
 import {
-  changeSala,
+  createSala,
   getSala,
   getSalaByNome,
   getSalaId,
   getSalas,
-  saveSala,
+  updateSala,
 } from '../services/salaServices';
+import {
+  createTurma,
+  getTurmaByUniqueCompostKey,
+  getTurmasBySala,
+} from '../services/turmaServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
-import {
-  getTurmaByUniqueCompostKey,
-  getTurmasBySala,
-  saveTurma,
-} from '../services/turmaServices';
-import { getClasseId } from '../services/classeServices';
 
-function throwNomeAlreadyExist() {
+function throwInvalidNomeError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Nome inválido',
@@ -38,33 +38,33 @@ function throwNotFoundSalaIdError() {
 }
 
 export async function createSalaController(
-  request: FastifyRequest<{ Body: postSalaBodyType }>,
+  request: FastifyRequest<{ Body: createSalaBodyType }>,
   reply: FastifyReply
 ) {
   const { nome } = request.body;
   const isSalaNome = await getSalaByNome(nome);
 
-  if (isSalaNome) throwNomeAlreadyExist();
-  const sala = await saveSala(request.body);
+  if (isSalaNome) throwInvalidNomeError();
+  const sala = await createSala(request.body);
   return reply.status(HttpStatusCodes.CREATED).send(sala);
 }
 
 export async function updateSalaController(
-  request: FastifyRequest<{ Params: salaParamsType; Body: postSalaBodyType }>,
+  request: FastifyRequest<{ Params: salaParamsType; Body: createSalaBodyType }>,
   reply: FastifyReply
 ) {
   const { salaId } = request.params;
   const { nome } = request.body;
 
-  const [isSala, sala] = await Promise.all([
+  const [isSalaId, sala] = await Promise.all([
     await getSalaId(salaId),
     await getSalaByNome(nome),
   ]);
 
-  if (!isSala) throwNotFoundSalaIdError();
-  if (sala && sala.id !== salaId) throwNomeAlreadyExist();
+  if (!isSalaId) throwNotFoundSalaIdError();
+  if (sala && sala.id !== salaId) throwInvalidNomeError();
 
-  const updatedSala = await changeSala(salaId, request.body);
+  const updatedSala = await updateSala(salaId, request.body);
   return reply.send(updatedSala);
 }
 
@@ -73,7 +73,6 @@ export async function getSalaController(
   reply: FastifyReply
 ) {
   const { salaId } = request.params;
-
   const sala = await getSala(salaId);
 
   if (!sala) throwNotFoundSalaIdError();
@@ -81,11 +80,11 @@ export async function getSalaController(
 }
 
 export async function getSalasController(
-  request: FastifyRequest,
+  _request: FastifyRequest,
   reply: FastifyReply
 ) {
-  const data = await getSalas();
-  return reply.send({ data });
+  const salas = await getSalas();
+  return reply.send(salas);
 }
 
 export async function getSalaTurmasController(
@@ -97,20 +96,20 @@ export async function getSalaTurmasController(
 
   if (!isSalaId) throwNotFoundSalaIdError();
   const turmas = await getTurmasBySala(salaId);
-  return reply.send({ data: turmas });
+  return reply.send(turmas);
 }
 
 export async function createTurmaInSalaController(
   request: FastifyRequest<{
     Params: salaParamsType;
-    Body: postTurmaToSalaBodyType;
+    Body: createTurmaToSalaBodyType;
   }>,
   reply: FastifyReply
 ) {
   const { salaId } = request.params;
   const { nome, classeId } = request.body;
 
-  const [isClasseId, isSalaId, isTurma] = await Promise.all([
+  const [isClasseId, isSalaId, isTurmaId] = await Promise.all([
     await getClasseId(classeId),
     await getSalaId(salaId),
     await getTurmaByUniqueCompostKey(nome, salaId, salaId),
@@ -125,13 +124,13 @@ export async function createTurmaInSalaController(
     });
   }
 
-  if (isTurma) {
+  if (isTurmaId) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
       message: 'Turma já registada na sala.',
     });
   }
 
-  const turma = await saveTurma({ nome, classeId: salaId, salaId });
+  const turma = await createTurma({ nome, classeId, salaId });
   return reply.status(HttpStatusCodes.CREATED).send(turma);
 }

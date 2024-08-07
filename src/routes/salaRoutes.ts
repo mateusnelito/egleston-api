@@ -4,9 +4,9 @@ import {
   getSalaSchema,
   getSalasSchema,
   getSalaTurmasSchema,
-  postSalaSchema,
-  postTurmaToSalaSchema,
-  putSalaSchema,
+  createSalaSchema,
+  createTurmaToSalaSchema,
+  updateSalaSchema,
 } from '../schemas/salaSchemas';
 import {
   createSalaController,
@@ -22,13 +22,13 @@ export const salaRoutes: FastifyPluginAsync = async (
 ) => {
   // POST
   server.withTypeProvider<ZodTypeProvider>().post('/', {
-    schema: postSalaSchema,
+    schema: createSalaSchema,
     handler: createSalaController,
   });
 
   // PUT
   server.withTypeProvider<ZodTypeProvider>().put('/:salaId', {
-    schema: putSalaSchema,
+    schema: updateSalaSchema,
     handler: updateSalaController,
   });
 
@@ -52,7 +52,7 @@ export const salaRoutes: FastifyPluginAsync = async (
 
   // POST Turma
   server.withTypeProvider<ZodTypeProvider>().post('/:salaId/turmas', {
-    schema: postTurmaToSalaSchema,
+    schema: createTurmaToSalaSchema,
     handler: createTurmaInSalaController,
   });
 };

@@ -22,9 +22,6 @@ const salaBodySchema = z.object({
       message: 'O nome da sala deve possuir no máximo 30 caracteres.',
     }),
   // TODO: Add appropriated regex
-  // .regex(//, {
-  //   message: 'o nome da sala deve seguir o padrão 9999-9999.',
-  // }),
   capacidade: z
     .number({
       required_error: 'A capacidade é obrigatória.',
@@ -57,7 +54,7 @@ const salaParamsSchema = z.object({
     .positive({ message: 'O id da sala deve ser positivo.' }),
 });
 
-export const postSalaSchema = {
+export const createSalaSchema = {
   summary: 'Adiciona uma nova sala',
   tags: ['salas'],
   body: salaBodySchema.omit({ id: true }),
@@ -67,13 +64,13 @@ export const postSalaSchema = {
   },
 };
 
-export const putSalaSchema = {
+export const updateSalaSchema = {
   summary: 'Atualiza uma sala existente',
   tags: ['salas'],
   params: salaParamsSchema,
   body: salaBodySchema.omit({ id: true }),
   response: {
-    200: salaBodySchema.omit({ id: true }),
+    200: salaBodySchema,
     400: simpleBadRequestSchema,
     404: notFoundRequestSchema,
   },
@@ -113,7 +110,7 @@ export const getSalaTurmasSchema = {
   },
 };
 
-export const postTurmaToSalaSchema = {
+export const createTurmaToSalaSchema = {
   summary: 'Adiciona uma turma a uma sala',
   tags: ['salas'],
   params: salaParamsSchema,
@@ -125,8 +122,8 @@ export const postTurmaToSalaSchema = {
   },
 };
 
-export type postSalaBodyType = z.infer<typeof postSalaSchema.body>;
+export type createSalaBodyType = z.infer<typeof createSalaSchema.body>;
 export type salaParamsType = z.infer<typeof salaParamsSchema>;
-export type postTurmaToSalaBodyType = z.infer<
-  typeof postTurmaToSalaSchema.body
+export type createTurmaToSalaBodyType = z.infer<
+  typeof createTurmaToSalaSchema.body
 >;
