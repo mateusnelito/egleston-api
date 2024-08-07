@@ -1,27 +1,19 @@
 import { prisma } from '../lib/prisma';
 
-export async function getTelefone(telefone: string, responsavelId?: number) {
-  const whereClause = responsavelId
-    ? { responsavelId: { not: responsavelId }, telefone }
-    : { telefone };
-
-  return await prisma.responsavelContacto.findFirst({
-    where: whereClause,
+export async function getResponsavelTelefone(telefone: string) {
+  return await prisma.responsavelContacto.findUnique({
+    where: { telefone },
     select: {
-      telefone: true,
+      responsavelId: true,
     },
   });
 }
 
-export async function getEmail(email: string, responsavelId?: number) {
-  const whereClause = responsavelId
-    ? { responsavelId: { not: responsavelId }, email }
-    : { email };
-
+export async function getResponsavelEmail(email: string) {
   return await prisma.responsavelContacto.findFirst({
-    where: whereClause,
+    where: { email },
     select: {
-      email: true,
+      responsavelId: true,
     },
   });
 }

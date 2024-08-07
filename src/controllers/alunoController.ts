@@ -26,7 +26,7 @@ import {
 } from '../services/responsavelContactoServices';
 import {
   getTotalAlunoResponsaveis,
-  saveResponsavel,
+  createResponsavel,
 } from '../services/responsavelServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
@@ -346,6 +346,6 @@ export async function createAlunoResponsavelController(
     if (isResponsavelEmail) throwInvalidEmailError();
   }
 
-  const responsavel = await saveResponsavel(alunoId, request.body);
+  const responsavel = await createResponsavel(alunoId, request.body);
   return reply.status(HttpStatusCodes.CREATED).send(responsavel);
 }
