@@ -31,6 +31,7 @@ export const contactoSchema = z.object(
         message:
           'Outros contactos deve possuir entre 5 e 255 caracteres e conter apenas letras, números, espaços, e os caracteres especiais comuns (.,;:\'"-())',
       })
+      .nullable()
       .optional(),
   },
   { required_error: 'contacto é obrigatório.' }
