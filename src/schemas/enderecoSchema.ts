@@ -31,5 +31,8 @@ export const enderecoSchema = z.object(
       .max(99999, { message: 'O número da casa máximo valido é 99999.' })
       .transform(String),
   },
-  { required_error: 'endereço é obrigatório.' }
+  {
+    required_error: 'endereço é obrigatório.',
+    invalid_type_error: 'endereco deve ser um object.',
+  }
 );
