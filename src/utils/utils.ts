@@ -16,3 +16,9 @@ export function calculateTimeBetweenDates(
 ): number {
   return dayjs(end).diff(dayjs(begin), unit);
 }
+
+// Only work with primitive values: 1, 2, 3 || "a", "b", "c"
+// Not with objects
+export function arrayHasDuplicatedValue(array: Array<any>) {
+  return new Set(array).size !== array.length;
+}
