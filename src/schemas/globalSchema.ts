@@ -24,7 +24,7 @@ export const notFoundRequestSchema = defaultBadRequestSchema
   })
   .or(defaultBadRequestSchema);
 
-export const getAllResourcesParamsSchema = z.object({
+export const getResourcesDefaultQueriesSchema = z.object({
   page_size: z.coerce
     .number({
       invalid_type_error: 'O tamanho da página deve ser número.',

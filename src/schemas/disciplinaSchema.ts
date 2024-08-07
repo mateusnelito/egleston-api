@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { cursoNomeRegEx, descricaoRegEx } from '../utils/regexPatterns';
 import {
   complexBadRequestSchema,
-  getAllResourcesQueriesSchema,
+  getResourcesDefaultQueriesSchema,
   notFoundRequestSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
@@ -72,7 +72,7 @@ export const updateDisciplinaSchema = {
 export const getDisciplinasSchema = {
   summary: 'Retorna todas as disciplinas',
   tags: ['disciplinas'],
-  querystring: getAllResourcesQueriesSchema,
+  querystring: getResourcesDefaultQueriesSchema,
   response: {
     200: z.object({
       data: z.array(disciplinaBodySchema.omit({ descricao: true })),
