@@ -12,7 +12,7 @@ export async function getTurmaByUniqueCompostKey(
   });
 }
 
-export async function saveTurma(data: turmaBodyType) {
+export async function createTurma(data: turmaBodyType) {
   return await prisma.turma.create({ data });
 }
 
@@ -20,12 +20,12 @@ export async function getTurmaId(id: number) {
   return await prisma.turma.findUnique({ where: { id }, select: { id: true } });
 }
 
-export async function changeTurma(id: number, data: turmaBodyType) {
+export async function updateTurma(id: number, data: turmaBodyType) {
   return await prisma.turma.update({ where: { id }, data });
 }
 
 export async function getTurma(id: number) {
-  return await prisma.turma.findUnique({
+  const turma = await prisma.turma.findUnique({
     where: { id },
     select: {
       id: true,
@@ -38,18 +38,31 @@ export async function getTurma(id: number) {
       },
     },
   });
+
+  if (turma) {
+    return {
+      id: turma?.id,
+      nome: turma?.nome,
+      classe: turma?.Classe.nome,
+      sala: turma?.Sala.nome,
+    };
+  }
 }
 
 export async function getTurmasByClasse(classeId: number) {
-  return await prisma.turma.findMany({
-    where: { classeId },
-    select: { id: true, nome: true },
-  });
+  return {
+    data: await prisma.turma.findMany({
+      where: { classeId },
+      select: { id: true, nome: true },
+    }),
+  };
 }
 
 export async function getTurmasBySala(salaId: number) {
-  return await prisma.turma.findMany({
-    where: { salaId },
-    select: { id: true, nome: true },
-  });
+  return {
+    data: await prisma.turma.findMany({
+      where: { salaId },
+      select: { id: true, nome: true },
+    }),
+  };
 }

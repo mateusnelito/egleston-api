@@ -3,11 +3,11 @@ import { turmaBodyType, turmaParamsType } from '../schemas/turmaSchemas';
 import { getClasseId } from '../services/classeServices';
 import { getSalaId } from '../services/salaServices';
 import {
-  changeTurma,
+  updateTurma,
   getTurma,
   getTurmaByUniqueCompostKey,
   getTurmaId,
-  saveTurma,
+  createTurma,
 } from '../services/turmaServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
@@ -48,7 +48,7 @@ export async function createTurmaController(
   reply: FastifyReply
 ) {
   const { nome, classeId, salaId } = request.body;
-  const [isClasseId, isSalaId, isTurma] = await Promise.all([
+  const [isClasseId, isSalaId, isTurmaId] = await Promise.all([
     await getClasseId(classeId),
     await getSalaId(salaId),
     await getTurmaByUniqueCompostKey(nome, classeId, salaId),
@@ -56,9 +56,10 @@ export async function createTurmaController(
 
   if (!isClasseId) throwNotFoundClasseIdError();
   if (!isSalaId) throwNotFoundSalaIdError();
-  if (isTurma) throwTurmaAlreadyExistError();
+  if (isTurmaId) throwTurmaAlreadyExistError();
 
-  const turma = await saveTurma({ nome, classeId, salaId });
+  // TODO: SEND A BETTER RESPONSE
+  const turma = await createTurma({ nome, classeId, salaId });
   return reply.status(HttpStatusCodes.CREATED).send(turma);
 }
 
@@ -69,7 +70,7 @@ export async function updateTurmaController(
   const { nome, classeId, salaId } = request.body;
   const { turmaId } = request.params;
 
-  const [isTurmaId, isClasseId, isSalaId, isTurma] = await Promise.all([
+  const [isTurmaId, isClasseId, isSalaId, turma] = await Promise.all([
     await getTurmaId(turmaId),
     await getClasseId(classeId),
     await getSalaId(salaId),
@@ -79,11 +80,11 @@ export async function updateTurmaController(
   if (!isTurmaId) throwNotFoundTurmaIdError();
   if (!isClasseId) throwNotFoundClasseIdError();
   if (!isSalaId) throwNotFoundSalaIdError();
-  if (isTurma && isTurma.id !== turmaId) throwTurmaAlreadyExistError();
+  if (turma && turma.id !== turmaId) throwTurmaAlreadyExistError();
 
-  const turma = await changeTurma(turmaId, { nome, classeId, salaId });
+  const turmaUpdated = await updateTurma(turmaId, { nome, classeId, salaId });
   // TODO: SEND A BETTER RESPONSE
-  return reply.send(turma);
+  return reply.send(turmaUpdated);
 }
 
 export async function getTurmaController(
@@ -95,10 +96,6 @@ export async function getTurmaController(
   const turma = await getTurma(turmaId);
   if (!turma) throwNotFoundTurmaIdError();
 
-  return reply.send({
-    id: turma?.id,
-    nome: turma?.nome,
-    classe: turma?.Classe.nome,
-    sala: turma?.Sala.nome,
-  });
+  // TODO: SEND A BETTER RESPONSE
+  return reply.send(turma);
 }
