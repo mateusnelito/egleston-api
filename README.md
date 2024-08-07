@@ -42,7 +42,7 @@ Egleston-API é uma API REST projetada para gerir as operações de uma escola, 
 A documentação completa da API pode ser acessada através da interface Swagger
 
 - [Documentação Swagger Online](#)
-- Para acessar localmente, inicie a API e navegue até http://localhost:8000/swagger.
+- Para acessar localmente, inicie a API e navegue até http://localhost:8000/docs.
 
 ## Tecnologias Utilizadas
 

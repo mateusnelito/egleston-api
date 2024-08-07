@@ -63,7 +63,7 @@ async function swaggerDocs(server: FastifyInstance) {
   });
 
   server.register(fastifySwaggerUi, {
-    prefix: '/swagger',
+    prefix: '/docs',
   });
 }
 export default fastifyPlugin(swaggerDocs);
