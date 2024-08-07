@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { outrosContactosRegEx } from '../utils/regexPatterns';
 
 export const contactoSchema = z.object(
   {
@@ -19,6 +20,17 @@ export const contactoSchema = z.object(
       .trim()
       .email({ message: 'O endereço de email é inválido.' })
       .nullable()
+      .optional(),
+    outros: z
+      .string({
+        invalid_type_error:
+          'Outros contactos devem estar em formato de string.',
+      })
+      .trim()
+      .regex(outrosContactosRegEx, {
+        message:
+          'Outros contactos deve possuir entre 5 e 255 caracteres e conter apenas letras, números, espaços, e os caracteres especiais comuns (.,;:\'"-())',
+      })
       .optional(),
   },
   { required_error: 'contacto é obrigatório.' }

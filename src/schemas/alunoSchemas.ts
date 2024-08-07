@@ -101,7 +101,7 @@ export const createAlunoSchema = {
   tags: ['alunos'],
   body: alunoBodySchema.omit({ id: true }).extend({
     endereco: enderecoSchema,
-    contacto: contactoSchema,
+    contacto: contactoSchema.omit({ outros: true }),
     responsaveis: z
       .array(createResponsavelBodySchema, {
         invalid_type_error: 'O array de responsáveis é inválido.',
@@ -116,7 +116,7 @@ export const createAlunoSchema = {
       endereco: enderecoSchema.extend({
         numeroCasa: z.string(),
       }),
-      contacto: contactoSchema,
+      contacto: contactoSchema.omit({ outros: true }),
     }),
     400: complexBadRequestSchema,
     404: complexBadRequestSchema,
@@ -129,13 +129,13 @@ export const updateAlunoSchema = {
   params: alunoParamsSchema,
   body: alunoBodySchema.omit({ id: true, numeroBi: true }).extend({
     endereco: enderecoSchema,
-    contacto: contactoSchema,
+    contacto: contactoSchema.omit({ outros: true }),
   }),
   response: {
     200: alunoBodySchema.omit({ numeroBi: true }).extend({
       dataNascimento: z.string().date(),
       endereco: enderecoSchema.extend({ numeroCasa: z.string() }),
-      contacto: contactoSchema,
+      contacto: contactoSchema.omit({ outros: true }),
     }),
     400: complexBadRequestSchema,
     404: notFoundRequestSchema,
@@ -171,7 +171,7 @@ export const getAlunoSchema = {
     200: alunoBodySchema.extend({
       dataNascimento: z.string().date(),
       endereco: enderecoSchema.extend({ numeroCasa: z.string() }),
-      contacto: contactoSchema,
+      contacto: contactoSchema.omit({ outros: true }),
       responsaveis: z.array(
         responsavelBodySchema
           .omit({ parentescoId: true })
