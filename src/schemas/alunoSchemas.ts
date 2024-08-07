@@ -107,15 +107,15 @@ export const createAlunoSchema = {
         invalid_type_error: 'O array de responsáveis é inválido.',
         required_error: 'Os responsaveis são obrigatórios.',
       })
-      .max(4, { message: 'O máximo de responsaveis é 4.' })
+      .max(4, { message: 'O número máximo de responsaveis é 4.' })
       .nonempty({ message: 'Os responsaveis devem ser enviados.' }),
   }),
   response: {
     201: alunoBodySchema.extend({
       dataNascimento: z.string().date(),
-      endereco: enderecoSchema
-        .omit({ numeroCasa: true })
-        .extend({ numeroCasa: z.string().transform(Number) }),
+      endereco: enderecoSchema.extend({
+        numeroCasa: z.string(),
+      }),
       contacto: contactoSchema,
     }),
     400: complexBadRequestSchema,
@@ -134,9 +134,7 @@ export const updateAlunoSchema = {
   response: {
     200: alunoBodySchema.omit({ numeroBi: true }).extend({
       dataNascimento: z.string().date(),
-      endereco: enderecoSchema
-        .omit({ numeroCasa: true })
-        .extend({ numeroCasa: z.string().transform(Number) }),
+      endereco: enderecoSchema.extend({ numeroCasa: z.string() }),
       contacto: contactoSchema,
     }),
     400: complexBadRequestSchema,
@@ -172,9 +170,7 @@ export const getAlunoSchema = {
   response: {
     200: alunoBodySchema.extend({
       dataNascimento: z.string().date(),
-      endereco: enderecoSchema
-        .omit({ numeroCasa: true })
-        .extend({ numeroCasa: z.string().transform(Number) }),
+      endereco: enderecoSchema.extend({ numeroCasa: z.string() }),
       contacto: contactoSchema,
       responsaveis: z.array(
         responsavelBodySchema
