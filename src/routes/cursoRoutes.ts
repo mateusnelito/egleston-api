@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
-  createMultiplesCursoDisciplinaController,
+  createMultiplesCursoDisciplinaByCursoController,
   createClasseToCursoController,
   createCursoController,
   deleteMultiplesCursoDisciplinasController,
@@ -51,7 +51,7 @@ const cursosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
   // POST ASSOCIATION BETWEEN MULTIPLES DISCIPLINAS AND ONE CURSO
   server.withTypeProvider<ZodTypeProvider>().post('/:cursoId/disciplinas', {
     schema: createMultiplesCursoDisciplinaSchema,
-    handler: createMultiplesCursoDisciplinaController,
+    handler: createMultiplesCursoDisciplinaByCursoController,
   });
 
   // DELETE ASSOCIATION BETWEEN CURSO AND DISCIPLINA

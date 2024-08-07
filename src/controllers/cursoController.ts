@@ -140,7 +140,7 @@ export async function getCursoController(
   return reply.send(curso);
 }
 
-export async function createMultiplesCursoDisciplinaController(
+export async function createMultiplesCursoDisciplinaByCursoController(
   request: FastifyRequest<{
     Body: cursoDisciplinaAssociationBodyType;
     Params: cursoParamsType;
