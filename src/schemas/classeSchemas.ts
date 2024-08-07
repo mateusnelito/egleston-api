@@ -185,6 +185,7 @@ export const deleteClasseTurnoSchema = {
 };
 
 export type createClasseBodyType = z.infer<typeof createClasseSchema.body>;
+export type updateClasseBodyType = z.infer<typeof updateClasseSchema.body>;
 export type classeParamsType = z.infer<typeof classeParamsSchema>;
 export type createTurmaToClasseBodyType = z.infer<
   typeof createTurmaToClasseSchema.body

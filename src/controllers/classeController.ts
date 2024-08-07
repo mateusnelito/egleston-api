@@ -5,6 +5,7 @@ import {
   deleteClasseTurnoParamsType,
   createClasseBodyType,
   createTurmaToClasseBodyType,
+  updateClasseBodyType,
 } from '../schemas/classeSchemas';
 import { getAnoLectivoId } from '../services/anoLectivoServices';
 import { getCursoId } from '../services/cursoServices';
@@ -21,7 +22,7 @@ import NotFoundRequest from '../utils/NotFoundRequest';
 import {
   getTurmaByUniqueCompostKey,
   getTurmasByClasse,
-  saveTurma,
+  createTurma,
 } from '../services/turmaServices';
 import { getSalaId } from '../services/salaServices';
 import { getTurnoId } from '../services/turnoServices';
@@ -123,7 +124,7 @@ export async function createClasseController(
 export async function updateClasseController(
   request: FastifyRequest<{
     Params: classeParamsType;
-    Body: createClasseBodyType;
+    Body: updateClasseBodyType;
   }>,
   reply: FastifyReply
 ) {
@@ -211,7 +212,7 @@ export async function createTurmaInClasseController(
     });
   }
 
-  const turma = await saveTurma({ nome, classeId, salaId });
+  const turma = await createTurma({ nome, classeId, salaId });
   return reply.status(HttpStatusCodes.CREATED).send(turma);
 }
 
