@@ -1,53 +1,55 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
-import { professorBodyType } from '../schemas/professorSchemas';
+import { createProfessorBodyType } from '../schemas/professorSchemas';
 import { formatDate } from '../utils/utils';
 
-export async function saveProfessor(data: professorBodyType) {
-  // TODO: CREATE THIS DATA WITH TRANSACTION
+export async function createProfessor(data: createProfessorBodyType) {
+  const { disciplinas } = data;
+
+  const disciplinaProfessorClause = disciplinas
+    ? {
+        createMany: {
+          data: disciplinas.map((disciplinaId) => {
+            return { disciplinaId };
+          }),
+        },
+      }
+    : {};
+
   const professor = await prisma.professor.create({
     data: {
       nomeCompleto: data.nomeCompleto,
       dataNascimento: data.dataNascimento,
       Contacto: {
-        create: {
-          telefone: data.telefone,
-          email: data.email,
-          outros: data.outros,
+        create: data.contacto,
+      },
+      DisciplinasProfessores: disciplinaProfessorClause,
+    },
+    include: {
+      Contacto: {
+        select: {
+          telefone: true,
+          email: true,
+          outros: true,
         },
       },
     },
   });
 
-  // Handle with n-n association between professores and disciplinas
-  if (data.disciplinas) {
-    for (const disciplinaId of data.disciplinas) {
-      await prisma.disciplinasProfessores.create({
-        data: { professorId: professor.id, disciplinaId },
-      });
-    }
-
-    const professorDisciplinas = await prisma.disciplinasProfessores.findMany({
-      where: { professorId: professor.id },
-      select: {
-        disciplinaId: true,
-      },
-    });
-
-    return {
-      id: professor.id,
-      nomeCompleto: professor.nomeCompleto,
-      dataNascimento: formatDate(professor.dataNascimento),
-      disciplinas: professorDisciplinas.map((disciplina) => {
-        return disciplina.disciplinaId;
-      }),
-    };
-  }
-
-  return professor;
+  return {
+    id: professor.id,
+    nomeCompleto: professor.nomeCompleto,
+    dataNascimento: formatDate(professor.dataNascimento),
+    contacto: {
+      telefone: professor.Contacto?.telefone,
+      email: professor.Contacto?.email,
+      outros: professor?.Contacto?.outros,
+    },
+  };
 }
 
-export async function getProfessorDetails(id: number) {
-  return await prisma.professor.findUnique({
+export async function getProfessor(id: number) {
+  const professor = await prisma.professor.findUnique({
     where: { id },
     include: {
       Contacto: {
@@ -59,6 +61,20 @@ export async function getProfessorDetails(id: number) {
       },
     },
   });
+
+  if (professor) {
+    return {
+      id: professor.id,
+      nomeCompleto: professor.nomeCompleto,
+      dataNascimento: formatDate(professor.dataNascimento),
+      contacto: {
+        telefone: professor.Contacto?.telefone,
+        email: professor.Contacto?.email,
+        outros: professor?.Contacto?.outros,
+      },
+    };
+  }
+  return professor;
 }
 
 export async function getProfessorId(id: number) {
@@ -68,20 +84,39 @@ export async function getProfessorId(id: number) {
   });
 }
 
-export async function changeProfessor(id: number, data: professorBodyType) {
-  return await prisma.professor.update({
+export async function updateProfessor(
+  id: number,
+  data: createProfessorBodyType
+) {
+  const professor = await prisma.professor.update({
     where: { id },
     data: {
       nomeCompleto: data.nomeCompleto,
       Contacto: {
-        update: {
-          telefone: data.telefone,
-          email: data.email,
-          outros: data.outros,
+        update: data.contacto,
+      },
+    },
+    include: {
+      Contacto: {
+        select: {
+          telefone: true,
+          email: true,
+          outros: true,
         },
       },
     },
   });
+
+  return {
+    id: professor.id,
+    nomeCompleto: professor.nomeCompleto,
+    dataNascimento: formatDate(professor.dataNascimento),
+    contacto: {
+      telefone: professor.Contacto?.telefone,
+      email: professor.Contacto?.email,
+      outros: professor?.Contacto?.outros,
+    },
+  };
 }
 
 export async function getProfessores(

@@ -1,7 +1,7 @@
 import { prisma } from '../lib/prisma';
 import { formatDate } from '../utils/utils';
 
-export async function checkDisciplinaProfessorAssociation(
+export async function getDisciplinaProfessor(
   professorId: number,
   disciplinaId: number
 ) {
@@ -10,49 +10,38 @@ export async function checkDisciplinaProfessorAssociation(
   });
 }
 
-export async function associateDisciplinasWithProfessor(
+export async function createMultiplesDisciplinaProfessorByProfessor(
   professorId: number,
   disciplinas: Array<number>
 ) {
-  for (const disciplinaId of disciplinas) {
-    await prisma.disciplinasProfessores.create({
-      data: { professorId, disciplinaId },
+  const createManyDisciplinaProfessorPromise =
+    prisma.disciplinasProfessores.createMany({
+      data: disciplinas.map((disciplinaId) => {
+        return {
+          professorId,
+          disciplinaId,
+        };
+      }),
     });
-  }
-  const professor = await prisma.professor.findUnique({
+
+  const findProfessorPromise = prisma.professor.findUnique({
     where: { id: professorId },
-    select: {
-      id: true,
-      nomeCompleto: true,
-      dataNascimento: true,
-      DisciplinasProfessores: {
-        select: { disciplinaId: true },
-      },
-    },
   });
 
-  // Gambiarra 'cause professor always exist in this point of program
-  // FIXME: Find a better way to handle the serialization error
+  const [{ count: totalProfessorDisciplina }, professor] = await Promise.all([
+    await createManyDisciplinaProfessorPromise,
+    await findProfessorPromise,
+  ]);
+
   if (professor) {
     return {
+      id: professor.id,
       nomeCompleto: professor.nomeCompleto,
       dataNascimento: formatDate(professor.dataNascimento),
-      disciplinas: professor.DisciplinasProfessores.map((disciplina) => {
-        return disciplina.disciplinaId;
-      }),
+      disciplinas: totalProfessorDisciplina,
     };
   }
-}
-
-export async function associateProfessoresWithDisciplina(
-  disciplinaId: number,
-  professores: Array<number>
-) {
-  for (const professorId of professores) {
-    await prisma.disciplinasProfessores.create({
-      data: { disciplinaId, professorId },
-    });
-  }
+  return professor;
 }
 
 export async function deleteDisciplinaProfessor(
@@ -64,13 +53,22 @@ export async function deleteDisciplinaProfessor(
   });
 }
 
-export async function deleteDisciplinasWithProfessorAssociation(
+export async function deleteMultiplesDisciplinaProfessorByProfessor(
   professorId: number,
   disciplinas: Array<number>
 ) {
-  for (const disciplinaId of disciplinas) {
-    await prisma.disciplinasProfessores.delete({
-      where: { disciplinaId_professorId: { professorId, disciplinaId } },
-    });
-  }
+  const deleteDisciplinaProfessorArrayPromises = disciplinas.map(
+    (disciplinaId) => {
+      return prisma.disciplinasProfessores.delete({
+        where: {
+          disciplinaId_professorId: {
+            professorId,
+            disciplinaId,
+          },
+        },
+      });
+    }
+  );
+
+  return await Promise.all(deleteDisciplinaProfessorArrayPromises);
 }

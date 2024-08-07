@@ -1,30 +1,32 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
-  deleteProfessorDisciplinaAssociationParamsType,
+  createProfessorBodyType,
+  deleteProfessorDisciplinaParamsType,
   getProfessoresQueryStringType,
-  professorBodyType,
-  professorDisciplinasAssociationBodyType,
-  uniqueProfessorResourceParamsType,
+  professorDisciplinaBodyType,
+  professorParamsSchema,
+  updateProfessorBodyType,
 } from '../schemas/professorSchemas';
 import { getDisciplinaId } from '../services/disciplinaServices';
 import {
-  associateDisciplinasWithProfessor,
-  checkDisciplinaProfessorAssociation,
+  createMultiplesDisciplinaProfessorByProfessor,
   deleteDisciplinaProfessor,
-  deleteDisciplinasWithProfessorAssociation,
+  deleteMultiplesDisciplinaProfessorByProfessor,
+  getDisciplinaProfessor,
 } from '../services/disciplinasProfessoresServices';
 import { getEmail, getTelefone } from '../services/professorContactoServices';
 import {
-  changeProfessor,
-  getProfessorDetails,
+  createProfessor,
+  getProfessor,
   getProfessorId,
-  getProfessores as getProfessoresService,
-  saveProfessor,
+  getProfessores,
+  updateProfessor,
 } from '../services/professorServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
 import {
+  arrayHasDuplicatedValue,
   calculateTimeBetweenDates,
   formatDate,
   isBeginDateAfterEndDate,
@@ -38,7 +40,7 @@ function throwInvalidDataNascimentoError(message: string) {
   });
 }
 
-function throwTelefoneBadRequest() {
+function throwInvalidTelefoneError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Número de telefone inválido.',
@@ -46,7 +48,7 @@ function throwTelefoneBadRequest() {
   });
 }
 
-function throwEmailBadRequest() {
+function throwInvalidEmailError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Endereço de email inválido.',
@@ -54,22 +56,34 @@ function throwEmailBadRequest() {
   });
 }
 
-function throwNotFoundRequest() {
+function throwNotFoundProfessorIdError() {
   throw new NotFoundRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
     message: 'Id de professor não existe.',
   });
 }
 
+function throwInvalidDisciplinasArrayError() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Disciplinas inválidas.',
+    errors: {
+      disciplinas: ['disciplinas não podem conter items duplicados.'],
+    },
+  });
+}
+
 const MAXIMUM_AGE = 80;
 
-export async function createProfessor(
-  request: FastifyRequest<{ Body: professorBodyType }>,
+export async function createProfessorController(
+  request: FastifyRequest<{ Body: createProfessorBodyType }>,
   reply: FastifyReply
 ) {
-  const { telefone, email, disciplinas, dataNascimento } = request.body;
+  const { body: data } = request;
+  const { disciplinas, dataNascimento } = data;
+  const { telefone, email } = data.contacto;
 
-  // Checking dataNascimento integrity
+  // Check dataNascimento integrity
   if (isBeginDateAfterEndDate(dataNascimento, new Date()))
     throwInvalidDataNascimentoError(
       'Data de nascimento não pôde estar no futuro.'
@@ -80,27 +94,31 @@ export async function createProfessor(
     throwInvalidDataNascimentoError(`Idade maior que ${MAXIMUM_AGE} anos.`);
   }
 
-  const isTelefone = await getTelefone(telefone);
-  if (isTelefone) throwTelefoneBadRequest();
+  // Check disciplinas integrity
+  if (disciplinas && arrayHasDuplicatedValue(disciplinas))
+    throwInvalidDisciplinasArrayError();
+
+  const isProfessorTelefone = await getTelefone(telefone);
+  if (isProfessorTelefone) throwInvalidTelefoneError();
 
   if (email) {
-    const isEmail = await getEmail(email);
-    if (isEmail) throwEmailBadRequest();
+    const isProfessorEmail = await getEmail(email);
+    if (isProfessorEmail) throwInvalidEmailError();
   }
 
   if (disciplinas) {
     for (let i = 0; i < disciplinas.length; i++) {
-      const disciplina = disciplinas[i];
-      const isDisciplina = await getDisciplinaId(disciplina);
+      const disciplinaId = disciplinas[i];
+      const isDisciplinaId = await getDisciplinaId(disciplinaId);
 
       // TODO: Finish the verification before send the errors, to send all invalids disciplinas
-      if (!isDisciplina) {
+      if (!isDisciplinaId) {
         throw new BadRequest({
           statusCode: HttpStatusCodes.NOT_FOUND,
           message: 'Disciplina inválida.',
           errors: {
             disciplinas: {
-              [i]: 'disciplinaId não existe.',
+              [i]: 'ID da disciplina não existe.',
             },
           },
         });
@@ -108,21 +126,23 @@ export async function createProfessor(
     }
   }
 
-  const professor = await saveProfessor(request.body);
+  const professor = await createProfessor(request.body);
   return reply.status(HttpStatusCodes.CREATED).send(professor);
 }
 
-export async function updateProfessor(
+export async function updateProfessorController(
   request: FastifyRequest<{
-    Params: uniqueProfessorResourceParamsType;
-    Body: professorBodyType;
+    Params: professorParamsSchema;
+    Body: updateProfessorBodyType;
   }>,
   reply: FastifyReply
 ) {
   const { professorId } = request.params;
-  const { telefone, email, dataNascimento } = request.body;
+  const { body: data } = request;
+  const { dataNascimento } = data;
+  const { telefone, email } = data.contacto;
 
-  // Checking dataNascimento integrity
+  // Check dataNascimento integrity
   if (isBeginDateAfterEndDate(dataNascimento, new Date()))
     throwInvalidDataNascimentoError(
       'Data de nascimento não pôde estar no futuro.'
@@ -133,67 +153,55 @@ export async function updateProfessor(
     throwInvalidDataNascimentoError(`Idade maior que ${MAXIMUM_AGE} anos.`);
   }
 
-  const [isProfessor, isTelefone] = await Promise.all([
+  const [isProfessorId, professorTelefone] = await Promise.all([
     await getProfessorId(professorId),
-    await getTelefone(telefone, professorId),
+    await getTelefone(telefone),
   ]);
 
-  if (!isProfessor) throwNotFoundRequest();
-  if (isTelefone) throwTelefoneBadRequest();
+  if (!isProfessorId) throwNotFoundProfessorIdError();
+  if (professorTelefone && professorTelefone.professorId !== professorId)
+    throwInvalidTelefoneError();
 
   if (email) {
-    const isEmail = await getEmail(email, professorId);
-    if (isEmail) throwEmailBadRequest();
+    const professorEmail = await getEmail(email);
+    if (professorEmail && professorEmail.professorId !== professorId)
+      throwInvalidEmailError();
   }
 
-  const professor = await changeProfessor(professorId, request.body);
-  return reply.status(HttpStatusCodes.CREATED).send({
-    nomeCompleto: professor.nomeCompleto,
-    dataNascimento: formatDate(professor.dataNascimento),
-  });
+  const professor = await updateProfessor(professorId, request.body);
+  return reply.send(professor);
 }
 
-export async function getProfessor(
+export async function getProfessorController(
   request: FastifyRequest<{
-    Params: uniqueProfessorResourceParamsType;
+    Params: professorParamsSchema;
   }>,
   reply: FastifyReply
 ) {
   const { professorId } = request.params;
-  const professor = await getProfessorDetails(professorId);
+  const professor = await getProfessor(professorId);
 
-  if (!professor) throw throwNotFoundRequest();
-
-  return reply.send({
-    id: professor.id,
-    nomeCompleto: professor.nomeCompleto,
-    dataNascimento: formatDate(professor.dataNascimento),
-    contacto: {
-      telefone: professor.Contacto?.telefone,
-      email: professor.Contacto?.email,
-      outros: professor.Contacto?.outros,
-    },
-  });
+  if (!professor) throw throwNotFoundProfessorIdError();
+  return reply.send(professor);
 }
 
-export async function getProfessores(
+export async function getProfessoresController(
   request: FastifyRequest<{ Querystring: getProfessoresQueryStringType }>,
   reply: FastifyReply
 ) {
   const { cursor, page_size } = request.query;
-
-  const professores = await getProfessoresService(page_size, cursor);
+  const professores = await getProfessores(page_size, cursor);
 
   let next_cursor =
     professores.length === page_size
       ? professores[professores.length - 1].id
       : undefined;
 
-  const data = professores.map((professor) => {
+  const data = professores.map(({ id, nomeCompleto, dataNascimento }) => {
     return {
-      id: professor.id,
-      nomeCompleto: professor.nomeCompleto,
-      dataNascimento: formatDate(professor.dataNascimento),
+      id,
+      nomeCompleto,
+      dataNascimento: formatDate(dataNascimento),
     };
   });
 
@@ -203,76 +211,82 @@ export async function getProfessores(
   });
 }
 
-export async function associateProfessorWithDisciplinas(
+export async function createMultiplesProfessorDisciplinaByProfessorController(
   request: FastifyRequest<{
-    Body: professorDisciplinasAssociationBodyType;
-    Params: uniqueProfessorResourceParamsType;
+    Body: professorDisciplinaBodyType;
+    Params: professorParamsSchema;
   }>,
   reply: FastifyReply
 ) {
   const { professorId } = request.params;
   const { disciplinas } = request.body;
 
-  const isProfessor = await getProfessorId(professorId);
-  if (!isProfessor) throwNotFoundRequest();
+  if (disciplinas && arrayHasDuplicatedValue(disciplinas))
+    throwInvalidDisciplinasArrayError();
 
+  const isProfessorId = await getProfessorId(professorId);
+  if (!isProfessorId) throwNotFoundProfessorIdError();
+
+  // TODO: TRY TO SIMPLIFY THIS CODE WITH PROMISE.ALL,
+  // CREATING A ARRAY WITH UNSOLVED PROMISES AND EXECUTE THEM ALL IN THE SAME TIME
   for (let i = 0; i < disciplinas.length; i++) {
     const disciplinaId = disciplinas[i];
 
-    const [isDisciplina, isDisciplinaProfessorAssociation] = await Promise.all([
+    const [isDisciplinaId, isDisciplinaProfessor] = await Promise.all([
       await getDisciplinaId(disciplinaId),
-      await checkDisciplinaProfessorAssociation(professorId, disciplinaId),
+      await getDisciplinaProfessor(professorId, disciplinaId),
     ]);
 
     // TODO: Finish the verification before send the errors, to send all invalids disciplinas
-    if (!isDisciplina) {
+    if (!isDisciplinaId) {
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Disciplina inválida.',
         errors: {
           disciplinas: {
-            [i]: 'disciplinaId não existe.',
+            [i]: 'ID da disciplina não existe.',
           },
         },
       });
     }
 
-    if (isDisciplinaProfessorAssociation) {
+    if (isDisciplinaProfessor) {
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Disciplina inválida.',
         errors: {
           disciplinas: {
-            [i]: 'disciplinaId Já está relacionada com o professor.',
+            [i]: 'disciplinaId já está registrada ao professor.',
           },
         },
       });
     }
   }
 
-  const cursoDisciplinas = await associateDisciplinasWithProfessor(
+  const cursoDisciplinas = await createMultiplesDisciplinaProfessorByProfessor(
     professorId,
     disciplinas
   );
 
-  // TODO: Send an appropriate response
   return reply.send(cursoDisciplinas);
 }
 
-export async function destroyProfessorDisciplina(
+export async function deleteProfessorDisciplinaController(
   request: FastifyRequest<{
-    Params: deleteProfessorDisciplinaAssociationParamsType;
+    Params: deleteProfessorDisciplinaParamsType;
   }>,
   reply: FastifyReply
 ) {
   const { professorId, disciplinaId } = request.params;
-  const isProfessorDisciplinaRelation =
-    await checkDisciplinaProfessorAssociation(professorId, disciplinaId);
+  const isProfessorDisciplina = await getDisciplinaProfessor(
+    professorId,
+    disciplinaId
+  );
 
-  if (!isProfessorDisciplinaRelation) {
+  if (!isProfessorDisciplina) {
     throw new NotFoundRequest({
       statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Associação não existe.',
+      message: 'Disciplina não registrada ao professor.',
     });
   }
 
@@ -280,46 +294,53 @@ export async function destroyProfessorDisciplina(
     professorId,
     disciplinaId
   );
+
+  // TODO: SEND A CORRECT RESPONSE
   return reply.send(professorDisciplina);
 }
 
-export async function deleteProfessorWithDisciplinasAssociation(
+export async function deleteMultiplesProfessorDisciplinaByProfessorController(
   request: FastifyRequest<{
-    Body: professorDisciplinasAssociationBodyType;
-    Params: uniqueProfessorResourceParamsType;
+    Body: professorDisciplinaBodyType;
+    Params: professorParamsSchema;
   }>,
   reply: FastifyReply
 ) {
   const { professorId } = request.params;
   const { disciplinas } = request.body;
 
-  const isProfessor = await getProfessorId(professorId);
-  if (!isProfessor) throwNotFoundRequest();
+  if (disciplinas && arrayHasDuplicatedValue(disciplinas))
+    throwInvalidDisciplinasArrayError();
+
+  const isProfessorId = await getProfessorId(professorId);
+  if (!isProfessorId) throwNotFoundProfessorIdError();
 
   for (let i = 0; i < disciplinas.length; i++) {
     const disciplinaId = disciplinas[i];
 
-    const isProfessorDisciplinaAssociation =
-      await checkDisciplinaProfessorAssociation(professorId, disciplinaId);
+    const isProfessorDisciplina = await getDisciplinaProfessor(
+      professorId,
+      disciplinaId
+    );
 
-    if (!isProfessorDisciplinaAssociation) {
+    if (!isProfessorDisciplina) {
       throw new BadRequest({
         statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Disciplina inválida.',
         errors: {
           disciplinas: {
-            // TODO: SEND A APPROPRIATED MESSAGE
-            [i]: 'Não existe relação.',
+            [i]: 'Disciplina não registrada ao professor.',
           },
         },
       });
     }
   }
 
-  const professorDisciplinas = await deleteDisciplinasWithProfessorAssociation(
-    professorId,
-    disciplinas
-  );
+  const professorDisciplinas =
+    await deleteMultiplesDisciplinaProfessorByProfessor(
+      professorId,
+      disciplinas
+    );
 
   // TODO: Send an appropriate response
   return reply.send(professorDisciplinas);
