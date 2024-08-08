@@ -72,6 +72,8 @@ export async function createAluno(data: createAlunoBodyType) {
         telefone: aluno.Contacto?.telefone,
         email: aluno.Contacto?.email,
       },
+      // In this point all the responsaveis are saved on db
+      responsaveis: data.responsaveis.length,
     };
   });
 }
@@ -83,7 +85,7 @@ export async function getAlunoNumeroBi(numeroBi: string) {
   });
 }
 
-export async function getAlunoDetails(id: number) {
+export async function getAluno(id: number) {
   const aluno = await prisma.aluno.findUnique({
     where: { id },
     include: {
@@ -97,13 +99,9 @@ export async function getAlunoDetails(id: number) {
       Contacto: {
         select: { telefone: true, email: true },
       },
-      Responsaveis: {
+      _count: {
         select: {
-          id: true,
-          nomeCompleto: true,
-          Parentesco: {
-            select: { nome: true },
-          },
+          Responsaveis: {},
         },
       },
     },
@@ -128,13 +126,7 @@ export async function getAlunoDetails(id: number) {
         telefone: aluno.Contacto?.telefone,
         email: aluno.Contacto?.email,
       },
-      responsaveis: aluno.Responsaveis.map((responsavel) => {
-        return {
-          id: responsavel.id,
-          nomeCompleto: responsavel.nomeCompleto,
-          parentesco: responsavel.Parentesco.nome,
-        };
-      }),
+      responsaveis: aluno._count.Responsaveis,
     };
   } else {
     return aluno;

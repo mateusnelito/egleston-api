@@ -12,7 +12,7 @@ import {
 } from '../services/alunoContactoServices';
 import {
   updateAluno,
-  getAlunoDetails,
+  getAluno,
   getAlunoId,
   getAlunoNumeroBi,
   getAlunoResponsaveis,
@@ -72,7 +72,7 @@ function throwNotFoundAlunoIdError() {
   });
 }
 
-function throwInvalidResponsaveisContactos() {
+function throwInvalidResponsaveisContactosError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Responsaveis inválidos.',
@@ -107,7 +107,7 @@ export async function createAlunoController(
     arrayHasDuplicatedValue(responsaveisTelefone) ||
     arrayHasDuplicatedValue(responsaveisEmails)
   ) {
-    throwInvalidResponsaveisContactos();
+    throwInvalidResponsaveisContactosError();
   }
 
   if (isBeginDateAfterEndDate(dataNascimento, new Date())) {
@@ -273,7 +273,7 @@ export async function getAlunoController(
 ) {
   const { alunoId } = request.params;
 
-  const aluno = await getAlunoDetails(alunoId);
+  const aluno = await getAluno(alunoId);
   if (!aluno) throwNotFoundAlunoIdError();
 
   return reply.send(aluno);

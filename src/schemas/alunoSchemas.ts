@@ -7,10 +7,7 @@ import {
   getResourcesDefaultQueriesSchema,
   notFoundRequestSchema,
 } from './globalSchema';
-import {
-  createResponsavelBodySchema,
-  responsavelBodySchema,
-} from './responsavelSchema';
+import { createResponsavelBodySchema } from './responsavelSchema';
 
 const alunoBodySchema = z.object({
   id: z
@@ -97,7 +94,7 @@ const alunoParamsSchema = z.object({
 });
 
 export const createAlunoSchema = {
-  summary: 'Adiciona um novo aluno',
+  summary: 'Cria um novo aluno',
   tags: ['alunos'],
   body: alunoBodySchema.omit({ id: true }).extend({
     endereco: enderecoSchema,
@@ -117,6 +114,7 @@ export const createAlunoSchema = {
         numeroCasa: z.string(),
       }),
       contacto: contactoSchema.omit({ outros: true }),
+      responsaveis: z.number().int(),
     }),
     400: complexBadRequestSchema,
     404: complexBadRequestSchema,
@@ -172,15 +170,7 @@ export const getAlunoSchema = {
       dataNascimento: z.string().date(),
       endereco: enderecoSchema.extend({ numeroCasa: z.string() }),
       contacto: contactoSchema.omit({ outros: true }),
-      responsaveis: z.array(
-        responsavelBodySchema
-          .omit({ parentescoId: true })
-          .extend({ parentesco: z.string() }),
-        {
-          invalid_type_error: 'O array de responsáveis é inválido.',
-          required_error: 'Os responsaveis são obrigatórios.',
-        }
-      ),
+      responsaveis: z.number().int(),
     }),
     404: notFoundRequestSchema,
   },
