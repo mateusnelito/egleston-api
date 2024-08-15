@@ -233,7 +233,7 @@ model Turma {
   turnoId  Int    @db.SmallInt
   Turno    Turno  @relation(fields: [turnoId], references: [id], onDelete: Cascade)
 
-  @@unique([nome, classeId, salaId])
+  @@unique([nome, classeId, salaId, turnoId])
   @@map("turmas")
   @@schema("cadastro")
 }
