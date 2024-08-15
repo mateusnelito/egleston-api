@@ -5,7 +5,8 @@ Content-Type: application/json
 {
     "nome": "A",
     "classeId": 1,
-    "salaId": 1
+    "salaId": 1,
+    "turnoId": 1
 }
 
 ### Create Turma
