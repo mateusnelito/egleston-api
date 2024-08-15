@@ -1,7 +1,6 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
-  createMultiplesClasseTurnoByTurnoController,
   createTurnoController,
   getTurnoController,
   getTurnosController,
@@ -10,7 +9,6 @@ import {
 import {
   getTurnoSchema,
   getTurnosSchema,
-  createMultiplesClassesInTurnoSchema,
   createTurnoSchema,
   updateTurnoSchema,
 } from '../schemas/turnoSchemas';
@@ -40,11 +38,5 @@ export const turnoRoutes: FastifyPluginAsync = async (
   server.withTypeProvider<ZodTypeProvider>().get('/', {
     schema: getTurnosSchema,
     handler: getTurnosController,
-  });
-
-  // POST Multiples ClasseTurno by turnoId
-  server.withTypeProvider<ZodTypeProvider>().post('/:turnoId/classes', {
-    schema: createMultiplesClassesInTurnoSchema,
-    handler: createMultiplesClasseTurnoByTurnoController,
   });
 };

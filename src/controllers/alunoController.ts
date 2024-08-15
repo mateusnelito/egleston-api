@@ -72,16 +72,6 @@ function throwNotFoundAlunoIdError() {
   });
 }
 
-function throwInvalidResponsaveisContactosError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Responsaveis inválidos.',
-    errors: {
-      responsaveis: ['responsaveis não podem conter contactos duplicados.'],
-    },
-  });
-}
-
 const MINIMUM_AGE = 14;
 const MINIMUM_RESPONSAVEIS = 4;
 
@@ -107,7 +97,13 @@ export async function createAlunoController(
     arrayHasDuplicatedValue(responsaveisTelefone) ||
     arrayHasDuplicatedValue(responsaveisEmails)
   ) {
-    throwInvalidResponsaveisContactosError();
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+      message: 'Responsaveis inválidos.',
+      errors: {
+        responsaveis: ['responsaveis não podem conter contactos duplicados.'],
+      },
+    });
   }
 
   if (isBeginDateAfterEndDate(dataNascimento, new Date())) {
@@ -122,8 +118,8 @@ export async function createAlunoController(
   }
 
   const [isAlunoNumeroBi, isAlunoTelefone] = await Promise.all([
-    await getAlunoNumeroBi(numeroBi),
-    await getAlunoTelefone(telefone),
+    getAlunoNumeroBi(numeroBi),
+    getAlunoTelefone(telefone),
   ]);
 
   if (isAlunoNumeroBi) {
@@ -147,8 +143,8 @@ export async function createAlunoController(
     const { parentescoId } = responsavel;
 
     const [isParentescoId, isResponsavelTelefone] = await Promise.all([
-      await getParentescoId(parentescoId),
-      await getResponsavelTelefone(telefone),
+      getParentescoId(parentescoId),
+      getResponsavelTelefone(telefone),
     ]);
 
     if (!isParentescoId) {

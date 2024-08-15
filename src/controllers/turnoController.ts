@@ -1,14 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import {
-  createMultiplesClassesInTurnoBodyType,
-  turnoBodyType,
-  turnoParamsType,
-} from '../schemas/turnoSchemas';
-import { getClasseId } from '../services/classeServices';
-import {
-  getClasseTurnoById,
-  createMultiplesClasseTurnoByTurno,
-} from '../services/classeTurnoServices';
+import { turnoBodyType, turnoParamsType } from '../schemas/turnoSchemas';
 import {
   createTurno,
   getTurno,
@@ -22,7 +13,6 @@ import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
 import {
-  arrayHasDuplicatedValue,
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
 } from '../utils/utils';
@@ -170,70 +160,4 @@ export async function getTurnosController(
 ) {
   const turnos = await getTurnos();
   return reply.send(turnos);
-}
-
-export async function createMultiplesClasseTurnoByTurnoController(
-  request: FastifyRequest<{
-    Params: turnoParamsType;
-    Body: createMultiplesClassesInTurnoBodyType;
-  }>,
-  reply: FastifyReply
-) {
-  const { turnoId } = request.params;
-  const { classes } = request.body;
-
-  if (arrayHasDuplicatedValue(classes)) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Classes inválidas.',
-      errors: {
-        cursos: ['O array de classes não pode conter items duplicados.'],
-      },
-    });
-  }
-
-  const isTurnoId = await getTurnoId(turnoId);
-  if (!isTurnoId) throwNotFoundTurnoIdError();
-
-  for (let i = 0; i < classes.length; i++) {
-    const classeId = classes[i];
-
-    const [isClasseId, isClasseTurnoId] = await Promise.all([
-      await getClasseId(classeId),
-      await getClasseTurnoById(classeId, turnoId),
-    ]);
-
-    // TODO: Finish the verification before send the errors, to send all invalids turnos
-    if (!isClasseId) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.NOT_FOUND,
-        message: 'Classe inválida.',
-        errors: {
-          classes: {
-            [i]: 'ID da classe não existe.',
-          },
-        },
-      });
-    }
-
-    if (isClasseTurnoId) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.NOT_FOUND,
-        message: 'Classe inválida.',
-        errors: {
-          turnos: {
-            [i]: 'classe Já está registrada ao turno.',
-          },
-        },
-      });
-    }
-  }
-
-  const classeTurnos = await createMultiplesClasseTurnoByTurno(
-    turnoId,
-    classes
-  );
-
-  // TODO: SEND A BETTER RESPONSE
-  return reply.status(HttpStatusCodes.CREATED).send(classeTurnos);
 }

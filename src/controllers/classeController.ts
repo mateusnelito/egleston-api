@@ -1,8 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   classeParamsType,
-  classeTurnoBodyType,
-  deleteClasseTurnoParamsType,
   createClasseBodyType,
   createTurmaToClasseBodyType,
   updateClasseBodyType,
@@ -26,12 +24,6 @@ import {
 } from '../services/turmaServices';
 import { getSalaId } from '../services/salaServices';
 import { getTurnoId } from '../services/turnoServices';
-import {
-  saveMultiplesClasseTurnoBasedOnClasseId,
-  deleteClasseTurno,
-  deleteMultiplesClasseTurnoBasedOnClasseId,
-  getClasseTurnoById,
-} from '../services/classeTurnoServices';
 import { arrayHasDuplicatedValue } from '../utils/utils';
 
 function throwNotFoundAnoLectivoIdError() {
@@ -214,121 +206,4 @@ export async function createTurmaInClasseController(
 
   const turma = await createTurma({ nome, classeId, salaId });
   return reply.status(HttpStatusCodes.CREATED).send(turma);
-}
-
-export async function createClasseTurnoController(
-  request: FastifyRequest<{
-    Params: classeParamsType;
-    Body: classeTurnoBodyType;
-  }>,
-  reply: FastifyReply
-) {
-  const { classeId } = request.params;
-  const { turnos } = request.body;
-
-  const isClasseId = await getClasseId(classeId);
-
-  if (!isClasseId) throwNotFoundClasseIdError();
-
-  for (let i = 0; i < turnos.length; i++) {
-    const turnoId = turnos[i];
-    const [isTurnoId, isClasseTurnoId] = await Promise.all([
-      await getTurnoId(turnoId),
-      await getClasseTurnoById(classeId, turnoId),
-    ]);
-
-    // TODO: Finish the verification before send the errors, to send all invalids turnos
-    if (!isTurnoId) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.NOT_FOUND,
-        message: 'Turno inválido.',
-        errors: {
-          turnos: {
-            [i]: 'turnoId não existe.',
-          },
-        },
-      });
-    }
-
-    if (isClasseTurnoId) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.NOT_FOUND,
-        message: 'Turno inválido.',
-        errors: {
-          turnos: {
-            [i]: 'turnoId Já está relacionada com a classe.',
-          },
-        },
-      });
-    }
-  }
-
-  const classeTurnos = await saveMultiplesClasseTurnoBasedOnClasseId(
-    classeId,
-    turnos
-  );
-
-  // TODO: SEND A BETTER RESPONSE
-  return reply.status(HttpStatusCodes.CREATED).send(classeTurnos);
-}
-
-export async function deleteMultiplesClasseTurnoController(
-  request: FastifyRequest<{
-    Params: classeParamsType;
-    Body: classeTurnoBodyType;
-  }>,
-  reply: FastifyReply
-) {
-  const { classeId } = request.params;
-  const { turnos } = request.body;
-
-  const isClasseId = await getClasseId(classeId);
-
-  if (!isClasseId) throwNotFoundClasseIdError();
-
-  for (let i = 0; i < turnos.length; i++) {
-    const turnoId = turnos[i];
-    const isClasseTurnoId = await getClasseTurnoById(classeId, turnoId);
-
-    if (!isClasseTurnoId) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.NOT_FOUND,
-        message: 'Turno inválido.',
-        errors: {
-          turnos: {
-            // TODO: SEND A APPROPRIATED MESSAGE
-            [i]: 'Não existe relação.',
-          },
-        },
-      });
-    }
-  }
-
-  const classeTurnos = await deleteMultiplesClasseTurnoBasedOnClasseId(
-    classeId,
-    turnos
-  );
-
-  // TODO: SEND A BETTER RESPONSE
-  return reply.status(HttpStatusCodes.CREATED).send(classeTurnos);
-}
-
-export async function deleteClasseTurnoController(
-  request: FastifyRequest<{ Params: deleteClasseTurnoParamsType }>,
-  reply: FastifyReply
-) {
-  const { classeId, turnoId } = request.params;
-  const isClasseTurnoId = await getClasseTurnoById(classeId, turnoId);
-
-  if (!isClasseTurnoId) {
-    throw new NotFoundRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Associação não existe.',
-    });
-  }
-
-  const classeTurno = await deleteClasseTurno(classeId, turnoId);
-
-  // TODO: SEND A BETTER RESPONSE
-  return reply.send(classeTurno);
 }
