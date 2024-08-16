@@ -54,7 +54,7 @@ const turmaParamsSchema = z.object({
     .positive({ message: 'O id da turma deve ser positivo.' }),
 });
 
-export const postTurmaSchema = {
+export const createTurmaSchema = {
   summary: 'Adiciona uma nova turma',
   tags: ['turmas'],
   body: turmaBodySchema.omit({ id: true }),
@@ -65,7 +65,7 @@ export const postTurmaSchema = {
   },
 };
 
-export const putTurmaSchema = {
+export const updateTurmaSchema = {
   summary: 'Atualiza uma turma existente',
   tags: ['turmas'],
   params: turmaParamsSchema,
@@ -83,11 +83,11 @@ export const getTurmaSchema = {
   params: turmaParamsSchema,
   response: {
     200: turmaBodySchema
-      .omit({ classeId: true, salaId: true })
+      .omit({ classeId: true, salaId: true, turnoId: true })
       .extend({ classe: z.string(), sala: z.string() }),
     404: notFoundRequestSchema,
   },
 };
 
-export type turmaBodyType = z.infer<typeof postTurmaSchema.body>;
+export type turmaBodyType = z.infer<typeof createTurmaSchema.body>;
 export type turmaParamsType = z.infer<typeof turmaParamsSchema>;

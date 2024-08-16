@@ -179,12 +179,13 @@ export async function createTurmaInClasseController(
   reply: FastifyReply
 ) {
   const { classeId } = request.params;
-  const { nome, salaId } = request.body;
+  const { nome, salaId, turnoId } = request.body;
 
-  const [isClasseId, isSalaId, isTurmaId] = await Promise.all([
-    await getClasseId(classeId),
-    await getSalaId(salaId),
-    await getTurmaByUniqueCompostKey(nome, classeId, salaId),
+  const [isClasseId, isSalaId, isTurnoId, isTurmaId] = await Promise.all([
+    getClasseId(classeId),
+    getSalaId(salaId),
+    getTurmaByUniqueCompostKey(nome, classeId, salaId, turnoId),
+    getTurnoId(turnoId),
   ]);
 
   if (!isClasseId) throwNotFoundClasseIdError();
@@ -197,6 +198,14 @@ export async function createTurmaInClasseController(
     });
   }
 
+  if (!isTurnoId) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.NOT_FOUND,
+      message: 'Turno inválido',
+      errors: { turnoId: 'ID do turno não existe.' },
+    });
+  }
+
   if (isTurmaId) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
@@ -204,6 +213,6 @@ export async function createTurmaInClasseController(
     });
   }
 
-  const turma = await createTurma({ nome, classeId, salaId });
+  const turma = await createTurma({ nome, classeId, salaId, turnoId });
   return reply.status(HttpStatusCodes.CREATED).send(turma);
 }

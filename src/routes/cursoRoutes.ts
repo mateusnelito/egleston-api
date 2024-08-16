@@ -25,7 +25,7 @@ import {
 
 const cursosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
   // POST
-  server.withTypeProvider<ZodTypeProvider>().post('/create', {
+  server.withTypeProvider<ZodTypeProvider>().post('/', {
     schema: createCursoSchema,
     handler: createCursoController,
   });

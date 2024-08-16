@@ -104,7 +104,9 @@ export const getSalaTurmasSchema = {
   params: salaParamsSchema,
   response: {
     200: z.object({
-      data: z.array(turmaBodySchema.omit({ salaId: true, classeId: true })),
+      data: z.array(
+        turmaBodySchema.omit({ salaId: true, classeId: true, turnoId: true })
+      ),
     }),
     404: notFoundRequestSchema,
   },

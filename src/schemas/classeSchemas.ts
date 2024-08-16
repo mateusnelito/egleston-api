@@ -105,7 +105,9 @@ export const getClasseTurmasSchema = {
   params: classeParamsSchema,
   response: {
     200: z.object({
-      data: z.array(turmaBodySchema.omit({ salaId: true, classeId: true })),
+      data: z.array(
+        turmaBodySchema.omit({ salaId: true, classeId: true, turnoId: true })
+      ),
     }),
     404: notFoundRequestSchema,
   },
@@ -123,75 +125,9 @@ export const createTurmaToClasseSchema = {
   },
 };
 
-const classeTurnoSchema = {
-  tags: ['classes'],
-  params: classeParamsSchema,
-  body: z.object({
-    turnos: z
-      .array(
-        z
-          .number({
-            message: 'O array de turnos deve conter apenas números.',
-          })
-          .int({
-            message: 'O array de turnos deve conter apenas números inteiros.',
-          })
-          .positive({
-            message:
-              'O array de turnos deve conter apenas números inteiros positivos.',
-          }),
-        {
-          invalid_type_error:
-            'Os turnos devem ser  enviadas no formato de array.',
-          required_error: 'Os turnos são necessários.',
-        }
-      )
-      .nonempty({ message: 'O array de turnos não deve estar vazio.' }),
-  }),
-  response: {
-    // 200: classeBodySchema.omit({ id: true }).extend({
-    //   turnos: z.array(z.number().int().positive()).optional(),
-    // }),
-    400: complexBadRequestSchema,
-    404: complexBadRequestSchema.or(notFoundRequestSchema),
-  },
-};
-
-export const createMultiplesClasseTurnoSchema = {
-  ...classeTurnoSchema,
-  summary: 'Associa Múltiplos turnos à uma classe',
-};
-
-export const deleteMultiplesClasseTurnoSchema = {
-  ...classeTurnoSchema,
-  summary: 'Deleta Múltiplos turnos relacionados à uma classe',
-};
-
-export const deleteClasseTurnoSchema = {
-  summary: 'Remove associação entre classe e turno',
-  tags: ['classes'],
-  params: classeParamsSchema.extend({
-    turnoId: z.coerce
-      .number({
-        required_error: 'O id de turno é obrigatório.',
-        invalid_type_error: 'O id de turno deve ser número.',
-      })
-      .int({ message: 'O id de turno deve ser inteiro.' })
-      .positive({ message: 'O id de turno deve ser positivo.' }),
-  }),
-  response: {
-    404: notFoundRequestSchema,
-  },
-};
-
 export type createClasseBodyType = z.infer<typeof createClasseSchema.body>;
 export type updateClasseBodyType = z.infer<typeof updateClasseSchema.body>;
 export type classeParamsType = z.infer<typeof classeParamsSchema>;
 export type createTurmaToClasseBodyType = z.infer<
   typeof createTurmaToClasseSchema.body
->;
-
-export type classeTurnoBodyType = z.infer<typeof classeTurnoSchema.body>;
-export type deleteClasseTurnoParamsType = z.infer<
-  typeof deleteClasseTurnoSchema.params
 >;

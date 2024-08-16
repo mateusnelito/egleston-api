@@ -23,7 +23,7 @@ const professoresRoutes: FastifyPluginAsync = async (
   server: FastifyInstance
 ) => {
   // POST
-  server.withTypeProvider<ZodTypeProvider>().post('/create', {
+  server.withTypeProvider<ZodTypeProvider>().post('/', {
     schema: createProfessorSchema,
     handler: createProfessorController,
   });

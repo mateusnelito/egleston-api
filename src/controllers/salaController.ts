@@ -21,6 +21,7 @@ import {
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
+import { getTurnoId } from '../services/turnoServices';
 
 function throwInvalidNomeError() {
   throw new BadRequest({
@@ -107,12 +108,13 @@ export async function createTurmaInSalaController(
   reply: FastifyReply
 ) {
   const { salaId } = request.params;
-  const { nome, classeId } = request.body;
+  const { nome, classeId, turnoId } = request.body;
 
-  const [isClasseId, isSalaId, isTurmaId] = await Promise.all([
-    await getClasseId(classeId),
-    await getSalaId(salaId),
-    await getTurmaByUniqueCompostKey(nome, salaId, salaId),
+  const [isClasseId, isSalaId, isTurnoId, isTurmaId] = await Promise.all([
+    getClasseId(classeId),
+    getSalaId(salaId),
+    getTurnoId(turnoId),
+    getTurmaByUniqueCompostKey(nome, salaId, salaId, turnoId),
   ]);
 
   if (!isSalaId) throwNotFoundSalaIdError();
@@ -124,6 +126,14 @@ export async function createTurmaInSalaController(
     });
   }
 
+  if (!isTurnoId) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.NOT_FOUND,
+      message: 'Turno inválido',
+      errors: { turnoId: 'ID do turno não existe.' },
+    });
+  }
+
   if (isTurmaId) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
@@ -131,6 +141,6 @@ export async function createTurmaInSalaController(
     });
   }
 
-  const turma = await createTurma({ nome, classeId, salaId });
+  const turma = await createTurma({ nome, classeId, salaId, turnoId });
   return reply.status(HttpStatusCodes.CREATED).send(turma);
 }
