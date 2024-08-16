@@ -166,15 +166,7 @@ export async function getAnoLectivoClassesController(
   if (!anoLectivo) throwNotFoundAnoLectivoIdError();
 
   const classes = await getClassesByAnoLectivo(anoLectivoId);
-  const data = classes.map((classe) => {
-    return {
-      id: classe.id,
-      nome: classe.nome,
-      curso: classe.Curso.nome,
-    };
-  });
-
-  return reply.send({ data });
+  return reply.send(classes);
 }
 
 export async function createClasseToAnoLectivoController(
@@ -214,12 +206,14 @@ export async function createClasseToAnoLectivoController(
     });
   }
 
+  // TODO: REFACTOR THIS
   const classe = await createClasse({
     nome: `${nome} - ${anoLectivo!.nome}`,
     anoLectivoId,
     cursoId,
     valorMatricula: Number(valorMatricula.toFixed(2)),
   });
+
   // TODO: Send a appropriate response
   return reply.status(HttpStatusCodes.CREATED).send(classe);
 }

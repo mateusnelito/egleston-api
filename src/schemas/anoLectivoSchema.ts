@@ -103,7 +103,6 @@ export const getAnoLectivoClassesSchema = {
         z.object({
           id: z.number().int().positive(),
           nome: z.string(),
-          curso: z.string(),
         })
       ),
     }),

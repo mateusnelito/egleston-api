@@ -1,6 +1,4 @@
-import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
-import { createClasseBodyType } from '../schemas/classeSchemas';
 
 export async function getClasseByCompostUniqueKey(
   nome: string,
@@ -61,47 +59,31 @@ export async function getClasse(id: number) {
 }
 
 export async function getClassesByAnoLectivo(anoLectivoId: number) {
-  return await prisma.classe.findMany({
-    where: { anoLectivoId },
-    select: {
-      id: true,
-      nome: true,
-      Curso: {
-        select: {
-          nome: true,
-        },
+  return {
+    data: await prisma.classe.findMany({
+      where: { anoLectivoId },
+      select: {
+        id: true,
+        nome: true,
       },
-    },
-    orderBy: {
-      Curso: { nome: 'asc' },
-    },
-  });
+      orderBy: {
+        Curso: { nome: 'asc' },
+      },
+    }),
+  };
 }
 
 export async function getClassesByCurso(cursoId: number) {
-  const classes = await prisma.classe.findMany({
-    where: { cursoId },
-    select: {
-      id: true,
-      nome: true,
-      AnoLectivo: {
-        select: {
-          nome: true,
-        },
-      },
-    },
-    orderBy: {
-      AnoLectivo: { nome: 'desc' },
-    },
-  });
-
   return {
-    data: classes.map((classe) => {
-      return {
-        id: classe.id,
-        nome: classe.nome,
-        anoLectivo: classe.AnoLectivo.nome,
-      };
+    data: await prisma.classe.findMany({
+      where: { cursoId },
+      select: {
+        id: true,
+        nome: true,
+      },
+      orderBy: {
+        AnoLectivo: { nome: 'desc' },
+      },
     }),
   };
 }

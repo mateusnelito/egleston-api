@@ -7,7 +7,7 @@ import {
   deleteCursoDisciplinaParamsType,
   updateCursoBodyType,
 } from '../schemas/cursoSchema';
-import { getAnoLectivoId } from '../services/anoLectivoServices';
+import { getAnoLectivo, getAnoLectivoId } from '../services/anoLectivoServices';
 import {
   createClasse,
   getClasseByCompostUniqueKey,
@@ -285,15 +285,15 @@ export async function createClasseToCursoController(
   reply: FastifyReply
 ) {
   const { cursoId } = request.params;
-  const { nome, anoLectivoId } = request.body;
+  const { nome, anoLectivoId, valorMatricula } = request.body;
 
-  const [isCursoId, isAnoLectivoId] = await Promise.all([
+  const [isCursoId, anoLectivo] = await Promise.all([
     await getCursoId(cursoId),
-    await getAnoLectivoId(anoLectivoId),
+    await getAnoLectivo(anoLectivoId),
   ]);
 
   if (!isCursoId) throwNotFoundCursoIdError();
-  if (!isAnoLectivoId) {
+  if (!anoLectivo) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.NOT_FOUND,
       message: 'Ano lectivo inválido',
@@ -314,7 +314,14 @@ export async function createClasseToCursoController(
     });
   }
 
-  const classe = await createClasse({ nome, anoLectivoId, cursoId });
+  // TODO: REFACTOR THIS
+  const classe = await createClasse({
+    nome: `${nome} - ${anoLectivo!.nome}`,
+    anoLectivoId,
+    cursoId,
+    valorMatricula: Number(valorMatricula.toFixed(2)),
+  });
+
   // TODO: Send a appropriate response
   return reply.status(HttpStatusCodes.CREATED).send(classe);
 }

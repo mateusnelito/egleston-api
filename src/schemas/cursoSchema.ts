@@ -197,7 +197,6 @@ export const getCursoClassesSchema = {
         z.object({
           id: z.number().int().positive(),
           nome: z.string(),
-          anoLectivo: z.string(),
         })
       ),
     }),
