@@ -27,6 +27,7 @@ model Aluno {
   Endereco        AlunoEndereco?
   Contacto        AlunoContacto?
   Responsaveis    Responsavel[]
+  Matricula       Matricula[]
 
   @@map("alunos")
   @@schema("cadastro")
@@ -137,6 +138,7 @@ model Curso {
   duracao           Int                 @db.SmallInt
   CursosDisciplinas CursosDisciplinas[]
   Classe            Classe[]
+  Matricula         Matricula[]
 
   @@map("cursos")
   @@schema("cadastro")
@@ -176,25 +178,27 @@ model DisciplinasProfessores {
 }
 
 model AnoLectivo {
-  id      Int      @id @default(autoincrement()) @db.SmallInt
-  nome    String   @unique @db.VarChar(9)
-  inicio  DateTime @db.Date
-  termino DateTime @db.Date
-  Classe  Classe[]
+  id        Int         @id @default(autoincrement()) @db.SmallInt
+  nome      String      @unique @db.VarChar(9)
+  inicio    DateTime    @db.Date
+  termino   DateTime    @db.Date
+  Classe    Classe[]
+  Matricula Matricula[]
 
   @@map("ano_lectivos")
   @@schema("cadastro")
 }
 
 model Classe {
-  id             Int        @id @default(autoincrement())
-  nome           String     @db.VarChar(15)
-  AnoLectivo     AnoLectivo @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade)
-  anoLectivoId   Int        @map("ano_lectivo_id") @db.SmallInt
-  Curso          Curso      @relation(fields: [cursoId], references: [id], onDelete: Cascade)
-  cursoId        Int        @map("curso_id") @db.SmallInt
-  valorMatricula Decimal    @map("valor_matricula") @db.Decimal(10, 2)
+  id             Int         @id @default(autoincrement())
+  nome           String      @db.VarChar(15)
+  AnoLectivo     AnoLectivo  @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade)
+  anoLectivoId   Int         @map("ano_lectivo_id") @db.SmallInt
+  Curso          Curso       @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  cursoId        Int         @map("curso_id") @db.SmallInt
+  valorMatricula Decimal     @map("valor_matricula") @db.Decimal(10, 2)
   Turma          Turma[]
+  Matricula      Matricula[]
 
   @@unique([nome, anoLectivoId, cursoId])
   @@map("classes")
@@ -225,33 +229,36 @@ model Turno {
 }
 
 model Turma {
-  id       Int    @id @default(autoincrement())
-  nome     String @db.VarChar(30)
-  Classe   Classe @relation(fields: [classeId], references: [id], onDelete: Cascade)
-  classeId Int    @map("classe_id")
-  Sala     Sala   @relation(fields: [salaId], references: [id], onDelete: Cascade)
-  salaId   Int    @map("sala_id") @db.SmallInt
-  turnoId  Int    @db.SmallInt
-  Turno    Turno  @relation(fields: [turnoId], references: [id], onDelete: Cascade)
+  id        Int         @id @default(autoincrement())
+  nome      String      @db.VarChar(30)
+  Classe    Classe      @relation(fields: [classeId], references: [id], onDelete: Cascade)
+  classeId  Int         @map("classe_id")
+  Sala      Sala        @relation(fields: [salaId], references: [id], onDelete: Cascade)
+  salaId    Int         @map("sala_id") @db.SmallInt
+  turnoId   Int         @db.SmallInt
+  Turno     Turno       @relation(fields: [turnoId], references: [id], onDelete: Cascade)
+  Matricula Matricula[]
 
   @@unique([nome, classeId, salaId, turnoId])
   @@map("turmas")
   @@schema("cadastro")
 }
 
-// model 
-//   id           Int        @id @default(autoincrement())
-//   alunoId      Int        @map("aluno_id")
-//   Aluno        Aluno      @relation(fields: [alunoId], references: [id], onDelete: Cascade)
-//   classeId     Int        @map("classe_id")
-//   Classe       Classe     @relation(fields: [classeId], references: [id], onDelete: Cascade)
-//   cursoId      Int        @map("curso_id")
-//   Curso        Curso      @relation(fields: [cursoId], references: [id], onDelete: Cascade)
-//   turmaId      Int        @map("turma_id")
-//   Turma        Turma      @relation(fields: [turmaId], references: [id], onDelete: Cascade)
-//   anoLectivoId Int        @map("ano_lectivo_id") @db.SmallInt
-//   AnoLectivo   AnoLectivo @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade)
-//   criadoEm     DateTime   @default(now()) @map("criado_em")
+model Matricula {
+  id           Int        @id @default(autoincrement())
+  alunoId      Int        @map("aluno_id")
+  Aluno        Aluno      @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  classeId     Int        @map("classe_id")
+  Classe       Classe     @relation(fields: [classeId], references: [id], onDelete: Cascade)
+  cursoId      Int        @map("curso_id")
+  Curso        Curso      @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  turmaId      Int        @map("turma_id")
+  Turma        Turma      @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+  anoLectivoId Int        @map("ano_lectivo_id") @db.SmallInt
+  AnoLectivo   AnoLectivo @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now()) @map("created_at")
+  // TODO: ADD THE USER WHO CREATED THE MATRICULA
 
-//   @@schema("academico")
-// }
+  @@map("matriculas")
+  @@schema("academico")
+}
