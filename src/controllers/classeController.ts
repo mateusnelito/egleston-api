@@ -5,7 +5,7 @@ import {
   createTurmaToClasseBodyType,
   updateClasseBodyType,
 } from '../schemas/classeSchemas';
-import { getAnoLectivoId } from '../services/anoLectivoServices';
+import { getAnoLectivo, getAnoLectivoId } from '../services/anoLectivoServices';
 import { getCursoId } from '../services/cursoServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
@@ -63,16 +63,14 @@ export async function createClasseController(
   request: FastifyRequest<{ Body: createClasseBodyType }>,
   reply: FastifyReply
 ) {
-  const { nome, anoLectivoId, cursoId, turnos } = request.body;
+  const { nome, anoLectivoId, cursoId, valorMatricula } = request.body;
 
-  if (turnos && arrayHasDuplicatedValue(turnos)) throwInvalidTurnosArrayError();
-
-  const [isAnoLectivoId, isCursoId] = await Promise.all([
-    await getAnoLectivoId(anoLectivoId),
+  const [anoLectivo, isCursoId] = await Promise.all([
+    await getAnoLectivo(anoLectivoId),
     await getCursoId(cursoId),
   ]);
 
-  if (!isAnoLectivoId) throwNotFoundAnoLectivoIdError();
+  if (!anoLectivo) throwNotFoundAnoLectivoIdError();
   if (!isCursoId) throwNotFoundCursoIdError();
 
   const isClasseId = await getClasseByCompostUniqueKey(
@@ -88,28 +86,15 @@ export async function createClasseController(
     });
   }
 
-  if (turnos) {
-    for (let i = 0; i < turnos.length; i++) {
-      const turnoId = turnos[i];
-      const isTurnoId = await getTurnoId(turnoId);
-
-      // TODO: Finish the verification before send the errors, to send all invalids turnos
-      if (!isTurnoId) {
-        throw new BadRequest({
-          statusCode: HttpStatusCodes.NOT_FOUND,
-          message: 'Turno inválido.',
-          errors: {
-            turnos: {
-              [i]: 'turnoId não existe.',
-            },
-          },
-        });
-      }
-    }
-  }
+  // TODO: REFACTOR THIS
+  const classe = await createClasse({
+    nome: `${nome} - ${anoLectivo!.nome}`,
+    anoLectivoId,
+    cursoId,
+    valorMatricula: Number(valorMatricula.toFixed(2)),
+  });
 
   // TODO: SEND A BETTER RESPONSE
-  const classe = await createClasse(request.body);
   return reply.status(HttpStatusCodes.CREATED).send(classe);
 }
 
@@ -121,17 +106,17 @@ export async function updateClasseController(
   reply: FastifyReply
 ) {
   const { classeId } = request.params;
-  const { nome, anoLectivoId, cursoId } = request.body;
+  const { nome, anoLectivoId, cursoId, valorMatricula } = request.body;
 
   const isClasseId = await getClasseId(classeId);
   if (!isClasseId) throwNotFoundClasseIdError();
 
-  const [isAnoLectivoId, isCursoId] = await Promise.all([
-    await getAnoLectivoId(anoLectivoId),
+  const [anoLectivo, isCursoId] = await Promise.all([
+    await getAnoLectivo(anoLectivoId),
     await getCursoId(cursoId),
   ]);
 
-  if (!isAnoLectivoId) throwNotFoundAnoLectivoIdError();
+  if (!anoLectivo) throwNotFoundAnoLectivoIdError();
   if (!isCursoId) throwNotFoundCursoIdError();
 
   const classe = await getClasseByCompostUniqueKey(nome, anoLectivoId, cursoId);
@@ -143,7 +128,12 @@ export async function updateClasseController(
     });
   }
 
-  const updatedClasse = await updateClasse(classeId, request.body);
+  const updatedClasse = await updateClasse(classeId, {
+    nome: `${nome} - ${anoLectivo!.nome}`,
+    anoLectivoId,
+    cursoId,
+    valorMatricula: Number(valorMatricula.toFixed(2)),
+  });
   return reply.send(updatedClasse);
 }
 

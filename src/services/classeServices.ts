@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { createClasseBodyType } from '../schemas/classeSchemas';
 
@@ -12,25 +13,14 @@ export async function getClasseByCompostUniqueKey(
   });
 }
 
-export async function createClasse(data: createClasseBodyType) {
-  const { turnos } = data;
-  if (turnos) {
-    return await prisma.classe.create({
-      data: {
-        nome: data.nome,
-        anoLectivoId: data.anoLectivoId,
-        cursoId: data.cursoId,
-        ClasseTurno: {
-          createMany: {
-            data: turnos.map((turnoId) => {
-              return { turnoId };
-            }),
-          },
-        },
-      },
-    });
-  }
+interface classeDataInterface {
+  nome: string;
+  anoLectivoId: number;
+  cursoId: number;
+  valorMatricula: number;
+}
 
+export async function createClasse(data: classeDataInterface) {
   return await prisma.classe.create({ data });
 }
 
@@ -41,7 +31,7 @@ export async function getClasseId(id: number) {
   });
 }
 
-export async function updateClasse(id: number, data: createClasseBodyType) {
+export async function updateClasse(id: number, data: classeDataInterface) {
   return await prisma.classe.update({ where: { id }, data });
 }
 

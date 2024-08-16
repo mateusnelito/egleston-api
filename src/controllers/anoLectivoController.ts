@@ -7,7 +7,7 @@ import {
 import {
   updateAnoLectivo,
   getAnoLectivoId,
-  getAnoLectivoNome,
+  getAnoLectivoByNome,
   getAnoLectivo,
   getAnoLectivos,
   createAnoLectivo,
@@ -76,7 +76,7 @@ export async function createAnoLectivoController(
   if (yearMonthLength !== YEAR_MONTH_LENGTH) throwInvalidYearLengthError();
 
   const nome = `${inicio.getFullYear()}-${termino.getFullYear()}`;
-  const isAnoLectivoNome = await getAnoLectivoNome(nome);
+  const isAnoLectivoNome = await getAnoLectivoByNome(nome);
   if (isAnoLectivoNome) throwAnoLectivoAlreadyExistError();
 
   const anoLectivo = await createAnoLectivo({ nome, inicio, termino });
@@ -109,7 +109,7 @@ export async function updateAnoLectivoController(
   const nome = `${inicio.getFullYear()}-${termino.getFullYear()}`;
   const [isAnoLectivo, anoLectivo] = await Promise.all([
     getAnoLectivoId(anoLectivoId),
-    getAnoLectivoNome(nome),
+    getAnoLectivoByNome(nome),
   ]);
 
   if (!isAnoLectivo) throwNotFoundAnoLectivoIdError();
@@ -185,14 +185,14 @@ export async function createClasseToAnoLectivoController(
   reply: FastifyReply
 ) {
   const { anoLectivoId } = request.params;
-  const { nome, cursoId } = request.body;
+  const { nome, cursoId, valorMatricula } = request.body;
 
-  const [isAnoLectivoId, isCursoId] = await Promise.all([
-    await getAnoLectivoId(anoLectivoId),
+  const [anoLectivo, isCursoId] = await Promise.all([
+    await getAnoLectivo(anoLectivoId),
     await getCursoId(cursoId),
   ]);
 
-  if (!isAnoLectivoId) throwNotFoundAnoLectivoIdError();
+  if (!anoLectivo) throwNotFoundAnoLectivoIdError();
   if (!isCursoId) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.NOT_FOUND,
@@ -215,9 +215,10 @@ export async function createClasseToAnoLectivoController(
   }
 
   const classe = await createClasse({
-    nome,
+    nome: `${nome} - ${anoLectivo!.nome}`,
     anoLectivoId,
     cursoId,
+    valorMatricula: Number(valorMatricula.toFixed(2)),
   });
   // TODO: Send a appropriate response
   return reply.status(HttpStatusCodes.CREATED).send(classe);

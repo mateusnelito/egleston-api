@@ -3,19 +3,21 @@ POST http://localhost:8000/api/classes
 Content-Type: application/json
 
 {
-  "nome": "10ª",
+  "nome": "12ª",
   "anoLectivoId": 1,
-  "cursoId": 1
+  "cursoId": 1,
+  "valorMatricula": 3000
 }
 
 ### Update
-PUT http://localhost:8000/api/classes/1
+PUT http://localhost:8000/api/classes/4
 Content-Type: application/json
 
 {
-  "nome": "11ª",
+  "nome": "13ª",
   "anoLectivoId": 1,
-  "cursoId": 1
+  "cursoId": 1,
+  "valorMatricula": 3000
 }
 
 ### Get Unique

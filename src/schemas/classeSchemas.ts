@@ -5,6 +5,7 @@ import {
   simpleBadRequestSchema,
 } from './globalSchema';
 import { turmaBodySchema } from './turmaSchemas';
+import { classeNomeRegEx } from '../utils/regexPatterns';
 export const classeBodySchema = z.object({
   id: z
     .number({
@@ -30,6 +31,12 @@ export const classeBodySchema = z.object({
     })
     .int({ message: 'O id de curso deve ser inteiro.' })
     .positive({ message: 'O id de curso deve ser positivo.' }),
+  valorMatricula: z
+    .number({
+      required_error: 'O valor da matrícula é obrigatório.',
+      invalid_type_error: 'O valor da matrícula deve ser número.',
+    })
+    .positive({ message: 'O valor da matrícula deve ser positivo.' }),
 });
 
 const classeParamsSchema = z.object({
@@ -45,31 +52,12 @@ const classeParamsSchema = z.object({
 export const createClasseSchema = {
   summary: 'Adiciona uma nova classe',
   tags: ['classes'],
-  body: classeBodySchema.omit({ id: true }).extend({
-    turnos: z
-      .array(
-        z
-          .number({
-            message: 'O array de turnos deve conter apenas números.',
-          })
-          .int({
-            message: 'O array de turnos deve conter apenas números inteiros.',
-          })
-          .positive({
-            message:
-              'O array de turnos deve conter apenas números inteiros positivos.',
-          }),
-        {
-          invalid_type_error:
-            'Os turnos devem ser  enviadas no formato de array.',
-          required_error: 'Os turnos são necessários.',
-        }
-      )
-      .nonempty({ message: 'O array de turnos não deve estar vazio.' })
-      .optional(),
-  }),
+  body: classeBodySchema.omit({ id: true }),
   response: {
-    201: classeBodySchema,
+    201: classeBodySchema.extend({
+      nome: z.string().regex(classeNomeRegEx),
+      valorMatricula: z.coerce.number(),
+    }),
     400: complexBadRequestSchema,
     404: complexBadRequestSchema,
   },
@@ -81,7 +69,10 @@ export const updateClasseSchema = {
   params: classeParamsSchema,
   body: classeBodySchema.omit({ id: true }),
   response: {
-    200: classeBodySchema.omit({ id: true }),
+    200: classeBodySchema.omit({ id: true }).extend({
+      nome: z.string().regex(classeNomeRegEx),
+      valorMatricula: z.coerce.number(),
+    }),
     400: simpleBadRequestSchema,
     404: simpleBadRequestSchema.or(notFoundRequestSchema),
   },
