@@ -13,13 +13,13 @@ PUT http://localhost:8000/api/classes/1
 Content-Type: application/json
 
 {
-  "nome": "10ª",
+  "nome": "11ª",
   "anoLectivoId": 1,
   "cursoId": 1
 }
 
 ### Get Unique
-GET http://localhost:8000/api/classes/2
+GET http://localhost:8000/api/classes/1
 
 ### Get Classe Turmas
 GET http://localhost:8000/api/classes/1/turmas
@@ -30,5 +30,6 @@ Content-Type: application/json
 
 {
   "nome": "C",
-  "salaId": 1
+  "salaId": 1,
+  "turnoId": 1
 }

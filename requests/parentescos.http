@@ -5,11 +5,11 @@ GET http://localhost:8000/api/parentescos
 GET http://localhost:8000/api/parentescos/1
 
 ### Create a parentesco
-POST http://localhost:8000/api/parentescos/create
+POST http://localhost:8000/api/parentescos/
 Content-Type: application/json
 
 {
-    "nome": "Pai"
+    "nome": "Tia"
 }
 
 ### Update an existent parentesco
@@ -17,5 +17,5 @@ PUT http://localhost:8000/api/parentescos/3
 Content-Type: application/json
 
 {
-    "nome": "Irmão"
+    "nome": "Tio"
 }

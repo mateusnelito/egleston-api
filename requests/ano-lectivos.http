@@ -17,17 +17,16 @@ Content-Type: application/json
 }
 
 ### Get all
-
 GET http://localhost:8000/api/ano-lectivos
 
 ### Get unique
-GET http://localhost:8000/api/ano-lectivos/4
+GET http://localhost:8000/api/ano-lectivos/1
 
 ### Get all classes
-GET http://localhost:8000/api/ano-lectivos/5/classes
+GET http://localhost:8000/api/ano-lectivos/1/classes
 
-### Post classe in ano lectivo
-POST http://localhost:8000/api/ano-lectivos/50/classes
+### Create classe in ano lectivo
+POST http://localhost:8000/api/ano-lectivos/1/classes
 Content-Type: application/json
 
 {

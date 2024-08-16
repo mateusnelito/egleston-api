@@ -5,39 +5,53 @@ GET http://localhost:8000/api/alunos?page_size=2
 GET http://localhost:8000/api/alunos/1
 
 ### Create a aluno
-POST http://localhost:8000/api/alunos/create
+POST http://localhost:8000/api/alunos
 Content-Type: application/json
 
 {
-    "nomeCompleto": "Mateus Vale Celestino Nelito",
-    "nomeCompletoPai": "Nelito Cassule Toquessa",
-    "nomeCompletoMae": "Ana Vale João",
-    "numeroBi": "000000000LA000",
-    "dataNascimento": "2005-06-01",
-    "genero": "M",
+  "nomeCompleto": "Mateus Vale Celestino Nelito",
+  "nomeCompletoPai": "Nelito Cassule Toquessa",
+  "nomeCompletoMae": "Ana Vale João",
+  "numeroBi": "000000000KN000",
+  "dataNascimento": "2005-06-01",
+  "genero": "M",
+  "endereco": {
     "bairro": "Simeone Mucune",
     "rua": "4 de Abril",
-    "numeroCasa": 15,
-    "telefone": "955555500",
-    "email": "email@example.com",
-    "responsaveis": [
-      {
-        "nomeCompleto": "Nelito Cassule Toquessa",
-        "parentescoId": 1,
-        "bairro": "Rocha",
-        "rua": "Desconhecida",
-        "numeroCasa": 105,
-        "telefone": "932879871"
+    "numeroCasa": 7
+  },
+  "contacto": {
+    "telefone": "935555500",
+    "email": "mateus@gmail.com"
+  },
+  "responsaveis": [
+    {
+      "nomeCompleto": "Nelito Cassule Toquessa",
+      "parentescoId": 1,
+      "endereco": {
+        "bairro": "Rocha Padaria",
+        "rua": "Da Max",
+        "numeroCasa": 1000
       },
-      {
-        "nomeCompleto": "Ana Vale João",
-        "parentescoId": 2,
+      "contacto": {
+        "telefone": "923333123",
+        "email": "nelito@gmail.com"
+      }
+    },
+    {
+      "nomeCompleto": "Ana Vale João",
+      "parentescoId": 2,
+      "endereco": {
         "bairro": "Simeone Mucune",
         "rua": "4 de Abril",
-        "numeroCasa": 15,
-        "telefone": "936666123"
+        "numeroCasa": 7
+      },
+      "contacto": {
+        "telefone": "958888123",
+        "outros": "Tel. Movicel: 991xxxxxx"
       }
-    ]
+    }
+  ]
 }
 
 ### Update an existent aluno
@@ -45,17 +59,40 @@ PUT http://localhost:8000/api/alunos/1
 Content-Type: application/json
 
 {
-    "nomeCompleto": "UPDATED FIRST",
-    "nomeCompletoPai": "UPDATED FIRST",
-    "nomeCompletoMae": "UPDATED FIRST",
-    "dataNascimento": "2001-01-19",
-    "genero": "M",
-    "bairro": "Camama",
-    "rua": "3 Bancadas",
-    "numeroCasa": 10,
-    "telefone": "932623102",
-    "email": "aswss@exmle.co"
+  "nomeCompleto": "UPDATED Vale Celestino Nelito",
+  "nomeCompletoPai": "Nelito Cassule Toquessa",
+  "nomeCompletoMae": "Ana Vale João",
+  "dataNascimento": "2005-06-01",
+  "genero": "M",
+  "endereco": {
+    "bairro": "Simeone Mucune",
+    "rua": "4 de Abril",
+    "numeroCasa": 7
+  },
+  "contacto": {
+    "telefone": "925555500",
+    "email": "asasa@asa.new"
+  }
 }
 
 ### GET all responsaveis
 GET http://localhost:8000/api/alunos/1/responsaveis
+
+### Create Responsavel to Aluno
+POST http://localhost:8000/api/alunos/1/responsaveis
+Content-Type: application/json
+
+{
+  "nomeCompleto": "Teste Da Silva",
+  "parentescoId": 3,
+  "endereco": {
+    "bairro": "Cazenga",
+    "rua": "Dos Matadores",
+    "numeroCasa": 10
+  },
+  "contacto": {
+    "telefone": "939556784",
+    "email": "teste@email.com",
+    "outros": "blah blah blah"
+  }
+}

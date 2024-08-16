@@ -5,14 +5,13 @@ GET http://localhost:8000/api/cursos
 GET http://localhost:8000/api/cursos/1
 
 ### Create a curso
-POST http://localhost:8000/api/cursos/create
+POST http://localhost:8000/api/cursos
 Content-Type: application/json
 
 {
-    "nome": "PUNIV",
+    "nome": "PUNIV II",
     "descricao": "Apenas mais um curso.",
-    "duracao": 3,
-    "disciplinas": [1, 2, 3]
+    "duracao": 3
 }
 
 ### Update an existent curso
@@ -20,8 +19,8 @@ PUT http://localhost:8000/api/cursos/1
 Content-Type: application/json
 
 {
-    "nome": "",
-    "descricao": "",
+    "nome": "UPDATED",
+    "descricao": "UPDATED FIRST",
     "duracao": 3
 }
 
@@ -52,6 +51,6 @@ POST http://localhost:8000/api/cursos/1/classes
 Content-Type: application/json
 
 {
-    "nome": "10ª",
-    "anoLectivoId": 5
+    "nome": "13ª",
+    "anoLectivoId": 1
 }

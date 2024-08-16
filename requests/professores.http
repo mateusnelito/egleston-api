@@ -1,14 +1,16 @@
 ### Create a professor
-POST http://localhost:8000/api/professores/create
+POST http://localhost:8000/api/professores
 Content-Type: application/json
 
 {
     "nomeCompleto": "Mateus Nelito",
     "dataNascimento": "2005-09-10",
-    "telefone": "935580500",
-    "email": "emaiyil@example.com",
-    "outros": "tel. alternativo: 99800123",
-    "disciplinas": [1, 2, 3]
+    "contacto": {
+        "telefone": "935580500",
+        "email": "emaiyil@example.com",
+        "outros": "tel. alternativo: 99800123"
+    },
+    "disciplinas": [1]
 }
 
 ### Update an existent professor
@@ -16,11 +18,13 @@ PUT http://localhost:8000/api/professores/1
 Content-Type: application/json
 
 {
-    "nomeCompleto": "Nome Completo",
+    "nomeCompleto": "UPDATED FIRST",
     "dataNascimento": "2005-09-10",
-    "telefone": "933123123",
-    "email": "emal@example.com",
-    "outros": "tel. alternativo: 998000123"
+    "contacto": {
+        "telefone": "935580500",
+        "email": "emaiyil@example.com",
+        "outros": "tel. alternativo: 99800123"
+    }
 }
 
 ### GET a professor by id
@@ -30,20 +34,20 @@ GET http://localhost:8000/api/professores/1
 GET http://localhost:8000/api/professores?page_size=2
 
 ### Associate some professor to multiples disciplinas
-POST http://localhost:8000/api/professores/7/disciplinas
+POST http://localhost:8000/api/professores/1/disciplinas
 Content-Type: application/json
 
 {
-    "disciplinas": [1, 2, 3]
+    "disciplinas": [1]
 }
 
 ### Delete a professor and disciplina association
-DELETE http://localhost:8000/api/professores/8/disciplinas/1
+DELETE http://localhost:8000/api/professores/1/disciplinas/1
 
 ### Delete some disciplinas associated with especific professor
-DELETE http://localhost:8000/api/cursos/7/disciplinas
+DELETE http://localhost:8000/api/cursos/1/disciplinas
 Content-Type: application/json
 
 {
-    "disciplinas": [1, 2, 3]
+    "disciplinas": [1]
 }

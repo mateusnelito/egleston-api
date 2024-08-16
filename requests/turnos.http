@@ -3,13 +3,13 @@ POST http://localhost:8000/api/turnos
 Content-Type: application/json
 
 {
-    "nome": "Manhã",
-    "inicio": "08:00:00",
-    "termino": "12:00:00"
+    "nome": "Tarde",
+    "inicio": "13:00:00",
+    "termino": "18:05:00"
 }
 
-### Create turno
-PUT http://localhost:8000/api/turnos/1
+### Update turno
+PUT http://localhost:8000/api/turnos/2
 Content-Type: application/json
 
 {

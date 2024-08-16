@@ -9,14 +9,15 @@ Content-Type: application/json
     "turnoId": 1
 }
 
-### Create Turma
+### Update Turma
 PUT http://localhost:8000/api/turmas/1
 Content-Type: application/json
 
 {
     "nome": "B",
     "classeId": 1,
-    "salaId": 1
+    "salaId": 1,
+    "turnoId": 1
 }
 
 ### Get Turma

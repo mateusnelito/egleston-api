@@ -1,5 +1,5 @@
 ### Create a disciplina for a especific curso
-POST http://localhost:8000/api/disciplinas/create
+POST http://localhost:8000/api/disciplinas/
 Content-Type: application/json
 
 {
@@ -23,9 +23,9 @@ GET http://localhost:8000/api/disciplinas/1
 GET http://localhost:8000/api/disciplinas
 
 ### Associate some disciplina to multiples cursos
-POST http://localhost:8000/api/disciplinas/4/cursos
+POST http://localhost:8000/api/disciplinas/1/cursos
 Content-Type: application/json
 
 {
-    "cursos": [1, 2, 3]
+    "cursos": [1, 2]
 }
