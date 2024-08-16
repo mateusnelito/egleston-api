@@ -10,7 +10,7 @@ export async function createAnoLectivo(data: anoLectivoInterface) {
   return await prisma.anoLectivo.create({ data });
 }
 
-export async function getAnoLectivoNome(nome: string) {
+export async function getAnoLectivoByNome(nome: string) {
   return await prisma.anoLectivo.findUnique({
     where: { nome },
     select: { id: true },
