@@ -93,33 +93,17 @@ const alunoParamsSchema = z.object({
     .positive({ message: 'O id do aluno deve ser positivo.' }),
 });
 
-export const createAlunoSchema = {
-  summary: 'Cria um novo aluno',
-  tags: ['alunos'],
-  body: alunoBodySchema.omit({ id: true }).extend({
-    endereco: enderecoSchema,
-    contacto: contactoSchema.omit({ outros: true }),
-    responsaveis: z
-      .array(createResponsavelBodySchema, {
-        invalid_type_error: 'O array de responsáveis é inválido.',
-        required_error: 'Os responsaveis são obrigatórios.',
-      })
-      .max(4, { message: 'O número máximo de responsaveis é 4.' })
-      .nonempty({ message: 'Os responsaveis devem ser enviados.' }),
-  }),
-  response: {
-    201: alunoBodySchema.extend({
-      dataNascimento: z.string().date(),
-      endereco: enderecoSchema.extend({
-        numeroCasa: z.string(),
-      }),
-      contacto: contactoSchema.omit({ outros: true }),
-      responsaveis: z.number().int(),
-    }),
-    400: complexBadRequestSchema,
-    404: complexBadRequestSchema,
-  },
-};
+export const createAlunoBodySchema = alunoBodySchema.omit({ id: true }).extend({
+  endereco: enderecoSchema,
+  contacto: contactoSchema.omit({ outros: true }),
+  responsaveis: z
+    .array(createResponsavelBodySchema, {
+      invalid_type_error: 'O array de responsáveis é inválido.',
+      required_error: 'Os responsaveis são obrigatórios.',
+    })
+    .max(4, { message: 'O número máximo de responsaveis é 4.' })
+    .nonempty({ message: 'Os responsaveis devem ser enviados.' }),
+});
 
 export const updateAlunoSchema = {
   summary: 'Atualiza um aluno existente',
@@ -209,7 +193,6 @@ export const createAlunoResponsavelSchema = {
   },
 };
 
-export type createAlunoBodyType = z.infer<typeof createAlunoSchema.body>;
 export type updateAlunoBodyType = z.infer<typeof updateAlunoSchema.body>;
 export type alunoParamsSchema = z.infer<typeof alunoParamsSchema>;
 export type getAlunosQueryStringType = z.infer<

@@ -1,0 +1,55 @@
+// Create
+POST http://localhost:8000/api/matriculas
+Content-Type: application/json
+
+{
+  "aluno": {
+    "nomeCompleto": "Mateus Vale Celestino Nelito",
+    "nomeCompletoPai": "Nelito Cassule Toquessa",
+    "nomeCompletoMae": "Ana Vale João",
+    "numeroBi": "000000000KN000",
+    "dataNascimento": "2005-06-01",
+    "genero": "M",
+    "endereco": {
+      "bairro": "Simeone Mucune",
+      "rua": "4 de Abril",
+      "numeroCasa": 7
+    },
+    "contacto": {
+      "telefone": "935555500",
+      "email": "mateus@gmail.com"
+    },
+    "responsaveis": [
+      {
+        "nomeCompleto": "Nelito Cassule Toquessa",
+        "parentescoId": 1,
+        "endereco": {
+          "bairro": "Rocha Padaria",
+          "rua": "Da Max",
+          "numeroCasa": 1000
+        },
+        "contacto": {
+          "telefone": "926333123",
+          "email": "nelito@gmail.com"
+        }
+      },
+      {
+        "nomeCompleto": "Ana Vale João",
+        "parentescoId": 2,
+        "endereco": {
+          "bairro": "Simeone Mucune",
+          "rua": "4 de Abril",
+          "numeroCasa": 7
+        },
+        "contacto": {
+          "telefone": "923333123",
+          "outros": "Tel. Movicel: 991xxxxxx"
+        }
+      }
+    ]
+  },
+  "classeId": 5,
+  "cursoId": 1,
+  "turmaId": 4,
+  "anoLectivoId": 1
+}

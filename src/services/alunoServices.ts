@@ -1,27 +1,41 @@
 import { prisma } from '../lib/prisma';
-import {
-  createAlunoBodyType,
-  updateAlunoBodyType,
-} from '../schemas/alunoSchemas';
+import { updateAlunoBodyType } from '../schemas/alunoSchemas';
+import { createMatriculaBodyType } from '../schemas/matriculaSchemas';
 import { formatDate } from '../utils/utils';
 
-export async function createAluno(data: createAlunoBodyType) {
+export async function createAlunoWithMatricula(
+  matriculaData: createMatriculaBodyType
+) {
+  // Retrieving aluno data
+  const { aluno: alunoData } = matriculaData;
+
+  // Persiste data in transaction
   return prisma.$transaction(async (transaction) => {
+    // Persist aluno, alunoEndereco, alunoContacto and matricula data
     const aluno = await transaction.aluno.create({
       data: {
-        nomeCompleto: data.nomeCompleto,
-        nomeCompletoPai: data.nomeCompletoPai,
-        nomeCompletoMae: data.nomeCompletoMae,
-        numeroBi: data.numeroBi,
-        dataNascimento: data.dataNascimento,
-        genero: data.genero,
+        nomeCompleto: alunoData.nomeCompleto,
+        nomeCompletoPai: alunoData.nomeCompletoPai,
+        nomeCompletoMae: alunoData.nomeCompletoMae,
+        numeroBi: alunoData.numeroBi,
+        dataNascimento: alunoData.dataNascimento,
+        genero: alunoData.genero,
         Endereco: {
-          create: data.endereco,
+          create: alunoData.endereco,
         },
         Contacto: {
-          create: data.contacto,
+          create: alunoData.contacto,
+        },
+        Matricula: {
+          create: {
+            classeId: matriculaData.classeId,
+            cursoId: matriculaData.cursoId,
+            turmaId: matriculaData.turmaId,
+            anoLectivoId: matriculaData.anoLectivoId,
+          },
         },
       },
+      // Define the field that must be retrieved from db after insert
       include: {
         Endereco: {
           select: {
@@ -36,10 +50,39 @@ export async function createAluno(data: createAlunoBodyType) {
             email: true,
           },
         },
+        Matricula: {
+          select: {
+            id: true,
+            createdAt: true,
+            Classe: {
+              select: {
+                nome: true,
+              },
+            },
+            Curso: {
+              select: {
+                nome: true,
+              },
+            },
+            Turma: {
+              select: {
+                nome: true,
+                Turno: {
+                  select: {
+                    nome: true,
+                  },
+                },
+              },
+            },
+          },
+          take: 1,
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
 
-    for (const responsavel of data.responsaveis) {
+    for (const responsavel of alunoData.responsaveis) {
+      // Persist aluno responsaveis data
       await transaction.responsavel.create({
         data: {
           alunoId: aluno.id,
@@ -55,25 +98,36 @@ export async function createAluno(data: createAlunoBodyType) {
       });
     }
 
+    const matricula = aluno.Matricula[0];
+
+    // Formatting the return data
     return {
-      id: aluno.id,
-      nomeCompleto: aluno.nomeCompleto,
-      nomeCompletoPai: aluno.nomeCompletoPai,
-      nomeCompletoMae: aluno.nomeCompletoMae,
-      numeroBi: aluno.numeroBi,
-      dataNascimento: formatDate(aluno.dataNascimento),
-      genero: aluno.genero,
-      endereco: {
-        bairro: aluno.Endereco?.bairro,
-        rua: aluno.Endereco?.rua,
-        numeroCasa: aluno.Endereco?.numeroCasa,
+      id: matricula.id,
+      aluno: {
+        id: aluno.id,
+        nomeCompleto: aluno.nomeCompleto,
+        nomeCompletoPai: aluno.nomeCompletoPai,
+        nomeCompletoMae: aluno.nomeCompletoMae,
+        numeroBi: aluno.numeroBi,
+        dataNascimento: formatDate(aluno.dataNascimento),
+        genero: aluno.genero,
+        endereco: {
+          bairro: aluno.Endereco?.bairro,
+          rua: aluno.Endereco?.rua,
+          numeroCasa: aluno.Endereco?.numeroCasa,
+        },
+        contacto: {
+          telefone: aluno.Contacto?.telefone,
+          email: aluno.Contacto?.email,
+        },
+        // In this point all the responsaveis are saved on db
+        responsaveis: matriculaData.aluno.responsaveis.length,
       },
-      contacto: {
-        telefone: aluno.Contacto?.telefone,
-        email: aluno.Contacto?.email,
-      },
-      // In this point all the responsaveis are saved on db
-      responsaveis: data.responsaveis.length,
+      classe: matricula.Classe.nome,
+      curso: matricula.Curso.nome,
+      turma: matricula.Turma.nome,
+      turno: matricula.Turma.Turno.nome,
+      createdAt: matricula.createdAt,
     };
   });
 }

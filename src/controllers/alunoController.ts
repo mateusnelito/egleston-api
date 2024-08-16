@@ -2,7 +2,6 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   alunoParamsSchema,
   getAlunosQueryStringType,
-  createAlunoBodyType,
   updateAlunoBodyType,
 } from '../schemas/alunoSchemas';
 import { createResponsavelBodyType } from '../schemas/responsavelSchema';
@@ -14,10 +13,8 @@ import {
   updateAluno,
   getAluno,
   getAlunoId,
-  getAlunoNumeroBi,
   getAlunoResponsaveis,
   getAlunos,
-  createAluno,
 } from '../services/alunoServices';
 import { getParentescoId } from '../services/parentescoServices';
 import {
@@ -32,7 +29,6 @@ import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
 import {
-  arrayHasDuplicatedValue,
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
 } from '../utils/utils';
@@ -72,134 +68,8 @@ function throwNotFoundAlunoIdError() {
   });
 }
 
-const MINIMUM_AGE = 14;
+export const MINIMUM_ALUNO_AGE = 14;
 const MINIMUM_RESPONSAVEIS = 4;
-
-export async function createAlunoController(
-  request: FastifyRequest<{ Body: createAlunoBodyType }>,
-  reply: FastifyReply
-) {
-  const { body: data } = request;
-  const { responsaveis } = data;
-  const { dataNascimento, numeroBi } = data;
-  const { telefone, email } = data.contacto;
-
-  // TODO: CHECK IF THERE'S DUPLICATED RESPONSAVEIS OBJECT, NOT ONLY DUPLICATED CONTACTS
-  const responsaveisTelefone = responsaveis.map(
-    (responsavel) => responsavel.contacto.telefone
-  );
-
-  const responsaveisEmails = responsaveis.map(
-    (responsavel) => responsavel.contacto?.email
-  );
-
-  if (
-    arrayHasDuplicatedValue(responsaveisTelefone) ||
-    arrayHasDuplicatedValue(responsaveisEmails)
-  ) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Responsaveis inválidos.',
-      errors: {
-        responsaveis: ['responsaveis não podem conter contactos duplicados.'],
-      },
-    });
-  }
-
-  if (isBeginDateAfterEndDate(dataNascimento, new Date())) {
-    throwInvalidDataNascimentoError(
-      'Data de nascimento não pôde estar no futuro.'
-    );
-  }
-
-  const age = calculateTimeBetweenDates(dataNascimento, new Date(), 'y');
-  if (age < MINIMUM_AGE) {
-    throwInvalidDataNascimentoError(`Idade inferior a ${MINIMUM_AGE} anos.`);
-  }
-
-  const [isAlunoNumeroBi, isAlunoTelefone] = await Promise.all([
-    getAlunoNumeroBi(numeroBi),
-    getAlunoTelefone(telefone),
-  ]);
-
-  if (isAlunoNumeroBi) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Número de BI inválido.',
-      errors: { numeroBi: ['O número de BI já sendo usado.'] },
-    });
-  }
-
-  if (isAlunoTelefone) throwInvalidTelefoneError();
-
-  if (email) {
-    const isAlunoEmail = await getAlunoEmail(email);
-    if (isAlunoEmail) throwInvalidEmailError();
-  }
-
-  for (let i = 0; i < responsaveis.length; i++) {
-    const responsavel = responsaveis[i];
-    const { telefone, email } = responsavel.contacto;
-    const { parentescoId } = responsavel;
-
-    const [isParentescoId, isResponsavelTelefone] = await Promise.all([
-      getParentescoId(parentescoId),
-      getResponsavelTelefone(telefone),
-    ]);
-
-    if (!isParentescoId) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.NOT_FOUND,
-        message: 'Parentesco inválido.',
-        errors: {
-          responsaveis: {
-            [i]: {
-              parentescoId: ['parentescoId não existe.'],
-            },
-          },
-        },
-      });
-    }
-
-    if (isResponsavelTelefone) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.BAD_REQUEST,
-        message: 'Número de telefone inválido.',
-        errors: {
-          responsaveis: {
-            [i]: {
-              contacto: {
-                telefone: ['O número de telefone já está sendo usado.'],
-              },
-            },
-          },
-        },
-      });
-    }
-
-    if (email) {
-      const isResponsavelEmail = await getResponsavelEmail(email);
-      if (isResponsavelEmail) {
-        throw new BadRequest({
-          statusCode: HttpStatusCodes.BAD_REQUEST,
-          message: 'Endereço de email inválido.',
-          errors: {
-            responsaveis: {
-              [i]: {
-                contacto: {
-                  email: ['O endereço de email já está sendo usado.'],
-                },
-              },
-            },
-          },
-        });
-      }
-    }
-  }
-
-  const aluno = await createAluno(data);
-  return reply.status(HttpStatusCodes.CREATED).send(aluno);
-}
 
 export async function updateAlunoController(
   request: FastifyRequest<{
@@ -221,8 +91,10 @@ export async function updateAlunoController(
     );
 
   const age = calculateTimeBetweenDates(dataNascimentoDate, new Date(), 'y');
-  if (age < MINIMUM_AGE) {
-    throwInvalidDataNascimentoError(`Idade inferior a ${MINIMUM_AGE} anos.`);
+  if (age < MINIMUM_ALUNO_AGE) {
+    throwInvalidDataNascimentoError(
+      `Idade inferior a ${MINIMUM_ALUNO_AGE} anos.`
+    );
   }
 
   const [isAlunoId, isAlunoTelefone] = await Promise.all([
