@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
-  alunoParamsSchema,
+  alunoParamsType,
   getAlunosQueryStringType,
   updateAlunoBodyType,
 } from '../schemas/alunoSchemas';
@@ -32,6 +32,7 @@ import {
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
 } from '../utils/utils';
+import { getMatriculasByAlunoId } from '../services/matriculaServices';
 
 function throwInvalidDataNascimentoError(message: string) {
   throw new BadRequest({
@@ -73,7 +74,7 @@ const MINIMUM_RESPONSAVEIS = 4;
 
 export async function updateAlunoController(
   request: FastifyRequest<{
-    Params: alunoParamsSchema;
+    Params: alunoParamsType;
     Body: updateAlunoBodyType;
   }>,
   reply: FastifyReply
@@ -135,7 +136,7 @@ export async function getAlunosController(
 
 export async function getAlunoController(
   request: FastifyRequest<{
-    Params: alunoParamsSchema;
+    Params: alunoParamsType;
   }>,
   reply: FastifyReply
 ) {
@@ -149,7 +150,7 @@ export async function getAlunoController(
 
 export async function getAlunoResponsaveisController(
   request: FastifyRequest<{
-    Params: alunoParamsSchema;
+    Params: alunoParamsType;
   }>,
   reply: FastifyReply
 ) {
@@ -164,7 +165,7 @@ export async function getAlunoResponsaveisController(
 
 export async function createAlunoResponsavelController(
   request: FastifyRequest<{
-    Params: alunoParamsSchema;
+    Params: alunoParamsType;
     Body: createResponsavelBodyType;
   }>,
   reply: FastifyReply
@@ -216,4 +217,17 @@ export async function createAlunoResponsavelController(
 
   const responsavel = await createResponsavel(alunoId, request.body);
   return reply.status(HttpStatusCodes.CREATED).send(responsavel);
+}
+
+export async function getAlunoMatriculasController(
+  request: FastifyRequest<{ Params: alunoParamsType }>,
+  reply: FastifyReply
+) {
+  const { alunoId } = request.params;
+  const isAlunoId = await getAlunoId(alunoId);
+
+  if (!isAlunoId) throwNotFoundAlunoIdError();
+
+  const alunoMatriculas = await getMatriculasByAlunoId(alunoId);
+  return reply.send(alunoMatriculas);
 }

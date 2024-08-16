@@ -193,8 +193,28 @@ export const createAlunoResponsavelSchema = {
   },
 };
 
+export const getAlunoMatriculasSchema = {
+  summary: 'Retorna todas matriculas do aluno',
+  tags: ['alunos'],
+  params: alunoParamsSchema,
+  response: {
+    200: z.object({
+      data: z.array(
+        z.object({
+          id: z.number().int().int().positive(),
+          classe: z.string(),
+          curso: z.string(),
+          turma: z.string(),
+          createdAt: z.date(),
+        })
+      ),
+    }),
+    404: notFoundRequestSchema,
+  },
+};
+
 export type updateAlunoBodyType = z.infer<typeof updateAlunoSchema.body>;
-export type alunoParamsSchema = z.infer<typeof alunoParamsSchema>;
+export type alunoParamsType = z.infer<typeof alunoParamsSchema>;
 export type getAlunosQueryStringType = z.infer<
   typeof getAlunosSchema.querystring
 >;
