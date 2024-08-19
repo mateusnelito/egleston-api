@@ -1,61 +1,23 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { createMatriculaBodyType } from '../schemas/matriculaSchemas';
-import {
-  getAlunoEmail,
-  getAlunoTelefone,
-} from '../services/alunoContactoServices';
-import {
-  createAlunoWithMatricula,
-  getAlunoNumeroBi,
-} from '../services/alunoServices';
-import { getAnoLectivoId } from '../services/anoLectivoServices';
-import {
-  getClasseId,
-  getClasseValorMatricula,
-} from '../services/classeServices';
-import { getCursoId } from '../services/cursoServices';
-import { getParentescoId } from '../services/parentescoServices';
-import {
-  getResponsavelEmail,
-  getResponsavelTelefone,
-} from '../services/responsavelContactoServices';
-import { getTurmaId } from '../services/turmaServices';
+import { createAlunoWithMatricula } from '../services/alunoServices';
+import { validateAlunoData } from '../services/alunoValidationService';
+import { validateMatriculaData } from '../services/matriculaValidationService';
+import { createPagamento } from '../services/pagamentoServices';
+import { validateResponsavelData } from '../services/responsaveisValidationServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import {
-  arrayHasDuplicatedValue,
-  calculateTimeBetweenDates,
-  isBeginDateAfterEndDate,
-} from '../utils/utils';
-import { MINIMUM_ALUNO_AGE } from './alunoController';
-import { getMetodoPagamentoById } from '../services/metodoPagamentoServices';
-import { createPagamento } from '../services/pagamentoServices';
-
-function throwInvalidDataNascimentoError(message: string) {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Data de nascimento inválida.',
-    errors: { aluno: { dataNascimento: [message] } },
-  });
-}
+import { arrayHasDuplicatedValue } from '../utils/utils';
+import { createMatricula } from '../services/matriculaServices';
 
 export async function createMatriculaController(
   request: FastifyRequest<{ Body: createMatriculaBodyType }>,
   reply: FastifyReply
 ) {
   const { body: data } = request;
-
-  // Extracting matricula data
-  const { classeId, cursoId, turmaId, anoLectivoId, metodoPagamentoId } =
-    request.body;
-
-  // Extracting aluno data
   const { aluno: alunoData } = data;
   const { responsaveis: alunoResponsaveis } = alunoData;
-  const { dataNascimento, numeroBi } = alunoData;
-  const { telefone, email } = alunoData.contacto;
 
-  // # - Aluno
   const responsaveisTelefone = alunoResponsaveis.map(
     (responsavel) => responsavel.contacto.telefone
   );
@@ -80,202 +42,26 @@ export async function createMatriculaController(
     });
   }
 
-  if (isBeginDateAfterEndDate(dataNascimento, new Date())) {
-    throwInvalidDataNascimentoError(
-      'Data de nascimento não pôde estar no futuro.'
-    );
+  await validateAlunoData(alunoData);
+
+  for (let index = 0; index < alunoResponsaveis.length; index++) {
+    const responsavel = alunoResponsaveis[index];
+    await validateResponsavelData(responsavel, index);
   }
 
-  const alunoAge = calculateTimeBetweenDates(dataNascimento, new Date(), 'y');
-  if (alunoAge < MINIMUM_ALUNO_AGE) {
-    throwInvalidDataNascimentoError(
-      `Idade inferior a ${MINIMUM_ALUNO_AGE} anos.`
-    );
-  }
+  const { classeId, cursoId, turmaId, anoLectivoId, metodoPagamentoId } =
+    request.body;
 
-  // - Checking data integrity
-  // # - matricula & aluno
-  const [
-    classe,
-    isCursoId,
-    isTurmaId,
-    isMetodoPagamentoId,
-    isAnoLectivoId,
-    isAlunoNumeroBi,
-    isAlunoTelefone,
-  ] = await Promise.all([
-    getClasseValorMatricula(classeId),
-    getCursoId(cursoId),
-    getTurmaId(turmaId),
-    getMetodoPagamentoById(metodoPagamentoId),
-    getAnoLectivoId(anoLectivoId),
-    getAlunoNumeroBi(numeroBi),
-    getAlunoTelefone(telefone),
-  ]);
-
-  if (!classe) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Parentesco inválido.',
-      errors: {
-        classeId: ['ID da classe não existe.'],
-      },
-    });
-  }
-
-  if (!isCursoId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Parentesco inválido.',
-      errors: {
-        cursoId: ['ID do curso não existe.'],
-      },
-    });
-  }
-
-  if (!isTurmaId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Parentesco inválido.',
-      errors: {
-        turmaId: ['ID da turma não existe.'],
-      },
-    });
-  }
-
-  if (!isAnoLectivoId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Parentesco inválido.',
-      errors: {
-        anoLectivoId: ['ID do ano lectivo não existe.'],
-      },
-    });
-  }
-
-  if (isAlunoNumeroBi) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Número de BI inválido.',
-      errors: { aluno: { numeroBi: ['O número de BI já sendo usado.'] } },
-    });
-  }
-
-  if (isAlunoTelefone) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Número de telefone inválido.',
-      errors: {
-        aluno: {
-          contacto: { telefone: ['O número de telefone já está sendo usado.'] },
-        },
-      },
-    });
-  }
-
-  if (!isMetodoPagamentoId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Metodo de pagamento inválido.',
-      errors: {
-        metodoPagamentoId: ['ID metodo de pagamento não existe.'],
-      },
-    });
-  }
-
-  if (email) {
-    const isAlunoEmail = await getAlunoEmail(email);
-    if (isAlunoEmail) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.BAD_REQUEST,
-        message: 'Endereço de email inválido.',
-        errors: {
-          aluno: {
-            contacto: { email: ['O endereço de email já está sendo usado.'] },
-          },
-        },
-      });
-    }
-  }
-
-  for (let i = 0; i < alunoResponsaveis.length; i++) {
-    const responsavel = alunoResponsaveis[i];
-    const { telefone, email } = responsavel.contacto;
-    const { parentescoId } = responsavel;
-
-    const [isParentescoId, isResponsavelTelefone] = await Promise.all([
-      getParentescoId(parentescoId),
-      getResponsavelTelefone(telefone),
-    ]);
-
-    if (!isParentescoId) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.NOT_FOUND,
-        message: 'Parentesco inválido.',
-        errors: {
-          aluno: {
-            responsaveis: {
-              [i]: {
-                parentescoId: ['parentescoId não existe.'],
-              },
-            },
-          },
-        },
-      });
-    }
-
-    if (isResponsavelTelefone) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.BAD_REQUEST,
-        message: 'Número de telefone inválido.',
-        errors: {
-          aluno: {
-            responsaveis: {
-              [i]: {
-                contacto: {
-                  telefone: ['O número de telefone já está sendo usado.'],
-                },
-              },
-            },
-          },
-        },
-      });
-    }
-
-    if (email) {
-      const isResponsavelEmail = await getResponsavelEmail(email);
-      if (isResponsavelEmail) {
-        throw new BadRequest({
-          statusCode: HttpStatusCodes.BAD_REQUEST,
-          message: 'Endereço de email inválido.',
-          errors: {
-            aluno: {
-              responsaveis: {
-                [i]: {
-                  contacto: {
-                    email: ['O endereço de email já está sendo usado.'],
-                  },
-                },
-              },
-            },
-          },
-        });
-      }
-    }
-  }
-
-  const matricula = await createAlunoWithMatricula(data);
-
-  // SAVE Pagamento
-  const pagamento = await createPagamento({
-    alunoId: matricula.aluno.id,
-    tipoPagamento: 'Matricula',
-    valor: Number(classe.valorMatricula),
-    descricao: null,
-    metodoPagamentoId,
+  await validateMatriculaData({
+    classeId,
+    cursoId,
+    turmaId,
     anoLectivoId,
+    metodoPagamentoId,
   });
 
-  // TODO: SAVE THE PAYMENT AND GENERATE THE RELATOR OR *COMPROVANTE
-  return reply.send({ matricula, pagamento });
+  const matricula = await createMatricula(data);
+
+  // TODO: GENERATE THE RELATOR OR *COMPROVANTE
+  return reply.send(matricula);
 }

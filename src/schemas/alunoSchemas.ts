@@ -213,6 +213,7 @@ export const getAlunoMatriculasSchema = {
   },
 };
 
+export type createAlunoBodyType = z.infer<typeof createAlunoBodySchema>;
 export type updateAlunoBodyType = z.infer<typeof updateAlunoSchema.body>;
 export type alunoParamsType = z.infer<typeof alunoParamsSchema>;
 export type getAlunosQueryStringType = z.infer<
