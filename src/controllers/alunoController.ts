@@ -10,20 +10,21 @@ import {
   getAlunoTelefone,
 } from '../services/alunoContactoServices';
 import {
-  updateAluno,
   getAluno,
   getAlunoId,
   getAlunoResponsaveis,
   getAlunos,
+  updateAluno,
 } from '../services/alunoServices';
+import { getMatriculasByAlunoId } from '../services/matriculaServices';
 import { getParentescoId } from '../services/parentescoServices';
 import {
   getResponsavelEmail,
   getResponsavelTelefone,
 } from '../services/responsavelContactoServices';
 import {
-  getTotalAlunoResponsaveis,
   createResponsavel,
+  getTotalAlunoResponsaveis,
 } from '../services/responsavelServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
@@ -32,7 +33,6 @@ import {
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
 } from '../utils/utils';
-import { getMatriculasByAlunoId } from '../services/matriculaServices';
 
 function throwInvalidDataNascimentoError(message: string) {
   throw new BadRequest({

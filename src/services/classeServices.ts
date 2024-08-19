@@ -33,13 +33,6 @@ export async function updateClasse(id: number, data: classeDataInterface) {
   return await prisma.classe.update({ where: { id }, data });
 }
 
-export async function getClasseValorMatricula(id: number) {
-  return await prisma.classe.findUnique({
-    where: { id },
-    select: { valorMatricula: true },
-  });
-}
-
 export async function getClasse(id: number) {
   const classe = await prisma.classe.findUnique({
     where: { id },
