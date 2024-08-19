@@ -28,6 +28,7 @@ model Aluno {
   Contacto        AlunoContacto?
   Responsaveis    Responsavel[]
   Matricula       Matricula[]
+  Pagamento       Pagamento[]
 
   @@map("alunos")
   @@schema("cadastro")
@@ -184,6 +185,7 @@ model AnoLectivo {
   termino   DateTime    @db.Date
   Classe    Classe[]
   Matricula Matricula[]
+  Pagamento Pagamento[]
 
   @@map("ano_lectivos")
   @@schema("cadastro")
@@ -261,4 +263,38 @@ model Matricula {
 
   @@map("matriculas")
   @@schema("academico")
+}
+
+enum TipoPagamento {
+  Propina
+  Matricula
+  Confirmacao
+
+  @@schema("financeiro")
+}
+
+model Pagamento {
+  id                Int             @id @default(autoincrement())
+  alunoId           Int             @map("aluno_id")
+  Aluno             Aluno           @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  tipoPagamento     TipoPagamento   @map("tipo_pagamento")
+  valor             Decimal         @db.Decimal(10, 2)
+  descricao         String?         @db.VarChar(255)
+  metodoPagamentoId Int             @map("metodo_pagamento_id") @db.SmallInt
+  MetodoPagamento   MetodoPagamento @relation(fields: [metodoPagamentoId], references: [id], onDelete: Cascade)
+  anoLectivoId      Int             @map("ano_lectivo_id") @db.SmallInt
+  AnoLectivo        AnoLectivo      @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade)
+  createdAt         DateTime        @default(now()) @map("created_at")
+
+  @@map("pagamentos")
+  @@schema("financeiro")
+}
+
+model MetodoPagamento {
+  id        Int         @id @default(autoincrement()) @db.SmallInt
+  nome      String      @unique @db.VarChar(50)
+  Pagamento Pagamento[]
+
+  @@map("metodos_pagamento")
+  @@schema("financeiro")
 }
