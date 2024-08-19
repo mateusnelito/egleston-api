@@ -65,6 +65,10 @@ async function swaggerDocs(server: FastifyInstance) {
           name: 'metodos-pagamento',
           description: 'Endpoints relacionados a metodos de pagamentos',
         },
+        {
+          name: 'pagamentos',
+          description: 'Endpoints relacionados a pagamentos',
+        },
       ],
     },
     transform: jsonSchemaTransform,
