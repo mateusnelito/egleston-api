@@ -1,0 +1,21 @@
+### Create
+POST http://localhost:8000/api/metodos-pagamento/
+Content-Type: application/json
+
+{
+    "nome": "Cash"
+}
+
+### Update
+PUT http://localhost:8000/api/metodos-pagamento/1
+Content-Type: application/json
+
+{
+    "nome": "TPA"
+}
+
+### GET 
+GET http://localhost:8000/api/metodos-pagamento/1
+
+### GET 
+GET http://localhost:8000/api/metodos-pagamento
