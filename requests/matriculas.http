@@ -51,5 +51,6 @@ Content-Type: application/json
   "classeId": 5,
   "cursoId": 1,
   "turmaId": 4,
+  "metodoPagamentoId": 1,
   "anoLectivoId": 1
 }

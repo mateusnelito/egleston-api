@@ -4,56 +4,6 @@ GET http://localhost:8000/api/alunos?page_size=2
 ### GET aluno
 GET http://localhost:8000/api/alunos/1
 
-### Create a aluno
-POST http://localhost:8000/api/alunos
-Content-Type: application/json
-
-{
-  "nomeCompleto": "Mateus Vale Celestino Nelito",
-  "nomeCompletoPai": "Nelito Cassule Toquessa",
-  "nomeCompletoMae": "Ana Vale João",
-  "numeroBi": "000000000KN000",
-  "dataNascimento": "2005-06-01",
-  "genero": "M",
-  "endereco": {
-    "bairro": "Simeone Mucune",
-    "rua": "4 de Abril",
-    "numeroCasa": 7
-  },
-  "contacto": {
-    "telefone": "935555500",
-    "email": "mateus@gmail.com"
-  },
-  "responsaveis": [
-    {
-      "nomeCompleto": "Nelito Cassule Toquessa",
-      "parentescoId": 1,
-      "endereco": {
-        "bairro": "Rocha Padaria",
-        "rua": "Da Max",
-        "numeroCasa": 1000
-      },
-      "contacto": {
-        "telefone": "923333123",
-        "email": "nelito@gmail.com"
-      }
-    },
-    {
-      "nomeCompleto": "Ana Vale João",
-      "parentescoId": 2,
-      "endereco": {
-        "bairro": "Simeone Mucune",
-        "rua": "4 de Abril",
-        "numeroCasa": 7
-      },
-      "contacto": {
-        "telefone": "958888123",
-        "outros": "Tel. Movicel: 991xxxxxx"
-      }
-    }
-  ]
-}
-
 ### Update an existent aluno
 PUT http://localhost:8000/api/alunos/1
 Content-Type: application/json

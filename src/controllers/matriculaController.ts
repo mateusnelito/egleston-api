@@ -9,7 +9,10 @@ import {
   getAlunoNumeroBi,
 } from '../services/alunoServices';
 import { getAnoLectivoId } from '../services/anoLectivoServices';
-import { getClasseId } from '../services/classeServices';
+import {
+  getClasseId,
+  getClasseValorMatricula,
+} from '../services/classeServices';
 import { getCursoId } from '../services/cursoServices';
 import { getParentescoId } from '../services/parentescoServices';
 import {
@@ -25,6 +28,8 @@ import {
   isBeginDateAfterEndDate,
 } from '../utils/utils';
 import { MINIMUM_ALUNO_AGE } from './alunoController';
+import { getMetodoPagamentoById } from '../services/metodoPagamentoServices';
+import { createPagamento } from '../services/pagamentoServices';
 
 function throwInvalidDataNascimentoError(message: string) {
   throw new BadRequest({
@@ -41,7 +46,8 @@ export async function createMatriculaController(
   const { body: data } = request;
 
   // Extracting matricula data
-  const { classeId, cursoId, turmaId, anoLectivoId } = request.body;
+  const { classeId, cursoId, turmaId, anoLectivoId, metodoPagamentoId } =
+    request.body;
 
   // Extracting aluno data
   const { aluno: alunoData } = data;
@@ -90,29 +96,29 @@ export async function createMatriculaController(
   // - Checking data integrity
   // # - matricula & aluno
   const [
-    isClasseId,
+    classe,
     isCursoId,
     isTurmaId,
+    isMetodoPagamentoId,
     isAnoLectivoId,
     isAlunoNumeroBi,
     isAlunoTelefone,
   ] = await Promise.all([
-    getClasseId(classeId),
+    getClasseValorMatricula(classeId),
     getCursoId(cursoId),
     getTurmaId(turmaId),
+    getMetodoPagamentoById(metodoPagamentoId),
     getAnoLectivoId(anoLectivoId),
     getAlunoNumeroBi(numeroBi),
     getAlunoTelefone(telefone),
   ]);
 
-  if (!isClasseId) {
+  if (!classe) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.NOT_FOUND,
       message: 'Parentesco inválido.',
       errors: {
-        aluno: {
-          classeId: ['ID da classe não existe.'],
-        },
+        classeId: ['ID da classe não existe.'],
       },
     });
   }
@@ -122,9 +128,7 @@ export async function createMatriculaController(
       statusCode: HttpStatusCodes.NOT_FOUND,
       message: 'Parentesco inválido.',
       errors: {
-        aluno: {
-          cursoId: ['ID do curso não existe.'],
-        },
+        cursoId: ['ID do curso não existe.'],
       },
     });
   }
@@ -134,9 +138,7 @@ export async function createMatriculaController(
       statusCode: HttpStatusCodes.NOT_FOUND,
       message: 'Parentesco inválido.',
       errors: {
-        aluno: {
-          turmaId: ['ID da turma não existe.'],
-        },
+        turmaId: ['ID da turma não existe.'],
       },
     });
   }
@@ -146,9 +148,7 @@ export async function createMatriculaController(
       statusCode: HttpStatusCodes.NOT_FOUND,
       message: 'Parentesco inválido.',
       errors: {
-        aluno: {
-          anoLectivoId: ['ID do ano lectivo não existe.'],
-        },
+        anoLectivoId: ['ID do ano lectivo não existe.'],
       },
     });
   }
@@ -169,6 +169,16 @@ export async function createMatriculaController(
         aluno: {
           contacto: { telefone: ['O número de telefone já está sendo usado.'] },
         },
+      },
+    });
+  }
+
+  if (!isMetodoPagamentoId) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+      message: 'Metodo de pagamento inválido.',
+      errors: {
+        metodoPagamentoId: ['ID metodo de pagamento não existe.'],
       },
     });
   }
@@ -256,6 +266,16 @@ export async function createMatriculaController(
 
   const matricula = await createAlunoWithMatricula(data);
 
+  // SAVE Pagamento
+  const pagamento = await createPagamento({
+    alunoId: matricula.aluno.id,
+    tipoPagamento: 'Matricula',
+    valor: Number(classe.valorMatricula),
+    descricao: null,
+    metodoPagamentoId,
+    anoLectivoId,
+  });
+
   // TODO: SAVE THE PAYMENT AND GENERATE THE RELATOR OR *COMPROVANTE
-  return reply.send(matricula);
+  return reply.send({ matricula, pagamento });
 }
