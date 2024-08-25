@@ -1,14 +1,14 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
+import PdfPrinter from 'pdfmake';
 import { createMatriculaBodyType } from '../schemas/matriculaSchemas';
-import { createAlunoWithMatricula } from '../services/alunoServices';
 import { validateAlunoData } from '../services/alunoValidationService';
+import { createMatricula } from '../services/matriculaServices';
 import { validateMatriculaData } from '../services/matriculaValidationService';
-import { createPagamento } from '../services/pagamentoServices';
 import { validateResponsavelData } from '../services/responsaveisValidationServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
+import { createMatriculaPdf } from '../utils/pdfUtils';
 import { arrayHasDuplicatedValue } from '../utils/utils';
-import { createMatricula } from '../services/matriculaServices';
 
 export async function createMatriculaController(
   request: FastifyRequest<{ Body: createMatriculaBodyType }>,
@@ -62,6 +62,31 @@ export async function createMatriculaController(
 
   const matricula = await createMatricula(data);
 
-  // TODO: GENERATE THE RELATOR OR *COMPROVANTE
-  return reply.send(matricula);
+  // Criando o PDF
+  const fonts = {
+    Helvetica: {
+      normal: 'Helvetica',
+      bold: 'Helvetica-Bold',
+    },
+  };
+
+  // Criando uma instância do PdfPrinter
+  const pdfPrinter = new PdfPrinter(fonts);
+
+  // Gerando o documento PDF
+  const matriculaPdfDocument = pdfPrinter.createPdfKitDocument(
+    createMatriculaPdf(matricula)
+  );
+
+  // Definindo o tipo de resposta HTTP como PDF
+  reply.type('application/pdf');
+
+  // Fazendo streaming do PDF para a resposta
+  matriculaPdfDocument.pipe(reply.raw);
+
+  // Finalizando a criação do PDF
+  matriculaPdfDocument.end();
+
+  // Retornando a resposta
+  return reply;
 }

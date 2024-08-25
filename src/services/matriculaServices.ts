@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { createMatriculaBodyType } from '../schemas/matriculaSchemas';
+import { matriculaData } from '../utils/interfaces';
 import { formatDate } from '../utils/utils';
 
 export async function createMatricula(matriculaData: createMatriculaBodyType) {
@@ -40,12 +41,6 @@ export async function createMatricula(matriculaData: createMatriculaBodyType) {
             bairro: true,
             rua: true,
             numeroCasa: true,
-          },
-        },
-        Contacto: {
-          select: {
-            telefone: true,
-            email: true,
           },
         },
         Matricula: {
@@ -128,38 +123,28 @@ export async function createMatricula(matriculaData: createMatriculaBodyType) {
     return {
       id: matricula.id,
       aluno: {
-        id: aluno.id,
-        nomeCompleto: aluno.nomeCompleto,
-        nomeCompletoPai: aluno.nomeCompletoPai,
-        nomeCompletoMae: aluno.nomeCompletoMae,
+        nome: aluno.nomeCompleto,
         numeroBi: aluno.numeroBi,
         dataNascimento: formatDate(aluno.dataNascimento),
         genero: aluno.genero,
         endereco: {
-          bairro: aluno.Endereco?.bairro,
-          rua: aluno.Endereco?.rua,
-          numeroCasa: aluno.Endereco?.numeroCasa,
+          bairro: aluno.Endereco!.bairro,
+          rua: aluno.Endereco!.rua,
+          numeroCasa: aluno.Endereco!.numeroCasa,
         },
-        contacto: {
-          telefone: aluno.Contacto?.telefone,
-          email: aluno.Contacto?.email,
-        },
-        responsaveis: matriculaData.aluno.responsaveis.length,
       },
       classe: matricula.Classe.nome,
       curso: matricula.Curso.nome,
       turma: matricula.Turma.nome,
       turno: matricula.Turma.Turno.nome,
       anoLectivo: matricula.AnoLectivo.nome,
-      createdAt: matricula.createdAt,
+      data: formatDate(matricula.createdAt),
       pagamento: {
-        id: pagamento.id,
-        alunoId: pagamento.alunoId,
         valor: Number(pagamento.valor),
-        descricao: pagamento.descricao,
         metodoPagamento: pagamento.MetodoPagamento.nome,
-        createdAt: pagamento.createdAt,
       },
+      // TODO: MAKE THIS DYNAMIC
+      funcionario: 'Teste Funcionário',
     };
   });
 }
