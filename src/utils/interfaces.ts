@@ -14,6 +14,7 @@ export interface matriculaData {
   classe: string;
   curso: string;
   turma: string;
+  turno: string;
   anoLectivo: string;
   pagamento: {
     valor: number;
