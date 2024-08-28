@@ -33,52 +33,22 @@ import {
   createResponsavel,
   getTotalAlunoResponsaveis,
 } from '../services/responsavelServices';
+import {
+  MINIMUM_ALUNO_AGE,
+  MINIMUM_ALUNO_RESPONSAVEIS,
+  throwInvalidAlunoDataNascimentoError,
+  throwInvalidAlunoEmailError,
+  throwInvalidAlunoTelefoneError,
+  throwNotFoundAlunoIdError,
+} from '../utils/controllers/alunoControllerUtils';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import NotFoundRequest from '../utils/NotFoundRequest';
 import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
 import {
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
-} from '../utils/utils';
-
-function throwInvalidDataNascimentoError(message: string) {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Data de nascimento inválida.',
-    errors: { dataNascimento: [message] },
-  });
-}
-
-function throwInvalidTelefoneError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Número de telefone inválido.',
-    errors: {
-      contacto: { telefone: ['O número de telefone já está sendo usado.'] },
-    },
-  });
-}
-
-function throwInvalidEmailError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Endereço de email inválido.',
-    errors: {
-      contacto: { email: ['O endereço de email já está sendo usado.'] },
-    },
-  });
-}
-
-function throwNotFoundAlunoIdError() {
-  throw new NotFoundRequest({
-    statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'Id de aluno não existe.',
-  });
-}
-
-export const MINIMUM_ALUNO_AGE = 14;
-const MINIMUM_RESPONSAVEIS = 4;
+} from '../utils/utilsFunctions';
+import { throwNotFoundParentescoIdFieldError } from '../utils/controllers/parentescoControllerUtils';
 
 export async function updateAlunoController(
   request: FastifyRequest<{
@@ -93,13 +63,13 @@ export async function updateAlunoController(
   const { telefone, email } = data.contacto;
 
   if (isBeginDateAfterEndDate(dataNascimento, new Date()))
-    throwInvalidDataNascimentoError(
+    throwInvalidAlunoDataNascimentoError(
       'Data de nascimento não pôde estar no futuro.'
     );
 
   const age = calculateTimeBetweenDates(dataNascimento, new Date(), 'y');
   if (age < MINIMUM_ALUNO_AGE) {
-    throwInvalidDataNascimentoError(
+    throwInvalidAlunoDataNascimentoError(
       `Idade inferior a ${MINIMUM_ALUNO_AGE} anos.`
     );
   }
@@ -111,12 +81,12 @@ export async function updateAlunoController(
 
   if (!isAlunoId) throwNotFoundAlunoIdError();
   if (isAlunoTelefone && isAlunoTelefone.alunoId !== alunoId)
-    throwInvalidTelefoneError();
+    throwInvalidAlunoTelefoneError();
 
   if (email) {
     const isAlunoEmail = await getAlunoEmail(email);
     if (isAlunoEmail && isAlunoEmail.alunoId !== alunoId)
-      throwInvalidEmailError();
+      throwInvalidAlunoEmailError();
   }
 
   const aluno = await updateAluno(alunoId, data);
@@ -196,7 +166,7 @@ export async function createAlunoResponsavelController(
 
   if (!isAlunoId) throwNotFoundAlunoIdError();
 
-  if (alunoTotalResponsaveis >= MINIMUM_RESPONSAVEIS) {
+  if (alunoTotalResponsaveis >= MINIMUM_ALUNO_RESPONSAVEIS) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
       message: 'Número máximo de responsaveis atingido.',
@@ -207,18 +177,12 @@ export async function createAlunoResponsavelController(
   // 'Cause nobody has 2 fathers or mothers
 
   // TODO: search for better way to validate parentesco and avoid duplication
-  if (!isParentescoId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Parentesco inválido.',
-      errors: { parentescoId: ['parentescoId não existe.'] },
-    });
-  }
-  if (isResponsavelTelefone) throwInvalidTelefoneError();
+  if (!isParentescoId) throwNotFoundParentescoIdFieldError();
+  if (isResponsavelTelefone) throwInvalidAlunoTelefoneError();
 
   if (email) {
     const isResponsavelEmail = await getResponsavelEmail(email);
-    if (isResponsavelEmail) throwInvalidEmailError();
+    if (isResponsavelEmail) throwInvalidAlunoEmailError();
   }
 
   const responsavel = await createResponsavel(alunoId, request.body);
