@@ -10,7 +10,13 @@ const matriculaBodySchema = z.object({
     })
     .int({ message: 'O id da matricula deve ser inteiro.' })
     .positive({ message: 'O id da matricula deve ser positivo.' }),
-  aluno: createAlunoBodySchema,
+  alunoId: z
+    .number({
+      required_error: 'O id do aluno é obrigatório.',
+      invalid_type_error: 'O id do aluno deve ser número.',
+    })
+    .int({ message: 'O id do aluno deve ser inteiro.' })
+    .positive({ message: 'O id do aluno deve ser positivo.' }),
   classeId: z
     .number({
       required_error: 'O id da classe é obrigatório.',
@@ -50,10 +56,14 @@ const matriculaBodySchema = z.object({
   createdAt: z.date({ message: 'createdAt deve ser uma data.' }).nullable(),
 });
 
-export const createMatriculaSchema = {
+export const createAlunoAndMatriculaSchema = {
   summary: 'Cria uma nova matricula',
   tags: ['matriculas'],
-  body: matriculaBodySchema.omit({ id: true, createdAt: true }),
+  body: matriculaBodySchema
+    .extend({
+      aluno: createAlunoBodySchema,
+    })
+    .omit({ id: true, alunoId: true, createdAt: true }),
   response: {
     // 201: matriculaBodySchema,
     400: complexBadRequestSchema,
@@ -61,6 +71,7 @@ export const createMatriculaSchema = {
   },
 };
 
-export type createMatriculaBodyType = z.infer<
-  typeof createMatriculaSchema.body
+export type matriculaBodyType = z.infer<typeof matriculaBodySchema>;
+export type createAlunoAndMatriculaBodyType = z.infer<
+  typeof createAlunoAndMatriculaSchema.body
 >;
