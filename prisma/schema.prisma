@@ -261,6 +261,7 @@ model Matricula {
   createdAt    DateTime   @default(now()) @map("created_at")
   // TODO: ADD THE USER WHO CREATED THE MATRICULA
 
+  @@unique([alunoId, classeId, anoLectivoId])
   @@map("matriculas")
   @@schema("academico")
 }
