@@ -7,6 +7,13 @@ import {
 } from 'pdfmake/interfaces';
 import { matriculaData } from './interfaces';
 
+export const pdfDefaultFonts = {
+  Helvetica: {
+    normal: 'Helvetica',
+    bold: 'Helvetica-Bold',
+  },
+};
+
 export function createPdfHeader(
   institutionName: string,
   institutionAddress: string,
@@ -112,6 +119,7 @@ export function createMatriculaPdf(
           ['Classe:', matricula.classe],
           ['Curso:', matricula.curso],
           ['Turma:', matricula.turma],
+          ['Turno:', matricula.turno],
           ['Ano Letivo:', matricula.anoLectivo],
         ],
         { margin: [0, 5, 0, 15] }
