@@ -1,17 +1,17 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import PdfPrinter from 'pdfmake';
-import { createMatriculaBodyType } from '../schemas/matriculaSchemas';
+import { createAlunoAndMatriculaBodyType } from '../schemas/matriculaSchemas';
+import { createAlunoAndMatricula } from '../services/alunoServices';
 import { validateAlunoData } from '../services/alunoValidationService';
-import { createMatricula } from '../services/matriculaServices';
 import { validateMatriculaData } from '../services/matriculaValidationService';
 import { validateResponsavelData } from '../services/responsaveisValidationServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import { createMatriculaPdf } from '../utils/pdfUtils';
+import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
 import { arrayHasDuplicatedValue } from '../utils/utils';
 
-export async function createMatriculaController(
-  request: FastifyRequest<{ Body: createMatriculaBodyType }>,
+export async function createAlunoAndMatriculaController(
+  request: FastifyRequest<{ Body: createAlunoAndMatriculaBodyType }>,
   reply: FastifyReply
 ) {
   const { body: data } = request;
@@ -60,18 +60,12 @@ export async function createMatriculaController(
     metodoPagamentoId,
   });
 
-  const matricula = await createMatricula(data);
+  const matricula = await createAlunoAndMatricula(data);
 
   // Criando o PDF
-  const fonts = {
-    Helvetica: {
-      normal: 'Helvetica',
-      bold: 'Helvetica-Bold',
-    },
-  };
 
   // Criando uma instância do PdfPrinter
-  const pdfPrinter = new PdfPrinter(fonts);
+  const pdfPrinter = new PdfPrinter(pdfDefaultFonts);
 
   // Gerando o documento PDF
   const matriculaPdfDocument = pdfPrinter.createPdfKitDocument(
@@ -86,6 +80,8 @@ export async function createMatriculaController(
 
   // Finalizando a criação do PDF
   matriculaPdfDocument.end();
+
+  // TODO: DEFINIR O NOME DO ARQUIVO ANTES DE ENVIAR
 
   // Retornando a resposta
   return reply;
