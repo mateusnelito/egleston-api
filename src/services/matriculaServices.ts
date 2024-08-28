@@ -1,153 +1,6 @@
 import { prisma } from '../lib/prisma';
-import { createMatriculaBodyType } from '../schemas/matriculaSchemas';
-import { matriculaData } from '../utils/interfaces';
+import { createAlunoMatriculaBodyType } from '../schemas/alunoSchemas';
 import { formatDate } from '../utils/utils';
-
-export async function createMatricula(matriculaData: createMatriculaBodyType) {
-  const {
-    aluno: alunoData,
-    classeId,
-    metodoPagamentoId,
-    anoLectivoId,
-  } = matriculaData;
-
-  return await prisma.$transaction(async (transaction) => {
-    const aluno = await transaction.aluno.create({
-      data: {
-        nomeCompleto: alunoData.nomeCompleto,
-        nomeCompletoPai: alunoData.nomeCompletoPai,
-        nomeCompletoMae: alunoData.nomeCompletoMae,
-        numeroBi: alunoData.numeroBi,
-        dataNascimento: alunoData.dataNascimento,
-        genero: alunoData.genero,
-        Endereco: {
-          create: alunoData.endereco,
-        },
-        Contacto: {
-          create: alunoData.contacto,
-        },
-        Matricula: {
-          create: {
-            classeId: matriculaData.classeId,
-            cursoId: matriculaData.cursoId,
-            turmaId: matriculaData.turmaId,
-            anoLectivoId: matriculaData.anoLectivoId,
-          },
-        },
-      },
-      include: {
-        Endereco: {
-          select: {
-            bairro: true,
-            rua: true,
-            numeroCasa: true,
-          },
-        },
-        Matricula: {
-          select: {
-            id: true,
-            createdAt: true,
-            Classe: {
-              select: {
-                nome: true,
-              },
-            },
-            Curso: {
-              select: {
-                nome: true,
-              },
-            },
-            Turma: {
-              select: {
-                nome: true,
-                Turno: {
-                  select: {
-                    nome: true,
-                  },
-                },
-              },
-            },
-            AnoLectivo: {
-              select: {
-                nome: true,
-              },
-            },
-          },
-          take: 1,
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    });
-
-    for (const responsavel of alunoData.responsaveis) {
-      // Persist aluno responsaveis data
-      await transaction.responsavel.create({
-        data: {
-          alunoId: aluno.id,
-          nomeCompleto: responsavel.nomeCompleto,
-          parentescoId: responsavel.parentescoId,
-          Endereco: {
-            create: responsavel.endereco,
-          },
-          Contacto: {
-            create: responsavel.contacto,
-          },
-        },
-      });
-    }
-
-    const classe = await transaction.classe.findUnique({
-      where: { id: classeId },
-      select: { valorMatricula: true },
-    });
-
-    const pagamento = await transaction.pagamento.create({
-      data: {
-        alunoId: aluno.id,
-        tipoPagamento: 'Matricula',
-        valor: classe!.valorMatricula,
-        metodoPagamentoId,
-        anoLectivoId,
-      },
-      include: {
-        MetodoPagamento: {
-          select: {
-            nome: true,
-          },
-        },
-      },
-    });
-
-    const matricula = aluno.Matricula[0];
-
-    return {
-      id: matricula.id,
-      aluno: {
-        nome: aluno.nomeCompleto,
-        numeroBi: aluno.numeroBi,
-        dataNascimento: formatDate(aluno.dataNascimento),
-        genero: aluno.genero,
-        endereco: {
-          bairro: aluno.Endereco!.bairro,
-          rua: aluno.Endereco!.rua,
-          numeroCasa: aluno.Endereco!.numeroCasa,
-        },
-      },
-      classe: matricula.Classe.nome,
-      curso: matricula.Curso.nome,
-      turma: matricula.Turma.nome,
-      turno: matricula.Turma.Turno.nome,
-      anoLectivo: matricula.AnoLectivo.nome,
-      data: formatDate(matricula.createdAt),
-      pagamento: {
-        valor: Number(pagamento.valor),
-        metodoPagamento: pagamento.MetodoPagamento.nome,
-      },
-      // TODO: MAKE THIS DYNAMIC
-      funcionario: 'Teste Funcionário',
-    };
-  });
-}
 
 export async function getMatriculasByAlunoId(alunoId: number) {
   const matriculas = await prisma.matricula.findMany({
@@ -186,4 +39,128 @@ export async function getMatriculasByAlunoId(alunoId: number) {
       };
     }),
   };
+}
+
+export async function createMatricula(
+  alunoId: number,
+  data: createAlunoMatriculaBodyType
+) {
+  return await prisma.$transaction(async (transaction) => {
+    const matricula = await transaction.matricula.create({
+      data: {
+        alunoId,
+        classeId: data.classeId,
+        cursoId: data.cursoId,
+        turmaId: data.turmaId,
+        anoLectivoId: data.anoLectivoId,
+      },
+      select: {
+        id: true,
+        createdAt: true,
+        Aluno: {
+          select: {
+            nomeCompleto: true,
+            numeroBi: true,
+            genero: true,
+            dataNascimento: true,
+            Endereco: {
+              select: {
+                bairro: true,
+                rua: true,
+                numeroCasa: true,
+              },
+            },
+          },
+        },
+
+        Classe: {
+          select: {
+            nome: true,
+          },
+        },
+        Curso: {
+          select: {
+            nome: true,
+          },
+        },
+        Turma: {
+          select: {
+            nome: true,
+            Turno: {
+              select: {
+                nome: true,
+              },
+            },
+          },
+        },
+        AnoLectivo: {
+          select: {
+            nome: true,
+          },
+        },
+      },
+    });
+
+    const classe = await transaction.classe.findUnique({
+      where: { id: data.classeId },
+      select: { valorMatricula: true },
+    });
+
+    const pagamento = await transaction.pagamento.create({
+      data: {
+        alunoId,
+        tipoPagamento: 'Matricula',
+        valor: classe!.valorMatricula,
+        metodoPagamentoId: data.metodoPagamentoId,
+        anoLectivoId: data.anoLectivoId,
+      },
+      include: {
+        MetodoPagamento: {
+          select: {
+            nome: true,
+          },
+        },
+      },
+    });
+
+    return {
+      id: matricula.id,
+      aluno: {
+        nome: matricula.Aluno.nomeCompleto,
+        numeroBi: matricula.Aluno.numeroBi,
+        dataNascimento: formatDate(matricula.Aluno.dataNascimento),
+        genero: matricula.Aluno.genero,
+        endereco: {
+          bairro: matricula.Aluno.Endereco!.bairro,
+          rua: matricula.Aluno.Endereco!.rua,
+          numeroCasa: matricula.Aluno.Endereco!.numeroCasa,
+        },
+      },
+      classe: matricula.Classe.nome,
+      curso: matricula.Curso.nome,
+      turma: matricula.Turma.nome,
+      turno: matricula.Turma.Turno.nome,
+      anoLectivo: matricula.AnoLectivo.nome,
+      data: formatDate(matricula.createdAt),
+      pagamento: {
+        valor: Number(pagamento.valor),
+        metodoPagamento: pagamento.MetodoPagamento.nome,
+      },
+      // TODO: MAKE THIS DYNAMIC
+      funcionario: 'Usuário Teste Dinâmico',
+    };
+  });
+}
+
+export async function getMatriculaIdByCompostKey(
+  alunoId: number,
+  classeId: number,
+  anoLectivoId: number
+) {
+  return await prisma.matricula.findUnique({
+    where: {
+      alunoId_classeId_anoLectivoId: { alunoId, classeId, anoLectivoId },
+    },
+    select: { id: true },
+  });
 }
