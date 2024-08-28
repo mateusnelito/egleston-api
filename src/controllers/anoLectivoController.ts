@@ -5,59 +5,34 @@ import {
   createClasseToAnoLectivoBodyType,
 } from '../schemas/anoLectivoSchema';
 import {
-  updateAnoLectivo,
-  getAnoLectivoId,
-  getAnoLectivoByNome,
-  getAnoLectivo,
-  getAnoLectivos,
   createAnoLectivo,
+  getAnoLectivo,
+  getAnoLectivoByNome,
+  getAnoLectivoId,
+  getAnoLectivos,
+  updateAnoLectivo,
 } from '../services/anoLectivoServices';
 import {
+  createClasse,
   getClasseByCompostUniqueKey,
   getClassesByAnoLectivo,
-  createClasse,
 } from '../services/classeServices';
 import { getCursoId } from '../services/cursoServices';
-import BadRequest from '../utils/BadRequest';
+import {
+  ANO_LECTIVO_MONTH_LENGTH,
+  throwDuplicatedAnoLectivoError,
+  throwInvalidAnoLectivoInicioError,
+  throwInvalidAnoLectivoYearLengthError,
+  throwNotFoundAnoLectivoIdError,
+} from '../utils/controllers/anoLectivoControllerUtils';
+import { throwDuplicatedClasseError } from '../utils/controllers/classeControllerUtils';
+import { throwNotFoundCursoIdFieldError } from '../utils/controllers/cursoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import NotFoundRequest from '../utils/NotFoundRequest';
 import {
   calculateTimeBetweenDates,
   formatDate,
   isBeginDateAfterEndDate,
-} from '../utils/utils';
-
-function throwInvalidInicioError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Data de início inválida.',
-    errors: { inicio: ['Início não pode ser após o término.'] },
-  });
-}
-
-function throwInvalidYearLengthError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Ano lectivo inválido',
-    errors: { termino: ['A duração do ano lectivo deve ser de 11 meses.'] },
-  });
-}
-
-function throwAnoLectivoAlreadyExistError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'O ano lectivo já existe.',
-  });
-}
-
-function throwNotFoundAnoLectivoIdError() {
-  throw new NotFoundRequest({
-    statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'ID do ano lectivo não existe.',
-  });
-}
-
-const YEAR_MONTH_LENGTH = 11;
+} from '../utils/utilsFunctions';
 
 export async function createAnoLectivoController(
   request: FastifyRequest<{ Body: createAnoLectivoBodyType }>,
@@ -68,16 +43,18 @@ export async function createAnoLectivoController(
   const termino = new Date(terminoString);
 
   // Validating dates
-  if (isBeginDateAfterEndDate(inicio, termino)) throwInvalidInicioError();
+  if (isBeginDateAfterEndDate(inicio, termino))
+    throwInvalidAnoLectivoInicioError();
 
   // FIXME: O dia de inicio do mês não começa em 01 caso for dado com 01.
   // e.g: 2024-09-01 -> 2024-08-31
   const yearMonthLength = calculateTimeBetweenDates(inicio, termino, 'M');
-  if (yearMonthLength !== YEAR_MONTH_LENGTH) throwInvalidYearLengthError();
+  if (yearMonthLength !== ANO_LECTIVO_MONTH_LENGTH)
+    throwInvalidAnoLectivoYearLengthError();
 
   const nome = `${inicio.getFullYear()}-${termino.getFullYear()}`;
   const isAnoLectivoNome = await getAnoLectivoByNome(nome);
-  if (isAnoLectivoNome) throwAnoLectivoAlreadyExistError();
+  if (isAnoLectivoNome) throwDuplicatedAnoLectivoError();
 
   const anoLectivo = await createAnoLectivo({ nome, inicio, termino });
   return reply.status(HttpStatusCodes.CREATED).send({
@@ -101,10 +78,12 @@ export async function updateAnoLectivoController(
   const termino = new Date(terminoString);
 
   // Validating dates
-  if (isBeginDateAfterEndDate(inicio, termino)) throwInvalidInicioError();
+  if (isBeginDateAfterEndDate(inicio, termino))
+    throwInvalidAnoLectivoInicioError();
 
   const yearMonthLength = calculateTimeBetweenDates(inicio, termino, 'M');
-  if (yearMonthLength !== YEAR_MONTH_LENGTH) throwInvalidYearLengthError();
+  if (yearMonthLength !== ANO_LECTIVO_MONTH_LENGTH)
+    throwInvalidAnoLectivoYearLengthError();
 
   const nome = `${inicio.getFullYear()}-${termino.getFullYear()}`;
   const [isAnoLectivo, anoLectivo] = await Promise.all([
@@ -114,7 +93,7 @@ export async function updateAnoLectivoController(
 
   if (!isAnoLectivo) throwNotFoundAnoLectivoIdError();
   if (anoLectivo && anoLectivo.id !== anoLectivoId)
-    throwAnoLectivoAlreadyExistError();
+    throwDuplicatedAnoLectivoError();
 
   const anoLectivoUpdated = await updateAnoLectivo(anoLectivoId, {
     nome,
@@ -131,7 +110,7 @@ export async function updateAnoLectivoController(
 }
 
 export async function getAnoLectivosController(
-  _request: FastifyRequest,
+  _: FastifyRequest,
   reply: FastifyReply
 ) {
   return reply.send(await getAnoLectivos());
@@ -185,13 +164,7 @@ export async function createClasseToAnoLectivoController(
   ]);
 
   if (!anoLectivo) throwNotFoundAnoLectivoIdError();
-  if (!isCursoId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Curso inválido',
-      errors: { cursoId: ['ID do curso não existe.'] },
-    });
-  }
+  if (!isCursoId) throwNotFoundCursoIdFieldError();
 
   const isClasse = await getClasseByCompostUniqueKey(
     nome,
@@ -199,12 +172,7 @@ export async function createClasseToAnoLectivoController(
     cursoId
   );
 
-  if (isClasse) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Classe já registada no ano lectivo.',
-    });
-  }
+  if (isClasse) throwDuplicatedClasseError();
 
   // TODO: REFACTOR THIS
   const classe = await createClasse({
