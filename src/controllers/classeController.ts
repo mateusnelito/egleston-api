@@ -5,59 +5,32 @@ import {
   createTurmaToClasseBodyType,
   updateClasseBodyType,
 } from '../schemas/classeSchemas';
-import { getAnoLectivo, getAnoLectivoId } from '../services/anoLectivoServices';
-import { getCursoId } from '../services/cursoServices';
-import BadRequest from '../utils/BadRequest';
-import HttpStatusCodes from '../utils/HttpStatusCodes';
+import { getAnoLectivo } from '../services/anoLectivoServices';
 import {
-  updateClasse,
+  createClasse,
   getClasseByCompostUniqueKey,
   getClasseId,
-  createClasse,
   getClasse as getClasseService,
+  updateClasse,
 } from '../services/classeServices';
-import NotFoundRequest from '../utils/NotFoundRequest';
+import { getCursoId } from '../services/cursoServices';
+import { getSalaId } from '../services/salaServices';
 import {
+  createTurma,
   getTurmaByUniqueCompostKey,
   getTurmasByClasse,
-  createTurma,
 } from '../services/turmaServices';
-import { getSalaId } from '../services/salaServices';
 import { getTurnoId } from '../services/turnoServices';
-import { arrayHasDuplicatedValue } from '../utils/utils';
-
-function throwNotFoundAnoLectivoIdError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'Ano lectivo inválido',
-    errors: { anoLectivoId: ['ID do ano lectivo não existe.'] },
-  });
-}
-
-function throwNotFoundCursoIdError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'Curso inválido',
-    errors: { cursoId: ['ID do curso não existe.'] },
-  });
-}
-
-function throwNotFoundClasseIdError() {
-  throw new NotFoundRequest({
-    statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'ID da classe não existe.',
-  });
-}
-
-function throwInvalidTurnosArrayError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Turnos inválidos.',
-    errors: {
-      turnos: ['turnos não podem conter items duplicados.'],
-    },
-  });
-}
+import { throwNotFoundAnoLectivoIdFieldError } from '../utils/controllers/anoLectivoControllerUtils';
+import {
+  throwDuplicatedClasseError,
+  throwNotFoundClasseIdError,
+} from '../utils/controllers/classeControllerUtils';
+import { throwNotFoundCursoIdFieldError } from '../utils/controllers/cursoControllerUtils';
+import { throwNotFoundSalaIdFieldError } from '../utils/controllers/salaControllerUtils';
+import { throwDuplicatedTurmaError } from '../utils/controllers/turmaControllerUtils';
+import { throwNotFoundTurnoIdFieldError } from '../utils/controllers/turnoControllerUtils';
+import HttpStatusCodes from '../utils/HttpStatusCodes';
 
 export async function createClasseController(
   request: FastifyRequest<{ Body: createClasseBodyType }>,
@@ -70,8 +43,8 @@ export async function createClasseController(
     await getCursoId(cursoId),
   ]);
 
-  if (!anoLectivo) throwNotFoundAnoLectivoIdError();
-  if (!isCursoId) throwNotFoundCursoIdError();
+  if (!anoLectivo) throwNotFoundAnoLectivoIdFieldError();
+  if (!isCursoId) throwNotFoundCursoIdFieldError();
 
   const isClasseId = await getClasseByCompostUniqueKey(
     nome,
@@ -79,12 +52,7 @@ export async function createClasseController(
     cursoId
   );
 
-  if (isClasseId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Classe já existe.',
-    });
-  }
+  if (isClasseId) throwDuplicatedClasseError();
 
   // TODO: REFACTOR THIS
   const classe = await createClasse({
@@ -116,17 +84,12 @@ export async function updateClasseController(
     await getCursoId(cursoId),
   ]);
 
-  if (!anoLectivo) throwNotFoundAnoLectivoIdError();
-  if (!isCursoId) throwNotFoundCursoIdError();
+  if (!anoLectivo) throwNotFoundAnoLectivoIdFieldError();
+  if (!isCursoId) throwNotFoundCursoIdFieldError();
 
   const classe = await getClasseByCompostUniqueKey(nome, anoLectivoId, cursoId);
 
-  if (classe && classe.id !== classeId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Classe já existe.',
-    });
-  }
+  if (classe && classe.id !== classeId) throwDuplicatedClasseError();
 
   const updatedClasse = await updateClasse(classeId, {
     nome: `${nome} - ${anoLectivo!.nome}`,
@@ -179,29 +142,9 @@ export async function createTurmaInClasseController(
   ]);
 
   if (!isClasseId) throwNotFoundClasseIdError();
-
-  if (!isSalaId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Sala inválida',
-      errors: { salaId: 'ID da sala não existe.' },
-    });
-  }
-
-  if (!isTurnoId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Turno inválido',
-      errors: { turnoId: 'ID do turno não existe.' },
-    });
-  }
-
-  if (isTurmaId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Turma já registada na classe.',
-    });
-  }
+  if (!isSalaId) throwNotFoundSalaIdFieldError();
+  if (!isTurnoId) throwNotFoundTurnoIdFieldError();
+  if (isTurmaId) throwDuplicatedTurmaError();
 
   const turma = await createTurma({ nome, classeId, salaId, turnoId });
   return reply.status(HttpStatusCodes.CREATED).send(turma);
