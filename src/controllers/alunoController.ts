@@ -1,6 +1,8 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
+import PdfPrinter from 'pdfmake';
 import {
   alunoParamsType,
+  createAlunoMatriculaBodyType,
   getAlunosQueryStringType,
   updateAlunoBodyType,
 } from '../schemas/alunoSchemas';
@@ -16,7 +18,12 @@ import {
   getAlunos,
   updateAluno,
 } from '../services/alunoServices';
-import { getMatriculasByAlunoId } from '../services/matriculaServices';
+import {
+  createMatricula,
+  getMatriculaIdByCompostKey,
+  getMatriculasByAlunoId,
+} from '../services/matriculaServices';
+import { validateMatriculaData } from '../services/matriculaValidationService';
 import { getParentescoId } from '../services/parentescoServices';
 import {
   getResponsavelEmail,
@@ -29,6 +36,7 @@ import {
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
+import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
 import {
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
@@ -81,17 +89,15 @@ export async function updateAlunoController(
 ) {
   const { alunoId } = request.params;
   const { body: data } = request;
-
   const { dataNascimento } = data;
   const { telefone, email } = data.contacto;
-  const dataNascimentoDate = new Date(dataNascimento);
 
-  if (isBeginDateAfterEndDate(dataNascimentoDate, new Date()))
+  if (isBeginDateAfterEndDate(dataNascimento, new Date()))
     throwInvalidDataNascimentoError(
       'Data de nascimento não pôde estar no futuro.'
     );
 
-  const age = calculateTimeBetweenDates(dataNascimentoDate, new Date(), 'y');
+  const age = calculateTimeBetweenDates(dataNascimento, new Date(), 'y');
   if (age < MINIMUM_ALUNO_AGE) {
     throwInvalidDataNascimentoError(
       `Idade inferior a ${MINIMUM_ALUNO_AGE} anos.`
@@ -99,8 +105,8 @@ export async function updateAlunoController(
   }
 
   const [isAlunoId, isAlunoTelefone] = await Promise.all([
-    await getAlunoId(alunoId),
-    await getAlunoTelefone(telefone),
+    getAlunoId(alunoId),
+    getAlunoTelefone(telefone),
   ]);
 
   if (!isAlunoId) throwNotFoundAlunoIdError();
@@ -182,10 +188,10 @@ export async function createAlunoResponsavelController(
     isParentescoId,
     isResponsavelTelefone,
   ] = await Promise.all([
-    await getAlunoId(alunoId),
-    await getTotalAlunoResponsaveis(alunoId),
-    await getParentescoId(parentescoId),
-    await getResponsavelTelefone(telefone),
+    getAlunoId(alunoId),
+    getTotalAlunoResponsaveis(alunoId),
+    getParentescoId(parentescoId),
+    getResponsavelTelefone(telefone),
   ]);
 
   if (!isAlunoId) throwNotFoundAlunoIdError();
@@ -230,4 +236,67 @@ export async function getAlunoMatriculasController(
 
   const alunoMatriculas = await getMatriculasByAlunoId(alunoId);
   return reply.send(alunoMatriculas);
+}
+
+export async function createAlunoMatriculasController(
+  request: FastifyRequest<{
+    Params: alunoParamsType;
+    Body: createAlunoMatriculaBodyType;
+  }>,
+  reply: FastifyReply
+) {
+  const { alunoId } = request.params;
+  const { classeId, cursoId, turmaId, anoLectivoId, metodoPagamentoId } =
+    request.body;
+
+  const isAlunoId = await getAlunoId(alunoId);
+
+  if (!isAlunoId) throwNotFoundAlunoIdError();
+
+  await validateMatriculaData({
+    classeId,
+    cursoId,
+    turmaId,
+    anoLectivoId,
+    metodoPagamentoId,
+  });
+
+  const isMatriculaId = await getMatriculaIdByCompostKey(
+    alunoId,
+    classeId,
+    anoLectivoId
+  );
+
+  if (isMatriculaId) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+      message: 'Matricula do aluno já existe.',
+    });
+  }
+
+  const matricula = await createMatricula(alunoId, request.body);
+
+  // Criando o PDF
+
+  // Criando uma instância do PdfPrinter
+  const pdfPrinter = new PdfPrinter(pdfDefaultFonts);
+
+  // Gerando o documento PDF
+  const matriculaPdfDocument = pdfPrinter.createPdfKitDocument(
+    createMatriculaPdf(matricula)
+  );
+
+  // Definindo o tipo de resposta HTTP como PDF
+  reply.type('application/pdf');
+
+  // Fazendo streaming do PDF para a resposta
+  matriculaPdfDocument.pipe(reply.raw);
+
+  // Finalizando a criação do PDF
+  matriculaPdfDocument.end();
+
+  // TODO: DEFINIR O NOME DO ARQUIVO ANTES DE ENVIAR
+
+  // Retornando a resposta
+  return reply;
 }

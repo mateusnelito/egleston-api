@@ -6,6 +6,7 @@ import {
   complexBadRequestSchema,
   getResourcesDefaultQueriesSchema,
   notFoundRequestSchema,
+  simpleBadRequestSchema,
 } from './globalSchema';
 import { createResponsavelBodySchema } from './responsavelSchema';
 
@@ -213,9 +214,62 @@ export const getAlunoMatriculasSchema = {
   },
 };
 
+export const createAlunoMatriculaSchema = {
+  summary: 'Cria uma matrícula para o aluno',
+  tags: ['alunos'],
+  params: alunoParamsSchema,
+  // TODO: REFACTOR THIS DUPLICATED CODE
+  body: z.object({
+    classeId: z
+      .number({
+        required_error: 'O id da classe é obrigatório.',
+        invalid_type_error: 'O id da classe deve ser número.',
+      })
+      .int({ message: 'O id da classe deve ser inteiro.' })
+      .positive({ message: 'O id da classe deve ser positivo.' }),
+    cursoId: z
+      .number({
+        required_error: 'O id de curso é obrigatório.',
+        invalid_type_error: 'O id de curso deve ser número.',
+      })
+      .int({ message: 'O id de curso deve ser inteiro.' })
+      .positive({ message: 'O id de curso deve ser positivo.' }),
+    turmaId: z
+      .number({
+        required_error: 'O id da turma é obrigatório.',
+        invalid_type_error: 'O id da turma deve ser número.',
+      })
+      .int({ message: 'O id da turma deve ser inteiro.' })
+      .positive({ message: 'O id da turma deve ser positivo.' }),
+    metodoPagamentoId: z
+      .number({
+        required_error: 'O id do metodo de pagamento é obrigatório.',
+        invalid_type_error: 'O id do metodo de pagamento deve ser número.',
+      })
+      .int({ message: 'O id do metodo de pagamento deve ser inteiro.' })
+      .positive({ message: 'O id do metodo de pagamento deve ser positivo.' }),
+    // FIXME: REMOVE, IT'S MUST BE DYNAMIC
+    anoLectivoId: z
+      .number({
+        required_error: 'O id do ano lectivo é obrigatório.',
+        invalid_type_error: 'O id do ano lectivo deve ser número.',
+      })
+      .int({ message: 'O id do ano lectivo deve ser inteiro.' })
+      .positive({ message: 'O id do ano lectivo deve ser positivo.' }),
+  }),
+  response: {
+    // 200: {},
+    400: simpleBadRequestSchema,
+    404: simpleBadRequestSchema,
+  },
+};
+
 export type createAlunoBodyType = z.infer<typeof createAlunoBodySchema>;
 export type updateAlunoBodyType = z.infer<typeof updateAlunoSchema.body>;
 export type alunoParamsType = z.infer<typeof alunoParamsSchema>;
 export type getAlunosQueryStringType = z.infer<
   typeof getAlunosSchema.querystring
+>;
+export type createAlunoMatriculaBodyType = z.infer<
+  typeof createAlunoMatriculaSchema.body
 >;
