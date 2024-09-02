@@ -1,22 +1,24 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import PdfPrinter from 'pdfmake';
-import { createAlunoAndMatriculaBodyType } from '../schemas/matriculaSchemas';
-import { createAlunoAndMatricula } from '../services/alunoServices';
+import { createAlunoMatriculaBodyType } from '../schemas/matriculaSchemas';
+import { createAlunoMatricula } from '../services/alunoServices';
 import { validateAlunoData } from '../services/alunoValidationService';
 import { validateMatriculaData } from '../services/matriculaValidationService';
 import { validateResponsavelData } from '../services/responsaveisValidationServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
-import { arrayHasDuplicatedValue } from '../utils/utils';
+import { arrayHasDuplicatedValue } from '../utils/utilsFunctions';
 
-export async function createAlunoAndMatriculaController(
-  request: FastifyRequest<{ Body: createAlunoAndMatriculaBodyType }>,
+export async function createAlunoMatriculaController(
+  request: FastifyRequest<{ Body: createAlunoMatriculaBodyType }>,
   reply: FastifyReply
 ) {
   const { body: data } = request;
   const { aluno: alunoData } = data;
   const { responsaveis: alunoResponsaveis } = alunoData;
+  const { classeId, cursoId, turmaId, anoLectivoId, metodoPagamentoId } =
+    request.body;
 
   const responsaveisTelefone = alunoResponsaveis.map(
     (responsavel) => responsavel.contacto.telefone
@@ -44,13 +46,9 @@ export async function createAlunoAndMatriculaController(
 
   await validateAlunoData(alunoData);
 
-  for (let index = 0; index < alunoResponsaveis.length; index++) {
-    const responsavel = alunoResponsaveis[index];
+  alunoResponsaveis.forEach(async (responsavel, index) => {
     await validateResponsavelData(responsavel, index);
-  }
-
-  const { classeId, cursoId, turmaId, anoLectivoId, metodoPagamentoId } =
-    request.body;
+  });
 
   await validateMatriculaData({
     classeId,
@@ -60,29 +58,58 @@ export async function createAlunoAndMatriculaController(
     metodoPagamentoId,
   });
 
-  const matricula = await createAlunoAndMatricula(data);
+  const matricula = await createAlunoMatricula(data);
 
-  // Criando o PDF
-
-  // Criando uma instância do PdfPrinter
+  // -> Making the PDF
   const pdfPrinter = new PdfPrinter(pdfDefaultFonts);
 
-  // Gerando o documento PDF
   const matriculaPdfDocument = pdfPrinter.createPdfKitDocument(
     createMatriculaPdf(matricula)
   );
 
-  // Definindo o tipo de resposta HTTP como PDF
   reply.type('application/pdf');
 
-  // Fazendo streaming do PDF para a resposta
+  // Making streaming of PDF to response
   matriculaPdfDocument.pipe(reply.raw);
 
-  // Finalizando a criação do PDF
+  // Ending PDF creation
   matriculaPdfDocument.end();
 
-  // TODO: DEFINIR O NOME DO ARQUIVO ANTES DE ENVIAR
+  // TODO: SET THE PDF NAME BEFORE SEND
 
-  // Retornando a resposta
   return reply;
 }
+
+// -> WORKING...
+// export async function updateMatriculaController(
+//   request: FastifyRequest<{
+//     Params: matriculaParamsType;
+//     Body: updateMatriculaBodyType;
+//   }>,
+//   reply: FastifyReply
+// ) {
+//   const { matriculaId } = request.params;
+//   const { classeId, cursoId, turmaId, metodoPagamentoId } = request.body;
+
+//   const [isMatriculaId, isCursoId, isTurmaId, isMetodoPagamentoId] =
+//     await Promise.all([
+//       getMatriculaIdById(matriculaId),
+//       getClasseId(classeId),
+//       getCursoId(cursoId),
+//       getTurmaId(turmaId),
+//       getMetodoPagamentoById(metodoPagamentoId),
+//     ]);
+
+//   if (!isCursoId) throwNotFoundCursoIdFieldError();
+//   if (!isTurmaId) throwNotFoundTurmaIdFieldError();
+
+//   if (!isMetodoPagamentoId) {
+//     throw new BadRequest({
+//       statusCode: HttpStatusCodes.BAD_REQUEST,
+//       message: 'Metodo de pagamento inválido.',
+//       errors: {
+//         metodoPagamentoId: ['ID metodo de pagamento não existe.'],
+//       },
+//     });
+//   }
+// }

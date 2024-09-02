@@ -20,7 +20,7 @@ import {
 } from '../services/alunoServices';
 import {
   createMatricula,
-  getMatriculaIdByCompostKey,
+  getMatriculaByUniqueKey,
   getMatriculasByAlunoId,
 } from '../services/matriculaServices';
 import { validateMatriculaData } from '../services/matriculaValidationService';
@@ -218,7 +218,7 @@ export async function createAlunoMatriculaController(
     metodoPagamentoId,
   });
 
-  const isMatriculaId = await getMatriculaIdByCompostKey(
+  const isMatriculaId = await getMatriculaByUniqueKey(
     alunoId,
     classeId,
     anoLectivoId
@@ -234,26 +234,17 @@ export async function createAlunoMatriculaController(
   const matricula = await createMatricula(alunoId, request.body);
 
   // Criando o PDF
-
-  // Criando uma instância do PdfPrinter
   const pdfPrinter = new PdfPrinter(pdfDefaultFonts);
 
-  // Gerando o documento PDF
   const matriculaPdfDocument = pdfPrinter.createPdfKitDocument(
     createMatriculaPdf(matricula)
   );
 
-  // Definindo o tipo de resposta HTTP como PDF
   reply.type('application/pdf');
-
-  // Fazendo streaming do PDF para a resposta
   matriculaPdfDocument.pipe(reply.raw);
-
-  // Finalizando a criação do PDF
   matriculaPdfDocument.end();
 
-  // TODO: DEFINIR O NOME DO ARQUIVO ANTES DE ENVIAR
+  // TODO: SET THE FILE NAME BEFORE SEND
 
-  // Retornando a resposta
   return reply;
 }

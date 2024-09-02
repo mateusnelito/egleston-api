@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import { createAlunoBodySchema } from './alunoSchemas';
-import { complexBadRequestSchema } from './globalSchema';
+import {
+  complexBadRequestSchema,
+  notFoundRequestSchema,
+  simpleBadRequestSchema,
+} from './globalSchema';
 
 const matriculaBodySchema = z.object({
   id: z
@@ -56,7 +60,17 @@ const matriculaBodySchema = z.object({
   createdAt: z.date({ message: 'createdAt deve ser uma data.' }).nullable(),
 });
 
-export const createAlunoAndMatriculaSchema = {
+const matriculaParamsSchema = z.object({
+  matriculaId: z.coerce
+    .number({
+      required_error: 'O id da matricula é obrigatório.',
+      invalid_type_error: 'O id da matricula deve ser número.',
+    })
+    .int({ message: 'O id da matricula deve ser inteiro.' })
+    .positive({ message: 'O id da matricula deve ser positivo.' }),
+});
+
+export const createAlunoMatriculaSchema = {
   summary: 'Cria uma nova matricula',
   tags: ['matriculas'],
   body: matriculaBodySchema
@@ -71,7 +85,28 @@ export const createAlunoAndMatriculaSchema = {
   },
 };
 
+export const updateMatriculaSchema = {
+  summary: 'Atualiza uma matricula existente',
+  tags: ['matriculas'],
+  params: matriculaParamsSchema,
+  body: matriculaBodySchema.omit({
+    id: true,
+    alunoId: true,
+    anoLectivoId: true,
+    createdAt: true,
+  }),
+  response: {
+    // 200: {},
+    400: simpleBadRequestSchema,
+    404: notFoundRequestSchema,
+  },
+};
+
 export type matriculaBodyType = z.infer<typeof matriculaBodySchema>;
-export type createAlunoAndMatriculaBodyType = z.infer<
-  typeof createAlunoAndMatriculaSchema.body
+export type createAlunoMatriculaBodyType = z.infer<
+  typeof createAlunoMatriculaSchema.body
+>;
+export type matriculaParamsType = z.infer<typeof matriculaParamsSchema>;
+export type updateMatriculaBodyType = z.infer<
+  typeof updateMatriculaSchema.body
 >;

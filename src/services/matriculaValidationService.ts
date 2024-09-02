@@ -1,4 +1,8 @@
 import BadRequest from '../utils/BadRequest';
+import { throwNotFoundAnoLectivoIdFieldError } from '../utils/controllers/anoLectivoControllerUtils';
+import { throwNotFoundClasseIdFieldError } from '../utils/controllers/classeControllerUtils';
+import { throwNotFoundCursoIdFieldError } from '../utils/controllers/cursoControllerUtils';
+import { throwNotFoundTurmaIdFieldError } from '../utils/controllers/turmaControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { getAnoLectivoId } from './anoLectivoServices';
 import { getClasseId } from './classeServices';
@@ -29,45 +33,10 @@ export async function validateMatriculaData(
       getAnoLectivoId(anoLectivoId),
     ]);
 
-  if (!classe) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Classe inválida.',
-      errors: {
-        classeId: ['ID da classe não existe.'],
-      },
-    });
-  }
-
-  if (!isCursoId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Curso inválido.',
-      errors: {
-        cursoId: ['ID do curso não existe.'],
-      },
-    });
-  }
-
-  if (!isTurmaId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Turma inválida.',
-      errors: {
-        turmaId: ['ID da turma não existe.'],
-      },
-    });
-  }
-
-  if (!isAnoLectivoId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Ano lectivo inválido.',
-      errors: {
-        anoLectivoId: ['ID do ano lectivo não existe.'],
-      },
-    });
-  }
+  if (!classe) throwNotFoundClasseIdFieldError();
+  if (!isCursoId) throwNotFoundCursoIdFieldError();
+  if (!isTurmaId) throwNotFoundTurmaIdFieldError();
+  if (!isAnoLectivoId) throwNotFoundAnoLectivoIdFieldError();
 
   if (!isMetodoPagamentoId) {
     throw new BadRequest({

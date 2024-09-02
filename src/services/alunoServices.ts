@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { updateAlunoBodyType } from '../schemas/alunoSchemas';
-import { createAlunoAndMatriculaBodyType } from '../schemas/matriculaSchemas';
+import { createAlunoMatriculaBodyType } from '../schemas/matriculaSchemas';
 import { formatDate } from '../utils/utilsFunctions';
 
 export async function getAlunoNumeroBi(numeroBi: string) {
@@ -162,8 +162,8 @@ export async function getAlunoResponsaveis(alunoId: number) {
   };
 }
 
-export async function createAlunoAndMatricula(
-  matriculaData: createAlunoAndMatriculaBodyType
+export async function createAlunoMatricula(
+  matriculaData: createAlunoMatriculaBodyType
 ) {
   const {
     aluno: alunoData,

@@ -9,19 +9,19 @@ export function throwNotFoundClasseIdError() {
   });
 }
 
-export function throwInvalidTurnosArrayError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Turnos inválidos.',
-    errors: {
-      turnos: ['turnos não podem conter items duplicados.'],
-    },
-  });
-}
-
 export function throwDuplicatedClasseError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Classe já existe.',
+  });
+}
+
+export function throwNotFoundClasseIdFieldError() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.NOT_FOUND,
+    message: 'Classe inválida.',
+    errors: {
+      classeId: ['ID da classe não existe.'],
+    },
   });
 }
