@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { createAlunoMatriculaBodyType } from '../schemas/alunoSchemas';
-import { formatDate } from '../utils/utils';
+import { formatDate } from '../utils/utilsFunctions';
 
 export async function getMatriculasByAlunoId(alunoId: number) {
   const matriculas = await prisma.matricula.findMany({
@@ -152,7 +152,7 @@ export async function createMatricula(
   });
 }
 
-export async function getMatriculaIdByCompostKey(
+export async function getMatriculaByUniqueKey(
   alunoId: number,
   classeId: number,
   anoLectivoId: number
@@ -161,6 +161,13 @@ export async function getMatriculaIdByCompostKey(
     where: {
       alunoId_classeId_anoLectivoId: { alunoId, classeId, anoLectivoId },
     },
+    select: { id: true },
+  });
+}
+
+export async function getMatriculaIdById(id: number) {
+  return await prisma.matricula.findUnique({
+    where: { id },
     select: { id: true },
   });
 }
