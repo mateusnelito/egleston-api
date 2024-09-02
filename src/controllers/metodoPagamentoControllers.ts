@@ -10,24 +10,11 @@ import {
   getMetodosPagamento,
   updateMetodoPagamento,
 } from '../services/metodoPagamentoServices';
-import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import NotFoundRequest from '../utils/NotFoundRequest';
-
-function throwInvalidNomeError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Nome de metodo de pagamento inválido.',
-    errors: { nome: ['O nome de metodo de pagamento já existe.'] },
-  });
-}
-
-function throwNotFoundMetodoPagamentoIdError() {
-  throw new NotFoundRequest({
-    statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'ID de metodo de pagamento não existe.',
-  });
-}
+import {
+  throwInvalidMetodoPagamentoNomeError,
+  throwNotFoundMetodoPagamentoIdError,
+} from '../utils/controllers/metodoPagamentoControllerUtils';
 
 export async function createMetodoPagamentoController(
   request: FastifyRequest<{ Body: createMetodoPagamentoBodyType }>,
@@ -36,7 +23,7 @@ export async function createMetodoPagamentoController(
   const { nome } = request.body;
 
   const isMetodoPagamentoNome = await getMetodoPagamentoByNome(nome);
-  if (isMetodoPagamentoNome) throwInvalidNomeError();
+  if (isMetodoPagamentoNome) throwInvalidMetodoPagamentoNomeError();
 
   const metodoPagamento = await createMetodoPagamento({ nome });
   return reply.status(HttpStatusCodes.CREATED).send(metodoPagamento);
@@ -59,7 +46,7 @@ export async function updateMetodoPagamentoController(
 
   if (!isMetodoPagamentoId) throwNotFoundMetodoPagamentoIdError();
   if (metodoPagamento && metodoPagamento.id !== metodoPagamentoId)
-    throwInvalidNomeError();
+    throwInvalidMetodoPagamentoNomeError();
 
   const metodoPagamentoUpdated = await updateMetodoPagamento(
     metodoPagamentoId,

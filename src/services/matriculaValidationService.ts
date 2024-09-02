@@ -1,9 +1,8 @@
-import BadRequest from '../utils/BadRequest';
 import { throwNotFoundAnoLectivoIdFieldError } from '../utils/controllers/anoLectivoControllerUtils';
 import { throwNotFoundClasseIdFieldError } from '../utils/controllers/classeControllerUtils';
 import { throwNotFoundCursoIdFieldError } from '../utils/controllers/cursoControllerUtils';
+import { throwNotFoundMetodoPagamentoIdFieldError } from '../utils/controllers/metodoPagamentoControllerUtils';
 import { throwNotFoundTurmaIdFieldError } from '../utils/controllers/turmaControllerUtils';
-import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { getAnoLectivoId } from './anoLectivoServices';
 import { getClasseId } from './classeServices';
 import { getCursoId } from './cursoServices';
@@ -36,15 +35,6 @@ export async function validateMatriculaData(
   if (!classe) throwNotFoundClasseIdFieldError();
   if (!isCursoId) throwNotFoundCursoIdFieldError();
   if (!isTurmaId) throwNotFoundTurmaIdFieldError();
+  if (!isMetodoPagamentoId) throwNotFoundMetodoPagamentoIdFieldError();
   if (!isAnoLectivoId) throwNotFoundAnoLectivoIdFieldError();
-
-  if (!isMetodoPagamentoId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Metodo de pagamento inválido.',
-      errors: {
-        metodoPagamentoId: ['ID metodo de pagamento não existe.'],
-      },
-    });
-  }
 }
