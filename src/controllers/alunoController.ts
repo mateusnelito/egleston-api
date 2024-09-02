@@ -37,7 +37,6 @@ import BadRequest from '../utils/BadRequest';
 import {
   MINIMUM_ALUNO_AGE,
   MINIMUM_ALUNO_RESPONSAVEIS,
-  throwInvalidAlunoDataNascimentoError,
   throwNotFoundAlunoIdError,
 } from '../utils/controllers/alunoControllerUtils';
 import { throwNotFoundParentescoIdFieldError } from '../utils/controllers/parentescoControllerUtils';
@@ -48,6 +47,7 @@ import {
   isBeginDateAfterEndDate,
   throwDuplicatedEmailError,
   throwDuplicatedTelefoneError,
+  throwInvalidDataNascimentoError,
 } from '../utils/utilsFunctions';
 
 export async function updateAlunoController(
@@ -63,13 +63,13 @@ export async function updateAlunoController(
   const { telefone, email } = data.contacto;
 
   if (isBeginDateAfterEndDate(dataNascimento, new Date()))
-    throwInvalidAlunoDataNascimentoError(
+    throwInvalidDataNascimentoError(
       'Data de nascimento não pôde estar no futuro.'
     );
 
   const alunoAge = calculateTimeBetweenDates(dataNascimento, new Date(), 'y');
   if (alunoAge < MINIMUM_ALUNO_AGE) {
-    throwInvalidAlunoDataNascimentoError(
+    throwInvalidDataNascimentoError(
       `Idade inferior a ${MINIMUM_ALUNO_AGE} anos.`
     );
   }

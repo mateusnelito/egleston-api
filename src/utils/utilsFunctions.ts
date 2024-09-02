@@ -44,3 +44,11 @@ export function throwDuplicatedTelefoneError() {
     },
   });
 }
+
+export function throwInvalidDataNascimentoError(message: string) {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Data de nascimento inválida.',
+    errors: { dataNascimento: [message] },
+  });
+}
