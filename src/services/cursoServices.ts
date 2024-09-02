@@ -48,8 +48,10 @@ export async function updateCurso(id: number, data: createCursoBodyType) {
 }
 
 export async function getCursos() {
-  return await prisma.curso.findMany({
-    select: { id: true, nome: true },
-    orderBy: { id: 'desc' },
-  });
+  return {
+    data: await prisma.curso.findMany({
+      select: { id: true, nome: true },
+      orderBy: { id: 'desc' },
+    }),
+  };
 }

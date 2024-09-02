@@ -13,7 +13,6 @@ export async function createMultiplesCursoDisciplinaByCurso(
   cursoId: number,
   disciplinas: Array<number>
 ) {
-  // Create multiples CursoDisciplinas without save in variable
   await prisma.cursosDisciplinas.createMany({
     data: disciplinas.map((disciplinaId) => {
       return {
