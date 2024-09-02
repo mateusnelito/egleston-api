@@ -53,7 +53,7 @@ export const updateParentescoSchema = {
   params: parentescoParamsSchema,
   body: parentescoBodySchema.omit({ id: true }),
   response: {
-    200: parentescoBodySchema.omit({ id: true }),
+    200: parentescoBodySchema,
     400: simpleBadRequestSchema,
     404: notFoundRequestSchema,
   },

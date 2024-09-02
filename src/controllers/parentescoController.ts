@@ -6,39 +6,26 @@ import {
 } from '../schemas/parentescoSchema';
 import {
   createParentesco,
-  getParentescos as getAllParentescos,
+  getParentescos,
   getParentesco,
   getParentescoByNome,
   getParentescoId,
   updateParentesco,
 } from '../services/parentescoServices';
-import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import NotFoundRequest from '../utils/NotFoundRequest';
-
-function throwNotFoundParentescoIdError() {
-  throw new NotFoundRequest({
-    statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'ID de parentesco não existe.',
-  });
-}
-
-function throwInvalidNomeError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Nome de parentesco inválido.',
-    errors: { nome: ['O nome de parentesco já existe.'] },
-  });
-}
+import {
+  throwDuplicatedParentescoNomeError,
+  throwNotFoundParentescoIdError,
+} from '../utils/controllers/parentescoControllerUtils';
 
 export async function createParentescoController(
   request: FastifyRequest<{ Body: createParentescoBodyType }>,
   reply: FastifyReply
 ) {
   const { nome } = request.body;
-
   const isParentescoNome = await getParentescoByNome(nome);
-  if (isParentescoNome) throwInvalidNomeError();
+
+  if (isParentescoNome) throwDuplicatedParentescoNomeError();
 
   const parentesco = await createParentesco(request.body);
   return reply.status(HttpStatusCodes.CREATED).send(parentesco);
@@ -55,22 +42,23 @@ export async function updateParentescoController(
   const { nome } = request.body;
 
   const [isParentescoId, parentesco] = await Promise.all([
-    await getParentescoId(parentescoId),
-    await getParentescoByNome(nome),
+    getParentescoId(parentescoId),
+    getParentescoByNome(nome),
   ]);
 
   if (!isParentescoId) throwNotFoundParentescoIdError();
-  if (parentesco && parentesco.id !== parentescoId) throwInvalidNomeError();
+  if (parentesco && parentesco.id !== parentescoId)
+    throwDuplicatedParentescoNomeError();
 
   const updatedParentesco = await updateParentesco(parentescoId, request.body);
-  return reply.send({ nome: updatedParentesco.nome });
+  return reply.send(updatedParentesco);
 }
 
 export async function getParentescosController(
-  request: FastifyRequest,
+  _: FastifyRequest,
   reply: FastifyReply
 ) {
-  const parentescos = await getAllParentescos();
+  const parentescos = await getParentescos();
   return reply.send(parentescos);
 }
 
@@ -81,8 +69,8 @@ export async function getParentescoController(
   reply: FastifyReply
 ) {
   const { parentescoId } = request.params;
-
   const parentesco = await getParentesco(parentescoId);
+
   if (!parentesco) throwNotFoundParentescoIdError();
 
   return reply.send(parentesco);
