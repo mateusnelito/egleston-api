@@ -15,28 +15,18 @@ import {
 } from '../services/salaServices';
 import {
   createTurma,
-  getTurmaByUniqueCompostKey,
+  getTurmaByUniqueKey,
   getTurmasBySala,
 } from '../services/turmaServices';
-import BadRequest from '../utils/BadRequest';
-import HttpStatusCodes from '../utils/HttpStatusCodes';
-import NotFoundRequest from '../utils/NotFoundRequest';
 import { getTurnoId } from '../services/turnoServices';
-
-function throwInvalidNomeError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Nome inválido',
-    errors: { nome: ['Nome já existe.'] },
-  });
-}
-
-function throwNotFoundSalaIdError() {
-  throw new NotFoundRequest({
-    statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'ID da sala não existe.',
-  });
-}
+import { throwNotFoundClasseIdFieldError } from '../utils/controllers/classeControllerUtils';
+import {
+  throwDuplicatedSalaNomeError,
+  throwNotFoundSalaIdError,
+} from '../utils/controllers/salaControllerUtils';
+import { throwNotFoundTurmaIdFieldError } from '../utils/controllers/turmaControllerUtils';
+import { throwNotFoundTurnoIdFieldError } from '../utils/controllers/turnoControllerUtils';
+import HttpStatusCodes from '../utils/HttpStatusCodes';
 
 export async function createSalaController(
   request: FastifyRequest<{ Body: createSalaBodyType }>,
@@ -45,7 +35,8 @@ export async function createSalaController(
   const { nome } = request.body;
   const isSalaNome = await getSalaByNome(nome);
 
-  if (isSalaNome) throwInvalidNomeError();
+  if (isSalaNome) throwDuplicatedSalaNomeError();
+
   const sala = await createSala(request.body);
   return reply.status(HttpStatusCodes.CREATED).send(sala);
 }
@@ -58,12 +49,12 @@ export async function updateSalaController(
   const { nome } = request.body;
 
   const [isSalaId, sala] = await Promise.all([
-    await getSalaId(salaId),
-    await getSalaByNome(nome),
+    getSalaId(salaId),
+    getSalaByNome(nome),
   ]);
 
   if (!isSalaId) throwNotFoundSalaIdError();
-  if (sala && sala.id !== salaId) throwInvalidNomeError();
+  if (sala && sala.id !== salaId) throwDuplicatedSalaNomeError();
 
   const updatedSala = await updateSala(salaId, request.body);
   return reply.send(updatedSala);
@@ -77,15 +68,15 @@ export async function getSalaController(
   const sala = await getSala(salaId);
 
   if (!sala) throwNotFoundSalaIdError();
+
   return reply.send(sala);
 }
 
 export async function getSalasController(
-  _request: FastifyRequest,
+  _: FastifyRequest,
   reply: FastifyReply
 ) {
-  const salas = await getSalas();
-  return reply.send(salas);
+  return reply.send(await getSalas());
 }
 
 export async function getSalaTurmasController(
@@ -96,6 +87,7 @@ export async function getSalaTurmasController(
   const isSalaId = await getSalaId(salaId);
 
   if (!isSalaId) throwNotFoundSalaIdError();
+
   const turmas = await getTurmasBySala(salaId);
   return reply.send(turmas);
 }
@@ -114,32 +106,13 @@ export async function createTurmaInSalaController(
     getClasseId(classeId),
     getSalaId(salaId),
     getTurnoId(turnoId),
-    getTurmaByUniqueCompostKey(nome, salaId, salaId, turnoId),
+    getTurmaByUniqueKey(nome, salaId, salaId, turnoId),
   ]);
 
   if (!isSalaId) throwNotFoundSalaIdError();
-  if (!isClasseId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Classe inválida',
-      errors: { classeId: 'ID da classe não existe.' },
-    });
-  }
-
-  if (!isTurnoId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Turno inválido',
-      errors: { turnoId: 'ID do turno não existe.' },
-    });
-  }
-
-  if (isTurmaId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Turma já registada na sala.',
-    });
-  }
+  if (!isClasseId) throwNotFoundClasseIdFieldError();
+  if (!isTurnoId) throwNotFoundTurnoIdFieldError();
+  if (isTurmaId) throwNotFoundTurmaIdFieldError();
 
   const turma = await createTurma({ nome, classeId, salaId, turnoId });
   return reply.status(HttpStatusCodes.CREATED).send(turma);
