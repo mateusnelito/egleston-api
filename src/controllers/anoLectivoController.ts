@@ -14,7 +14,7 @@ import {
 } from '../services/anoLectivoServices';
 import {
   createClasse,
-  getClasseByCompostUniqueKey,
+  getClasseByUniqueKey,
   getClassesByAnoLectivo,
 } from '../services/classeServices';
 import { getCursoId } from '../services/cursoServices';
@@ -164,11 +164,7 @@ export async function createClasseToAnoLectivoController(
   if (!anoLectivo) throwNotFoundAnoLectivoIdError();
   if (!isCursoId) throwNotFoundCursoIdFieldError();
 
-  const isClasse = await getClasseByCompostUniqueKey(
-    nome,
-    anoLectivoId,
-    cursoId
-  );
+  const isClasse = await getClasseByUniqueKey(nome, anoLectivoId, cursoId);
 
   if (isClasse) throwDuplicatedClasseError();
 

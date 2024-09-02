@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma';
 
-export async function getClasseByCompostUniqueKey(
+export async function getClasseByUniqueKey(
   nome: string,
   anoLectivoId: number,
   cursoId: number
