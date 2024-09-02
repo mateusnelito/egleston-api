@@ -1,7 +1,6 @@
-import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { createProfessorBodyType } from '../schemas/professorSchemas';
-import { formatDate } from '../utils/utils';
+import { formatDate } from '../utils/utilsFunctions';
 
 export async function createProfessor(data: createProfessorBodyType) {
   const { disciplinas } = data;
@@ -131,8 +130,4 @@ export async function getProfessores(
       id: 'desc',
     },
   });
-}
-
-export async function deleteResponsavel(id: number) {
-  return await prisma.responsavel.delete({ where: { id } });
 }

@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma';
-import { formatDate } from '../utils/utils';
+import { formatDate } from '../utils/utilsFunctions';
 
 export async function getDisciplinaProfessor(
   professorId: number,
@@ -29,8 +29,8 @@ export async function createMultiplesDisciplinaProfessorByProfessor(
   });
 
   const [{ count: totalProfessorDisciplina }, professor] = await Promise.all([
-    await createManyDisciplinaProfessorPromise,
-    await findProfessorPromise,
+    createManyDisciplinaProfessorPromise,
+    findProfessorPromise,
   ]);
 
   if (professor) {

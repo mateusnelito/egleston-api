@@ -23,6 +23,10 @@ import {
   updateProfessor,
 } from '../services/professorServices';
 import BadRequest from '../utils/BadRequest';
+import {
+  throwNotFoundDisciplinaIdInArrayError,
+  throwInvalidDisciplinasArrayError,
+} from '../utils/controllers/disciplinaControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import NotFoundRequest from '../utils/NotFoundRequest';
 import {
@@ -30,46 +34,15 @@ import {
   calculateTimeBetweenDates,
   formatDate,
   isBeginDateAfterEndDate,
-} from '../utils/utils';
-
-function throwInvalidDataNascimentoError(message: string) {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Data de nascimento inválida.',
-    errors: { dataNascimento: [message] },
-  });
-}
-
-function throwInvalidTelefoneError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Número de telefone inválido.',
-    errors: { telefone: ['O número de telefone já está sendo usado.'] },
-  });
-}
-
-function throwInvalidEmailError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Endereço de email inválido.',
-    errors: { email: ['O endereço de email já está sendo usado.'] },
-  });
-}
+  throwDuplicatedEmailError,
+  throwDuplicatedTelefoneError,
+  throwInvalidDataNascimentoError,
+} from '../utils/utilsFunctions';
 
 function throwNotFoundProfessorIdError() {
   throw new NotFoundRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
     message: 'Id de professor não existe.',
-  });
-}
-
-function throwInvalidDisciplinasArrayError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Disciplinas inválidas.',
-    errors: {
-      disciplinas: ['disciplinas não podem conter items duplicados.'],
-    },
   });
 }
 
@@ -83,47 +56,41 @@ export async function createProfessorController(
   const { disciplinas, dataNascimento } = data;
   const { telefone, email } = data.contacto;
 
-  // Check dataNascimento integrity
   if (isBeginDateAfterEndDate(dataNascimento, new Date()))
     throwInvalidDataNascimentoError(
       'Data de nascimento não pôde estar no futuro.'
     );
 
-  const age = calculateTimeBetweenDates(dataNascimento, new Date(), 'y');
-  if (age > MAXIMUM_AGE) {
+  const professorAge = calculateTimeBetweenDates(
+    dataNascimento,
+    new Date(),
+    'y'
+  );
+  if (professorAge > MAXIMUM_AGE) {
     throwInvalidDataNascimentoError(`Idade maior que ${MAXIMUM_AGE} anos.`);
   }
 
-  // Check disciplinas integrity
   if (disciplinas && arrayHasDuplicatedValue(disciplinas))
     throwInvalidDisciplinasArrayError();
 
-  const isProfessorTelefone = await getTelefone(telefone);
-  if (isProfessorTelefone) throwInvalidTelefoneError();
+  const [isProfessorTelefone, isProfessorEmail] = await Promise.all([
+    getTelefone(telefone),
+    email ? getEmail(email) : null,
+  ]);
 
-  if (email) {
-    const isProfessorEmail = await getEmail(email);
-    if (isProfessorEmail) throwInvalidEmailError();
-  }
+  if (isProfessorTelefone) throwDuplicatedTelefoneError();
+  if (isProfessorEmail) throwDuplicatedEmailError();
 
   if (disciplinas) {
-    for (let i = 0; i < disciplinas.length; i++) {
-      const disciplinaId = disciplinas[i];
-      const isDisciplinaId = await getDisciplinaId(disciplinaId);
-
-      // TODO: Finish the verification before send the errors, to send all invalids disciplinas
-      if (!isDisciplinaId) {
-        throw new BadRequest({
-          statusCode: HttpStatusCodes.NOT_FOUND,
-          message: 'Disciplina inválida.',
-          errors: {
-            disciplinas: {
-              [i]: 'ID da disciplina não existe.',
-            },
-          },
-        });
+    disciplinas.forEach(async (disciplinaId, index) => {
+      const disciplina = await getDisciplinaId(disciplinaId);
+      if (!disciplina) {
+        throwNotFoundDisciplinaIdInArrayError(
+          index,
+          'ID da disciplina não existe.'
+        );
       }
-    }
+    });
   }
 
   const professor = await createProfessor(request.body);
@@ -142,31 +109,32 @@ export async function updateProfessorController(
   const { dataNascimento } = data;
   const { telefone, email } = data.contacto;
 
-  // Check dataNascimento integrity
   if (isBeginDateAfterEndDate(dataNascimento, new Date()))
     throwInvalidDataNascimentoError(
       'Data de nascimento não pôde estar no futuro.'
     );
 
-  const age = calculateTimeBetweenDates(dataNascimento, new Date(), 'y');
-  if (age > MAXIMUM_AGE) {
+  const professorAge = calculateTimeBetweenDates(
+    dataNascimento,
+    new Date(),
+    'y'
+  );
+  if (professorAge > MAXIMUM_AGE) {
     throwInvalidDataNascimentoError(`Idade maior que ${MAXIMUM_AGE} anos.`);
   }
 
-  const [isProfessorId, professorTelefone] = await Promise.all([
-    await getProfessorId(professorId),
-    await getTelefone(telefone),
+  const [isProfessorId, professorTelefone, professorEmail] = await Promise.all([
+    getProfessorId(professorId),
+    getTelefone(telefone),
+    email ? getEmail(email) : null,
   ]);
 
   if (!isProfessorId) throwNotFoundProfessorIdError();
   if (professorTelefone && professorTelefone.professorId !== professorId)
-    throwInvalidTelefoneError();
+    throwDuplicatedTelefoneError();
 
-  if (email) {
-    const professorEmail = await getEmail(email);
-    if (professorEmail && professorEmail.professorId !== professorId)
-      throwInvalidEmailError();
-  }
+  if (professorEmail && professorEmail.professorId !== professorId)
+    throwDuplicatedEmailError();
 
   const professor = await updateProfessor(professorId, request.body);
   return reply.send(professor);
@@ -182,6 +150,7 @@ export async function getProfessorController(
   const professor = await getProfessor(professorId);
 
   if (!professor) throw throwNotFoundProfessorIdError();
+
   return reply.send(professor);
 }
 
@@ -221,47 +190,30 @@ export async function createMultiplesProfessorDisciplinaByProfessorController(
   const { professorId } = request.params;
   const { disciplinas } = request.body;
 
-  if (disciplinas && arrayHasDuplicatedValue(disciplinas))
-    throwInvalidDisciplinasArrayError();
+  if (arrayHasDuplicatedValue(disciplinas)) throwInvalidDisciplinasArrayError();
 
   const isProfessorId = await getProfessorId(professorId);
   if (!isProfessorId) throwNotFoundProfessorIdError();
 
-  // TODO: TRY TO SIMPLIFY THIS CODE WITH PROMISE.ALL,
-  // CREATING A ARRAY WITH UNSOLVED PROMISES AND EXECUTE THEM ALL IN THE SAME TIME
-  for (let i = 0; i < disciplinas.length; i++) {
-    const disciplinaId = disciplinas[i];
-
+  disciplinas.forEach(async (disciplinaId, index) => {
     const [isDisciplinaId, isDisciplinaProfessor] = await Promise.all([
-      await getDisciplinaId(disciplinaId),
-      await getDisciplinaProfessor(professorId, disciplinaId),
+      getDisciplinaId(disciplinaId),
+      getDisciplinaProfessor(professorId, disciplinaId),
     ]);
 
     // TODO: Finish the verification before send the errors, to send all invalids disciplinas
-    if (!isDisciplinaId) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.NOT_FOUND,
-        message: 'Disciplina inválida.',
-        errors: {
-          disciplinas: {
-            [i]: 'ID da disciplina não existe.',
-          },
-        },
-      });
-    }
+    if (!isDisciplinaId)
+      throwNotFoundDisciplinaIdInArrayError(
+        index,
+        'ID da disciplina não existe.'
+      );
 
-    if (isDisciplinaProfessor) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.NOT_FOUND,
-        message: 'Disciplina inválida.',
-        errors: {
-          disciplinas: {
-            [i]: 'disciplinaId já está registrada ao professor.',
-          },
-        },
-      });
-    }
-  }
+    if (isDisciplinaProfessor)
+      throwNotFoundDisciplinaIdInArrayError(
+        index,
+        'disciplinaId já está registrada ao professor.'
+      );
+  });
 
   const cursoDisciplinas = await createMultiplesDisciplinaProfessorByProfessor(
     professorId,
@@ -309,32 +261,23 @@ export async function deleteMultiplesProfessorDisciplinaByProfessorController(
   const { professorId } = request.params;
   const { disciplinas } = request.body;
 
-  if (disciplinas && arrayHasDuplicatedValue(disciplinas))
-    throwInvalidDisciplinasArrayError();
+  if (arrayHasDuplicatedValue(disciplinas)) throwInvalidDisciplinasArrayError();
 
   const isProfessorId = await getProfessorId(professorId);
   if (!isProfessorId) throwNotFoundProfessorIdError();
 
-  for (let i = 0; i < disciplinas.length; i++) {
-    const disciplinaId = disciplinas[i];
-
+  disciplinas.forEach(async (disciplinaId, index) => {
     const isProfessorDisciplina = await getDisciplinaProfessor(
       professorId,
       disciplinaId
     );
 
-    if (!isProfessorDisciplina) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.NOT_FOUND,
-        message: 'Disciplina inválida.',
-        errors: {
-          disciplinas: {
-            [i]: 'Disciplina não registrada ao professor.',
-          },
-        },
-      });
-    }
-  }
+    if (!isProfessorDisciplina)
+      throwNotFoundDisciplinaIdInArrayError(
+        index,
+        'Disciplina não registrada ao professor.'
+      );
+  });
 
   const professorDisciplinas =
     await deleteMultiplesDisciplinaProfessorByProfessor(
