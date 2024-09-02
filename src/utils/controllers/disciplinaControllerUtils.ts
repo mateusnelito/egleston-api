@@ -2,7 +2,7 @@ import BadRequest from '../BadRequest';
 import HttpStatusCodes from '../HttpStatusCodes';
 import NotFoundRequest from '../NotFoundRequest';
 
-export function throwInvalidDisciplinaIdInArrayError(
+export function throwNotFoundDisciplinaIdInArrayError(
   index: number,
   message: string,
   statusCode: number = HttpStatusCodes.NOT_FOUND

@@ -1,10 +1,10 @@
 import { createAlunoBodyType } from '../schemas/alunoSchemas';
 import BadRequest from '../utils/BadRequest';
-import { throwInvalidAlunoDataNascimentoError } from '../utils/controllers/alunoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import {
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
+  throwInvalidDataNascimentoError,
 } from '../utils/utilsFunctions';
 import { getAlunoEmail, getAlunoTelefone } from './alunoContactoServices';
 import { getAlunoNumeroBi } from './alunoServices';
@@ -16,14 +16,14 @@ export async function validateAlunoData(alunoData: createAlunoBodyType) {
   const { telefone, email } = alunoData.contacto;
 
   if (isBeginDateAfterEndDate(dataNascimento, new Date())) {
-    throwInvalidAlunoDataNascimentoError(
+    throwInvalidDataNascimentoError(
       'Data de nascimento não pode estar no futuro.'
     );
   }
 
   const alunoAge = calculateTimeBetweenDates(dataNascimento, new Date(), 'y');
   if (alunoAge < MINIMUM_ALUNO_AGE) {
-    throwInvalidAlunoDataNascimentoError(
+    throwInvalidDataNascimentoError(
       `Idade inferior a ${MINIMUM_ALUNO_AGE} anos.`
     );
   }

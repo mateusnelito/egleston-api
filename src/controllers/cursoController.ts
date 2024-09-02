@@ -37,8 +37,8 @@ import {
   throwNotFoundCursoIdError,
 } from '../utils/controllers/cursoControllerUtils';
 import {
-  throwInvalidDisciplinaIdInArrayError,
   throwInvalidDisciplinasArrayError,
+  throwNotFoundDisciplinaIdInArrayError,
 } from '../utils/controllers/disciplinaControllerUtils';
 import { arrayHasDuplicatedValue } from '../utils/utilsFunctions';
 
@@ -62,7 +62,10 @@ export async function createCursoController(
 
       // TODO: Finish the verification before send the errors, to send all invalids disciplinas
       if (!isDisciplinaId)
-        throwInvalidDisciplinaIdInArrayError(i, 'ID da disciplina não existe.');
+        throwNotFoundDisciplinaIdInArrayError(
+          i,
+          'ID da disciplina não existe.'
+        );
     }
   }
 
@@ -138,13 +141,13 @@ export async function createMultiplesCursoDisciplinaByCursoController(
 
     // TODO: Finish the verification before send the errors, to send all invalids disciplinas
     if (!isDisciplinaId)
-      throwInvalidDisciplinaIdInArrayError(
+      throwNotFoundDisciplinaIdInArrayError(
         index,
         'ID da disciplina não existe.'
       );
 
     if (isCursoDisciplina)
-      throwInvalidDisciplinaIdInArrayError(
+      throwNotFoundDisciplinaIdInArrayError(
         index,
         'Disciplina já registrada no curso.',
         HttpStatusCodes.BAD_REQUEST
@@ -201,7 +204,7 @@ export async function deleteMultiplesCursoDisciplinasController(
     const isCursoDisciplina = await getCursoDisciplina(cursoId, disciplinaId);
 
     if (!isCursoDisciplina)
-      throwInvalidDisciplinaIdInArrayError(
+      throwNotFoundDisciplinaIdInArrayError(
         index,
         'Disciplina não registrada no curso.'
       );
