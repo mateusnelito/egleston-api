@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
-  createAlunoMatriculasController,
+  createAlunoMatriculaController,
   createAlunoResponsavelController,
   getAlunoController,
   getAlunoMatriculasController,
@@ -59,7 +59,7 @@ const alunosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
   // POST
   server.withTypeProvider<ZodTypeProvider>().post('/:alunoId/matriculas', {
     schema: createAlunoMatriculaSchema,
-    handler: createAlunoMatriculasController,
+    handler: createAlunoMatriculaController,
   });
 };
 export default alunosRoutes;

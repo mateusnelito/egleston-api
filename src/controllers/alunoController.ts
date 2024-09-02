@@ -33,22 +33,22 @@ import {
   createResponsavel,
   getTotalAlunoResponsaveis,
 } from '../services/responsavelServices';
+import BadRequest from '../utils/BadRequest';
 import {
   MINIMUM_ALUNO_AGE,
   MINIMUM_ALUNO_RESPONSAVEIS,
   throwInvalidAlunoDataNascimentoError,
-  throwInvalidAlunoEmailError,
-  throwInvalidAlunoTelefoneError,
   throwNotFoundAlunoIdError,
 } from '../utils/controllers/alunoControllerUtils';
-import BadRequest from '../utils/BadRequest';
+import { throwNotFoundParentescoIdFieldError } from '../utils/controllers/parentescoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
 import {
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
+  throwDuplicatedEmailError,
+  throwDuplicatedTelefoneError,
 } from '../utils/utilsFunctions';
-import { throwNotFoundParentescoIdFieldError } from '../utils/controllers/parentescoControllerUtils';
 
 export async function updateAlunoController(
   request: FastifyRequest<{
@@ -67,27 +67,24 @@ export async function updateAlunoController(
       'Data de nascimento não pôde estar no futuro.'
     );
 
-  const age = calculateTimeBetweenDates(dataNascimento, new Date(), 'y');
-  if (age < MINIMUM_ALUNO_AGE) {
+  const alunoAge = calculateTimeBetweenDates(dataNascimento, new Date(), 'y');
+  if (alunoAge < MINIMUM_ALUNO_AGE) {
     throwInvalidAlunoDataNascimentoError(
       `Idade inferior a ${MINIMUM_ALUNO_AGE} anos.`
     );
   }
 
-  const [isAlunoId, isAlunoTelefone] = await Promise.all([
+  const [isAlunoId, alunoTelefone, alunoEmail] = await Promise.all([
     getAlunoId(alunoId),
     getAlunoTelefone(telefone),
+    email ? getAlunoEmail(email) : null,
   ]);
 
   if (!isAlunoId) throwNotFoundAlunoIdError();
-  if (isAlunoTelefone && isAlunoTelefone.alunoId !== alunoId)
-    throwInvalidAlunoTelefoneError();
+  if (alunoTelefone && alunoTelefone.alunoId !== alunoId)
+    throwDuplicatedTelefoneError();
 
-  if (email) {
-    const isAlunoEmail = await getAlunoEmail(email);
-    if (isAlunoEmail && isAlunoEmail.alunoId !== alunoId)
-      throwInvalidAlunoEmailError();
-  }
+  if (alunoEmail && alunoEmail.alunoId !== alunoId) throwDuplicatedEmailError();
 
   const aluno = await updateAluno(alunoId, data);
   return reply.send(aluno);
@@ -131,12 +128,12 @@ export async function getAlunoResponsaveisController(
   reply: FastifyReply
 ) {
   const { alunoId } = request.params;
-
   const isAlunoId = await getAlunoId(alunoId);
+
   if (!isAlunoId) throwNotFoundAlunoIdError();
 
   const responsaveis = await getAlunoResponsaveis(alunoId);
-  return reply.send({ data: responsaveis });
+  return reply.send(responsaveis);
 }
 
 export async function createAlunoResponsavelController(
@@ -148,7 +145,6 @@ export async function createAlunoResponsavelController(
 ) {
   const { alunoId } = request.params;
   const { body: data } = request;
-
   const { parentescoId } = request.body;
   const { telefone, email } = data.contacto;
 
@@ -157,11 +153,13 @@ export async function createAlunoResponsavelController(
     alunoTotalResponsaveis,
     isParentescoId,
     isResponsavelTelefone,
+    isResponsavelEmail,
   ] = await Promise.all([
     getAlunoId(alunoId),
     getTotalAlunoResponsaveis(alunoId),
     getParentescoId(parentescoId),
     getResponsavelTelefone(telefone),
+    email ? getResponsavelEmail(email) : null,
   ]);
 
   if (!isAlunoId) throwNotFoundAlunoIdError();
@@ -178,12 +176,8 @@ export async function createAlunoResponsavelController(
 
   // TODO: search for better way to validate parentesco and avoid duplication
   if (!isParentescoId) throwNotFoundParentescoIdFieldError();
-  if (isResponsavelTelefone) throwInvalidAlunoTelefoneError();
-
-  if (email) {
-    const isResponsavelEmail = await getResponsavelEmail(email);
-    if (isResponsavelEmail) throwInvalidAlunoEmailError();
-  }
+  if (isResponsavelTelefone) throwDuplicatedTelefoneError();
+  if (isResponsavelEmail) throwDuplicatedEmailError();
 
   const responsavel = await createResponsavel(alunoId, request.body);
   return reply.status(HttpStatusCodes.CREATED).send(responsavel);
@@ -202,7 +196,7 @@ export async function getAlunoMatriculasController(
   return reply.send(alunoMatriculas);
 }
 
-export async function createAlunoMatriculasController(
+export async function createAlunoMatriculaController(
   request: FastifyRequest<{
     Params: alunoParamsType;
     Body: createAlunoMatriculaBodyType;
@@ -212,7 +206,6 @@ export async function createAlunoMatriculasController(
   const { alunoId } = request.params;
   const { classeId, cursoId, turmaId, anoLectivoId, metodoPagamentoId } =
     request.body;
-
   const isAlunoId = await getAlunoId(alunoId);
 
   if (!isAlunoId) throwNotFoundAlunoIdError();

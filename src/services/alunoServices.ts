@@ -1,7 +1,7 @@
 import { prisma } from '../lib/prisma';
 import { updateAlunoBodyType } from '../schemas/alunoSchemas';
 import { createAlunoAndMatriculaBodyType } from '../schemas/matriculaSchemas';
-import { formatDate } from '../utils/utils';
+import { formatDate } from '../utils/utilsFunctions';
 
 export async function getAlunoNumeroBi(numeroBi: string) {
   return await prisma.aluno.findUnique({
@@ -154,10 +154,12 @@ export async function getAlunos(
 }
 
 export async function getAlunoResponsaveis(alunoId: number) {
-  return await prisma.responsavel.findMany({
-    where: { alunoId },
-    select: { id: true, nomeCompleto: true },
-  });
+  return {
+    data: await prisma.responsavel.findMany({
+      where: { alunoId },
+      select: { id: true, nomeCompleto: true },
+    }),
+  };
 }
 
 export async function createAlunoAndMatricula(

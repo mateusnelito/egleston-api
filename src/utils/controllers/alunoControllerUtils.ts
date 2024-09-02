@@ -13,26 +13,6 @@ export function throwInvalidAlunoDataNascimentoError(message: string) {
   });
 }
 
-export function throwInvalidAlunoTelefoneError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Número de telefone inválido.',
-    errors: {
-      contacto: { telefone: ['O número de telefone já está sendo usado.'] },
-    },
-  });
-}
-
-export function throwInvalidAlunoEmailError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Endereço de email inválido.',
-    errors: {
-      contacto: { email: ['O endereço de email já está sendo usado.'] },
-    },
-  });
-}
-
 export function throwNotFoundAlunoIdError() {
   throw new NotFoundRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
