@@ -54,6 +54,7 @@ export async function createAnoLectivoController(
 
   const nome = `${inicio.getFullYear()}-${termino.getFullYear()}`;
   const isAnoLectivoNome = await getAnoLectivoByNome(nome);
+
   if (isAnoLectivoNome) throwDuplicatedAnoLectivoError();
 
   const anoLectivo = await createAnoLectivo({ nome, inicio, termino });
@@ -77,7 +78,6 @@ export async function updateAnoLectivoController(
   const inicio = new Date(inicioString);
   const termino = new Date(terminoString);
 
-  // Validating dates
   if (isBeginDateAfterEndDate(inicio, termino))
     throwInvalidAnoLectivoInicioError();
 
@@ -123,16 +123,14 @@ export async function getAnoLectivoController(
   const { anoLectivoId } = request.params;
   const anoLectivo = await getAnoLectivo(anoLectivoId);
 
-  if (!anoLectivo) {
-    throwNotFoundAnoLectivoIdError();
-  } else {
-    return reply.send({
-      id: anoLectivo.id,
-      nome: anoLectivo.nome,
-      inicio: formatDate(anoLectivo.inicio),
-      termino: formatDate(anoLectivo.termino),
-    });
-  }
+  if (!anoLectivo) throwNotFoundAnoLectivoIdError();
+
+  return reply.send({
+    id: anoLectivo!.id,
+    nome: anoLectivo!.nome,
+    inicio: formatDate(anoLectivo!.inicio),
+    termino: formatDate(anoLectivo!.termino),
+  });
 }
 
 export async function getAnoLectivoClassesController(
