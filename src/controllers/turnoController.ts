@@ -9,55 +9,22 @@ import {
   getTurnos,
   updateTurno,
 } from '../services/turnoServices';
-import BadRequest from '../utils/BadRequest';
+import {
+  MAXIMUM_DURATION_HOURS,
+  MINIMUM_DURATION_HOURS,
+  throwDuplicatedTurnoError,
+  throwDuplicatedTurnoNomeError,
+  throwInvalidTurnoDurationError,
+  throwInvalidTurnoInicioError,
+  throwNotFoundTurnoIdError,
+  throwNotFoundTurnoIdFieldError,
+  TURNO_BASE_DATE,
+} from '../utils/controllers/turnoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import NotFoundRequest from '../utils/NotFoundRequest';
 import {
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
-} from '../utils/utils';
-
-function throwTurnoNomeAlreadyError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Nome inválido',
-    errors: { nome: ['Nome já existe.'] },
-  });
-}
-
-function throwInvalidInicioError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Hora de início inválida.',
-    errors: { inicio: ['Início não pode ser após o término.'] },
-  });
-}
-
-function throwTurnoAlreadyExistError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Turno já existe.',
-  });
-}
-
-function throwNotFoundTurnoIdError() {
-  throw new NotFoundRequest({
-    statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'ID do turno não existe.',
-  });
-}
-
-function throwInvalidYearDurationError(message: string) {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message,
-  });
-}
-
-// Controller const
-const BASE_DATE = '2024-07-24';
-const MAXIMUM_DURATION_HOURS = 8;
-const MINIMUM_DURATION_HOURS = 1;
+} from '../utils/utilsFunctions';
 
 export async function createTurnoController(
   request: FastifyRequest<{ Body: turnoBodyType }>,
@@ -65,11 +32,11 @@ export async function createTurnoController(
 ) {
   const { nome, inicio, termino } = request.body;
 
-  const inicioDate = new Date(`${BASE_DATE} ${inicio}`);
-  const terminoDate = new Date(`${BASE_DATE} ${termino}`);
+  const inicioDate = new Date(`${TURNO_BASE_DATE} ${inicio}`);
+  const terminoDate = new Date(`${TURNO_BASE_DATE} ${termino}`);
 
   if (isBeginDateAfterEndDate(inicioDate, terminoDate))
-    throwInvalidInicioError();
+    throwInvalidTurnoInicioError();
 
   const turnoDurationHours = calculateTimeBetweenDates(
     inicioDate,
@@ -78,22 +45,22 @@ export async function createTurnoController(
   );
 
   if (turnoDurationHours < MINIMUM_DURATION_HOURS)
-    throwInvalidYearDurationError(
+    throwInvalidTurnoDurationError(
       `A duração do turno deve ser no minimo de ${MINIMUM_DURATION_HOURS}h.`
     );
 
   if (turnoDurationHours > MAXIMUM_DURATION_HOURS)
-    throwInvalidYearDurationError(
+    throwInvalidTurnoDurationError(
       `A duração do turno deve ser no maximo de ${MAXIMUM_DURATION_HOURS}h.`
     );
 
   const [isTurnoNome, isTurnoId] = await Promise.all([
-    await getTurnoByNome(nome),
-    await getTurnoByInicioAndTermino(inicio, termino),
+    getTurnoByNome(nome),
+    getTurnoByInicioAndTermino(inicio, termino),
   ]);
 
-  if (isTurnoNome) throwTurnoNomeAlreadyError();
-  if (isTurnoId) throwTurnoAlreadyExistError();
+  if (isTurnoNome) throwDuplicatedTurnoNomeError();
+  if (isTurnoId) throwDuplicatedTurnoError();
 
   const turno = await createTurno({ nome, inicio, termino });
   return reply.status(HttpStatusCodes.CREATED).send(turno);
@@ -103,13 +70,13 @@ export async function updateTurnoController(
   request: FastifyRequest<{ Params: turnoParamsType; Body: turnoBodyType }>,
   reply: FastifyReply
 ) {
+  const { turnoId } = request.params;
   const { nome, inicio, termino } = request.body;
-
-  const inicioDate = new Date(`${BASE_DATE} ${inicio}`);
-  const terminoDate = new Date(`${BASE_DATE} ${termino}`);
+  const inicioDate = new Date(`${TURNO_BASE_DATE} ${inicio}`);
+  const terminoDate = new Date(`${TURNO_BASE_DATE} ${termino}`);
 
   if (isBeginDateAfterEndDate(inicioDate, terminoDate))
-    throwInvalidInicioError();
+    throwInvalidTurnoInicioError();
 
   const turnoDurationHours = calculateTimeBetweenDates(
     inicioDate,
@@ -118,26 +85,24 @@ export async function updateTurnoController(
   );
 
   if (turnoDurationHours < MINIMUM_DURATION_HOURS)
-    throwInvalidYearDurationError(
+    throwInvalidTurnoDurationError(
       `A duração do turno deve ser no minimo de ${MINIMUM_DURATION_HOURS}h.`
     );
 
   if (turnoDurationHours > MAXIMUM_DURATION_HOURS)
-    throwInvalidYearDurationError(
+    throwInvalidTurnoDurationError(
       `A duração do turno deve ser no maximo de ${MAXIMUM_DURATION_HOURS}h.`
     );
 
-  const { turnoId } = request.params;
-
   const [isTurnoId, turnoNome, turno] = await Promise.all([
-    await getTurnoId(turnoId),
-    await getTurnoByNome(nome),
-    await getTurnoByInicioAndTermino(inicio, termino),
+    getTurnoId(turnoId),
+    getTurnoByNome(nome),
+    getTurnoByInicioAndTermino(inicio, termino),
   ]);
 
-  if (!isTurnoId) throwNotFoundTurnoIdError();
-  if (turnoNome && turnoNome.id !== turnoId) throwTurnoNomeAlreadyError();
-  if (turno && turno.id !== turnoId) throwTurnoAlreadyExistError();
+  if (!isTurnoId) throwNotFoundTurnoIdFieldError();
+  if (turnoNome && turnoNome.id !== turnoId) throwDuplicatedTurnoNomeError();
+  if (turno && turno.id !== turnoId) throwDuplicatedTurnoError();
 
   const turnoUpdated = await updateTurno(turnoId, { nome, inicio, termino });
   return reply.send(turnoUpdated);
@@ -151,11 +116,12 @@ export async function getTurnoController(
   const turno = await getTurno(turnoId);
 
   if (!turno) throwNotFoundTurnoIdError();
+
   return reply.send(turno);
 }
 
 export async function getTurnosController(
-  request: FastifyRequest,
+  _: FastifyRequest,
   reply: FastifyReply
 ) {
   const turnos = await getTurnos();
