@@ -20,24 +20,13 @@ import {
   updateDisciplina,
 } from '../services/disciplinaServices';
 import BadRequest from '../utils/BadRequest';
+import { throwInvalidCursoIdInArrayError } from '../utils/controllers/cursoControllerUtils';
+import {
+  throwDuplicatedDisciplinaNomeError,
+  throwNotFoundDisciplinaIdError,
+} from '../utils/controllers/disciplinaControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import NotFoundRequest from '../utils/NotFoundRequest';
-import { arrayHasDuplicatedValue } from '../utils/utils';
-
-function throwNotDisciplinaIdError() {
-  throw new NotFoundRequest({
-    statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'ID da disciplina não existe.',
-  });
-}
-
-function throwInvalidNomeError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Nome da disciplina inválido.',
-    errors: { nome: ['O nome da disciplina já existe.'] },
-  });
-}
+import { arrayHasDuplicatedValue } from '../utils/utilsFunctions';
 
 export async function createDisciplinaController(
   request: FastifyRequest<{ Body: createDisciplinaBodyType }>,
@@ -46,7 +35,7 @@ export async function createDisciplinaController(
   const { nome } = request.body;
 
   const isDisciplinaNome = await getDisciplinaNome(nome);
-  if (isDisciplinaNome) throwInvalidNomeError();
+  if (isDisciplinaNome) throwDuplicatedDisciplinaNomeError();
 
   const disciplina = await createDisciplina(request.body);
   return reply.status(HttpStatusCodes.CREATED).send(disciplina);
@@ -63,12 +52,13 @@ export async function updateDisciplinaController(
   const { nome } = request.body;
 
   const [isDisciplinaId, disciplina] = await Promise.all([
-    await getDisciplinaId(disciplinaId),
-    await getDisciplinaNome(nome),
+    getDisciplinaId(disciplinaId),
+    getDisciplinaNome(nome),
   ]);
 
-  if (!isDisciplinaId) throwNotDisciplinaIdError();
-  if (disciplina && disciplina.id !== disciplinaId) throwInvalidNomeError();
+  if (!isDisciplinaId) throwNotFoundDisciplinaIdError();
+  if (disciplina && disciplina.id !== disciplinaId)
+    throwDuplicatedDisciplinaNomeError();
 
   const disciplinaUpdated = await updateDisciplina(disciplinaId, request.body);
   return reply.send(disciplinaUpdated);
@@ -82,7 +72,8 @@ export async function getDisciplinaController(
 ) {
   const { disciplinaId } = request.params;
   const isDisciplinaId = await getDisciplina(disciplinaId);
-  if (!isDisciplinaId) throwNotDisciplinaIdError();
+
+  if (!isDisciplinaId) throwNotFoundDisciplinaIdError();
   return reply.send(isDisciplinaId);
 }
 
@@ -119,46 +110,31 @@ export async function createMultiplesCursoDisciplinaByDisciplinaController(
       statusCode: HttpStatusCodes.BAD_REQUEST,
       message: 'Cursos inválidos.',
       errors: {
-        cursos: ['O array de cursos não pode conter items duplicados.'],
+        cursos: 'O array de cursos não pode conter items duplicados.',
       },
     });
   }
 
   const isDisciplinaId = await getDisciplinaId(disciplinaId);
-  if (!isDisciplinaId) throwNotDisciplinaIdError();
+  if (!isDisciplinaId) throwNotFoundDisciplinaIdError();
 
   for (let i = 0; i < cursos.length; i++) {
     const cursoId = cursos[i];
 
     const [isCursoId, isCursoDisciplina] = await Promise.all([
-      await getCursoId(cursoId),
-      await getCursoDisciplina(cursoId, disciplinaId),
+      getCursoId(cursoId),
+      getCursoDisciplina(cursoId, disciplinaId),
     ]);
 
     // TODO: Finish the verification before send the errors, to send all invalids cursos
-    if (!isCursoId) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.NOT_FOUND,
-        message: 'Curso inválido.',
-        errors: {
-          cursos: {
-            [i]: 'ID do curso não existe.',
-          },
-        },
-      });
-    }
+    if (!isCursoId)
+      throwInvalidCursoIdInArrayError(i, 'ID do curso não existe.');
 
-    if (isCursoDisciplina) {
-      throw new BadRequest({
-        statusCode: HttpStatusCodes.NOT_FOUND,
-        message: 'Curso inválido.',
-        errors: {
-          cursos: {
-            [i]: 'cursoId Já está registrado com a disciplina.',
-          },
-        },
-      });
-    }
+    if (isCursoDisciplina)
+      throwInvalidCursoIdInArrayError(
+        i,
+        'cursoId Já está registrado com a disciplina.'
+      );
   }
 
   const cursoDisciplinas = await createMultiplesCursoDisciplinaByDisciplina(

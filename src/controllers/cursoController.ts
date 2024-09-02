@@ -34,10 +34,12 @@ import { throwNotFoundAnoLectivoIdFieldError } from '../utils/controllers/anoLec
 import { throwDuplicatedClasseError } from '../utils/controllers/classeControllerUtils';
 import {
   throwDuplicatedCursoError,
-  throwDuplicatedDisciplinaIdInArrayError,
   throwNotFoundCursoIdError,
 } from '../utils/controllers/cursoControllerUtils';
-import { throwInvalidDisciplinaIdInArrayError } from '../utils/controllers/disciplinaControllerUtils';
+import {
+  throwInvalidDisciplinaIdInArrayError,
+  throwInvalidDisciplinasArrayError,
+} from '../utils/controllers/disciplinaControllerUtils';
 import { arrayHasDuplicatedValue } from '../utils/utilsFunctions';
 
 export async function createCursoController(
@@ -47,7 +49,7 @@ export async function createCursoController(
   const { nome, disciplinas } = request.body;
 
   if (disciplinas && arrayHasDuplicatedValue(disciplinas))
-    throwDuplicatedDisciplinaIdInArrayError();
+    throwInvalidDisciplinasArrayError();
 
   const isCursoNome = await getCursoNome(nome);
   if (isCursoNome) throwDuplicatedCursoError();
@@ -121,8 +123,7 @@ export async function createMultiplesCursoDisciplinaByCursoController(
   const { cursoId } = request.params;
   const { disciplinas } = request.body;
 
-  if (arrayHasDuplicatedValue(disciplinas))
-    throwDuplicatedDisciplinaIdInArrayError();
+  if (arrayHasDuplicatedValue(disciplinas)) throwInvalidDisciplinasArrayError();
 
   const isCursoId = await getCursoId(cursoId);
   if (!isCursoId) throwNotFoundCursoIdError();
@@ -190,8 +191,7 @@ export async function deleteMultiplesCursoDisciplinasController(
   const { cursoId } = request.params;
   const { disciplinas } = request.body;
 
-  if (arrayHasDuplicatedValue(disciplinas))
-    throwDuplicatedDisciplinaIdInArrayError();
+  if (arrayHasDuplicatedValue(disciplinas)) throwInvalidDisciplinasArrayError();
 
   const isCursoId = await getCursoId(cursoId);
   if (!isCursoId) throwNotFoundCursoIdError();

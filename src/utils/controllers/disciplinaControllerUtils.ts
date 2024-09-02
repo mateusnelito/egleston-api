@@ -32,3 +32,13 @@ export function throwDuplicatedDisciplinaNomeError() {
     errors: { nome: ['O nome da disciplina já existe.'] },
   });
 }
+
+export function throwInvalidDisciplinasArrayError() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Disciplinas inválidas.',
+    errors: {
+      disciplinas: 'O array de disciplinas não podem conter items duplicados.',
+    },
+  });
+}

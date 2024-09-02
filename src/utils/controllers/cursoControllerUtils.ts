@@ -25,16 +25,6 @@ export function throwDuplicatedCursoError() {
   });
 }
 
-export function throwDuplicatedDisciplinaIdInArrayError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Disciplinas inválidas.',
-    errors: {
-      disciplinas: 'o array de disciplinas não podem conter items duplicados.',
-    },
-  });
-}
-
 export function throwInvalidCursoIdInArrayError(
   index: number,
   message: string,
