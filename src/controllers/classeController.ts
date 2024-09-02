@@ -8,16 +8,16 @@ import {
 import { getAnoLectivo } from '../services/anoLectivoServices';
 import {
   createClasse,
-  getClasseByCompostUniqueKey,
+  getClasse,
+  getClasseByUniqueKey,
   getClasseId,
-  getClasse as getClasseService,
   updateClasse,
 } from '../services/classeServices';
 import { getCursoId } from '../services/cursoServices';
 import { getSalaId } from '../services/salaServices';
 import {
   createTurma,
-  getTurmaByUniqueCompostKey,
+  getTurmaByUniqueKey,
   getTurmasByClasse,
 } from '../services/turmaServices';
 import { getTurnoId } from '../services/turnoServices';
@@ -39,18 +39,14 @@ export async function createClasseController(
   const { nome, anoLectivoId, cursoId, valorMatricula } = request.body;
 
   const [anoLectivo, isCursoId] = await Promise.all([
-    await getAnoLectivo(anoLectivoId),
-    await getCursoId(cursoId),
+    getAnoLectivo(anoLectivoId),
+    getCursoId(cursoId),
   ]);
 
   if (!anoLectivo) throwNotFoundAnoLectivoIdFieldError();
   if (!isCursoId) throwNotFoundCursoIdFieldError();
 
-  const isClasseId = await getClasseByCompostUniqueKey(
-    nome,
-    anoLectivoId,
-    cursoId
-  );
+  const isClasseId = await getClasseByUniqueKey(nome, anoLectivoId, cursoId);
 
   if (isClasseId) throwDuplicatedClasseError();
 
@@ -76,18 +72,17 @@ export async function updateClasseController(
   const { classeId } = request.params;
   const { nome, anoLectivoId, cursoId, valorMatricula } = request.body;
 
-  const isClasseId = await getClasseId(classeId);
-  if (!isClasseId) throwNotFoundClasseIdError();
-
-  const [anoLectivo, isCursoId] = await Promise.all([
-    await getAnoLectivo(anoLectivoId),
-    await getCursoId(cursoId),
+  const [isClasseId, anoLectivo, isCursoId] = await Promise.all([
+    getClasseId(classeId),
+    getAnoLectivo(anoLectivoId),
+    getCursoId(cursoId),
   ]);
 
+  if (!isClasseId) throwNotFoundClasseIdError();
   if (!anoLectivo) throwNotFoundAnoLectivoIdFieldError();
   if (!isCursoId) throwNotFoundCursoIdFieldError();
 
-  const classe = await getClasseByCompostUniqueKey(nome, anoLectivoId, cursoId);
+  const classe = await getClasseByUniqueKey(nome, anoLectivoId, cursoId);
 
   if (classe && classe.id !== classeId) throwDuplicatedClasseError();
 
@@ -105,7 +100,7 @@ export async function getClasseController(
   reply: FastifyReply
 ) {
   const { classeId } = request.params;
-  const classe = await getClasseService(classeId);
+  const classe = await getClasse(classeId);
 
   if (!classe) throwNotFoundClasseIdError();
 
@@ -120,6 +115,7 @@ export async function getClasseTurmasController(
   const isClasseId = await getClasseId(classeId);
 
   if (!isClasseId) throwNotFoundClasseIdError();
+
   const turmas = await getTurmasByClasse(classeId);
   return reply.send(turmas);
 }
@@ -137,8 +133,8 @@ export async function createTurmaInClasseController(
   const [isClasseId, isSalaId, isTurnoId, isTurmaId] = await Promise.all([
     getClasseId(classeId),
     getSalaId(salaId),
-    getTurmaByUniqueCompostKey(nome, classeId, salaId, turnoId),
     getTurnoId(turnoId),
+    getTurmaByUniqueKey(nome, classeId, salaId, turnoId),
   ]);
 
   if (!isClasseId) throwNotFoundClasseIdError();

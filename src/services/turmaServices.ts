@@ -1,7 +1,7 @@
 import { prisma } from '../lib/prisma';
 import { turmaBodyType } from '../schemas/turmaSchemas';
 
-export async function getTurmaByUniqueCompostKey(
+export async function getTurmaByUniqueKey(
   nome: string,
   classeId: number,
   salaId: number,
