@@ -4,7 +4,7 @@ import HttpStatusCodes from '../utils/HttpStatusCodes';
 import {
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
-} from '../utils/utils';
+} from '../utils/utilsFunctions';
 import { getAlunoEmail, getAlunoTelefone } from './alunoContactoServices';
 import { getAlunoNumeroBi } from './alunoServices';
 
