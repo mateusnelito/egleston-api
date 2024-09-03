@@ -1,6 +1,5 @@
 import BadRequest from '../BadRequest';
 import HttpStatusCodes from '../HttpStatusCodes';
-import NotFoundRequest from '../NotFoundRequest';
 
 export function throwNotFoundSalaIdFieldError() {
   throw new BadRequest({
@@ -11,9 +10,9 @@ export function throwNotFoundSalaIdFieldError() {
 }
 
 export function throwNotFoundSalaIdError() {
-  throw new NotFoundRequest({
+  throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'ID da sala não existe.',
+    message: 'Sala não existe.',
   });
 }
 

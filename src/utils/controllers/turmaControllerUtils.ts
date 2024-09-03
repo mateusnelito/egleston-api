@@ -1,6 +1,5 @@
 import BadRequest from '../BadRequest';
 import HttpStatusCodes from '../HttpStatusCodes';
-import NotFoundRequest from '../NotFoundRequest';
 
 export function throwDuplicatedTurmaError() {
   throw new BadRequest({
@@ -20,8 +19,8 @@ export function throwNotFoundTurmaIdFieldError() {
 }
 
 export function throwNotFoundTurmaIdError() {
-  throw new NotFoundRequest({
+  throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'ID da turma não existe.',
+    message: 'Turma não existe.',
   });
 }

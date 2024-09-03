@@ -1,11 +1,10 @@
 import BadRequest from '../BadRequest';
 import HttpStatusCodes from '../HttpStatusCodes';
-import NotFoundRequest from '../NotFoundRequest';
 
 export function throwNotFoundClasseIdError() {
-  throw new NotFoundRequest({
+  throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'ID da classe não existe.',
+    message: 'Classe não existe.',
   });
 }
 
@@ -21,7 +20,7 @@ export function throwNotFoundClasseIdFieldError() {
     statusCode: HttpStatusCodes.NOT_FOUND,
     message: 'Classe inválida.',
     errors: {
-      classeId: ['ID da classe não existe.'],
+      classeId: ['Classe não existe.'],
     },
   });
 }

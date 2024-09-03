@@ -7,9 +7,9 @@ import {
   updateTurnoController,
 } from '../controllers/turnoController';
 import {
+  createTurnoSchema,
   getTurnoSchema,
   getTurnosSchema,
-  createTurnoSchema,
   updateTurnoSchema,
 } from '../schemas/turnoSchemas';
 

@@ -4,7 +4,6 @@ import { contactoSchema } from './contactoSchema';
 import {
   complexBadRequestSchema,
   getResourcesDefaultQueriesSchema,
-  notFoundRequestSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
 
@@ -99,7 +98,7 @@ export const updateProfessorSchema = {
       contacto: contactoSchema,
     }),
     400: simpleBadRequestSchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -112,7 +111,7 @@ export const getProfessorSchema = {
       dataNascimento: z.string().date(),
       contacto: contactoSchema,
     }),
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -164,7 +163,7 @@ const professorDisciplinaSchema = {
     //   disciplinas: z.number().int().positive(),
     // }),
     400: complexBadRequestSchema,
-    404: complexBadRequestSchema.or(notFoundRequestSchema),
+    404: complexBadRequestSchema,
   },
 };
 
@@ -186,7 +185,7 @@ export const deleteProfessorDisciplinaSchema = {
       .positive({ message: 'O id de disciplina deve ser positivo.' }),
   }),
   response: {
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 

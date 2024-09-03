@@ -5,7 +5,7 @@ import swaggerDocs from './plugins/swagger';
 import zodTypeProvider from './plugins/zod';
 import routes from './routes'; // Import all registered routes
 import HttpStatusCodes from './utils/HttpStatusCodes';
-import NotFoundRequest from './utils/NotFoundRequest';
+import BadRequest from './utils/BadRequest';
 
 // Instantiate the server
 const server = fastify();
@@ -25,7 +25,7 @@ server.register(routes);
 
 // Define the 404 route
 server.setNotFoundHandler(() => {
-  throw new NotFoundRequest({
+  throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
     message: 'Route not found',
   });

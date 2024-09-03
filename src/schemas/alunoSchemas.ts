@@ -5,7 +5,6 @@ import { enderecoSchema } from './enderecoSchema';
 import {
   complexBadRequestSchema,
   getResourcesDefaultQueriesSchema,
-  notFoundRequestSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
 import { createResponsavelBodySchema } from './responsavelSchema';
@@ -121,7 +120,7 @@ export const updateAlunoSchema = {
       contacto: contactoSchema.omit({ outros: true }),
     }),
     400: complexBadRequestSchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -157,7 +156,7 @@ export const getAlunoSchema = {
       contacto: contactoSchema.omit({ outros: true }),
       responsaveis: z.number().int(),
     }),
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -174,7 +173,7 @@ export const getAlunoResponsaveisSchema = {
         })
       ),
     }),
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -190,7 +189,7 @@ export const createAlunoResponsavelSchema = {
     //   nomeCompleto: z.string(),
     // }),
     400: complexBadRequestSchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -210,7 +209,7 @@ export const getAlunoMatriculasSchema = {
         })
       ),
     }),
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 

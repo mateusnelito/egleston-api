@@ -1,23 +1,22 @@
 import BadRequest from '../BadRequest';
 import HttpStatusCodes from '../HttpStatusCodes';
-import NotFoundRequest from '../NotFoundRequest';
 
 export function throwNotFoundCursoIdFieldError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
     message: 'Curso inválido',
-    errors: { cursoId: ['ID do curso não existe.'] },
+    errors: { cursoId: ['Curso não existe.'] },
   });
 }
 
 export function throwNotFoundCursoIdError() {
-  throw new NotFoundRequest({
+  throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'ID de curso não existe.',
+    message: 'Curso não existe.',
   });
 }
 
-export function throwDuplicatedCursoError() {
+export function throwDuplicatedCursoNomeError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Nome de curso inválido.',

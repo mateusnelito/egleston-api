@@ -1,11 +1,10 @@
 import { z } from 'zod';
 import {
   complexBadRequestSchema,
-  notFoundRequestSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
 import { turmaBodySchema } from './turmaSchemas';
-import { classeNomeRegEx } from '../utils/regexPatterns';
+
 export const classeBodySchema = z.object({
   id: z
     .number({
@@ -55,7 +54,6 @@ export const createClasseSchema = {
   body: classeBodySchema.omit({ id: true }),
   response: {
     201: classeBodySchema.extend({
-      nome: z.string().regex(classeNomeRegEx),
       valorMatricula: z.coerce.number(),
     }),
     400: complexBadRequestSchema,
@@ -70,11 +68,10 @@ export const updateClasseSchema = {
   body: classeBodySchema.omit({ id: true }),
   response: {
     200: classeBodySchema.omit({ id: true }).extend({
-      nome: z.string().regex(classeNomeRegEx),
       valorMatricula: z.coerce.number(),
     }),
     400: simpleBadRequestSchema,
-    404: simpleBadRequestSchema.or(notFoundRequestSchema),
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -83,10 +80,10 @@ export const getClasseSchema = {
   tags: ['classes'],
   params: classeParamsSchema,
   response: {
-    200: classeBodySchema
-      .omit({ anoLectivoId: true, cursoId: true })
-      .extend({ anoLectivo: z.string(), curso: z.string() }),
-    404: notFoundRequestSchema,
+    // 200: classeBodySchema
+    //   .omit({ anoLectivoId: true, cursoId: true })
+    //   .extend({ anoLectivo: z.string(), curso: z.string() }),
+    // 404: simpleBadRequestSchema,
   },
 };
 
@@ -100,7 +97,7 @@ export const getClasseTurmasSchema = {
         turmaBodySchema.omit({ salaId: true, classeId: true, turnoId: true })
       ),
     }),
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -112,7 +109,7 @@ export const createTurmaToClasseSchema = {
   response: {
     // TODO: SEND A BETTER RESPONSE BODY
     201: turmaBodySchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 

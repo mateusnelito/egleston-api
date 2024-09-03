@@ -227,7 +227,7 @@ export async function createAlunoMatriculaController(
   if (isMatriculaId) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Matricula do aluno já existe.',
+      message: 'Matricula já existe.',
     });
   }
 

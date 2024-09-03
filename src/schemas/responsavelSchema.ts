@@ -2,7 +2,10 @@ import { z } from 'zod';
 import { fullNameRegEx } from '../utils/regexPatterns';
 import { contactoSchema } from './contactoSchema';
 import { enderecoSchema } from './enderecoSchema';
-import { complexBadRequestSchema, notFoundRequestSchema } from './globalSchema';
+import {
+  complexBadRequestSchema,
+  simpleBadRequestSchema,
+} from './globalSchema';
 
 export const responsavelBodySchema = z.object({
   id: z
@@ -77,7 +80,7 @@ export const updateResponsavelSchema = {
         contacto: contactoSchema,
       }),
     400: complexBadRequestSchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -95,7 +98,7 @@ export const deleteResponsavelSchema = {
         }),
         contacto: contactoSchema,
       }),
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -113,7 +116,7 @@ export const getResponsavelSchema = {
         }),
         contacto: contactoSchema,
       }),
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 

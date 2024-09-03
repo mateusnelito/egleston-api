@@ -1,19 +1,19 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
-  getClasseSchema,
-  getClasseTurmasSchema,
-  createClasseSchema,
-  createTurmaToClasseSchema,
-  updateClasseSchema,
-} from '../schemas/classeSchemas';
-import {
   createClasseController,
   createTurmaInClasseController,
   getClasseController,
   getClasseTurmasController,
   updateClasseController,
 } from '../controllers/classeController';
+import {
+  createClasseSchema,
+  createTurmaToClasseSchema,
+  getClasseSchema,
+  getClasseTurmasSchema,
+  updateClasseSchema,
+} from '../schemas/classeSchemas';
 
 export const classeRoutes: FastifyPluginAsync = async (
   server: FastifyInstance
@@ -29,12 +29,6 @@ export const classeRoutes: FastifyPluginAsync = async (
     schema: updateClasseSchema,
     handler: updateClasseController,
   });
-
-  // // GET
-  // server.withTypeProvider<ZodTypeProvider>().get('/', {
-  //   schema: getClassesSchema,
-  //   handler: () => {},
-  // });
 
   // GET UNIQUE
   server.withTypeProvider<ZodTypeProvider>().get('/:classeId', {

@@ -1,6 +1,5 @@
 import BadRequest from '../BadRequest';
 import HttpStatusCodes from '../HttpStatusCodes';
-import NotFoundRequest from '../NotFoundRequest';
 
 // Controller const
 export const TURNO_BASE_DATE = '2024-07-24';
@@ -49,9 +48,9 @@ export function throwDuplicatedTurnoError() {
 }
 
 export function throwNotFoundTurnoIdError() {
-  throw new NotFoundRequest({
+  throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'ID do turno não existe.',
+    message: 'Turno não existe.',
   });
 }
 

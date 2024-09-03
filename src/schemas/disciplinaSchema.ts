@@ -3,7 +3,6 @@ import { cursoNomeRegEx, descricaoRegEx } from '../utils/regexPatterns';
 import {
   complexBadRequestSchema,
   getResourcesDefaultQueriesSchema,
-  notFoundRequestSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
 
@@ -65,7 +64,7 @@ export const updateDisciplinaSchema = {
   response: {
     200: disciplinaBodySchema,
     400: simpleBadRequestSchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -87,7 +86,7 @@ export const getDisciplinaSchema = {
   params: disciplinaParamsSchema,
   response: {
     200: disciplinaBodySchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -119,7 +118,7 @@ export const createMultiplesCursoDisciplinaSchema = {
   response: {
     // 201: cursoOkResponseSchema,
     400: complexBadRequestSchema,
-    404: complexBadRequestSchema.or(notFoundRequestSchema),
+    404: complexBadRequestSchema,
   },
 };
 

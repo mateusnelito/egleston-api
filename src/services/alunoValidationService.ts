@@ -38,7 +38,7 @@ export async function validateAlunoData(alunoData: createAlunoBodyType) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
       message: 'Número de BI inválido.',
-      errors: { aluno: { numeroBi: ['O número de BI já está sendo usado.'] } },
+      errors: { aluno: { numeroBi: ['Número de BI já existe.'] } },
     });
   }
 

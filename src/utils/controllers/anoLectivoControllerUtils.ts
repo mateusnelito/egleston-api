@@ -1,6 +1,5 @@
 import BadRequest from '../BadRequest';
 import HttpStatusCodes from '../HttpStatusCodes';
-import NotFoundRequest from '../NotFoundRequest';
 
 export const ANO_LECTIVO_MONTH_LENGTH = 11;
 
@@ -28,9 +27,9 @@ export function throwDuplicatedAnoLectivoError() {
 }
 
 export function throwNotFoundAnoLectivoIdError() {
-  throw new NotFoundRequest({
+  throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'ID do ano lectivo não existe.',
+    message: 'Ano lectivo não existe.',
   });
 }
 
@@ -38,6 +37,6 @@ export function throwNotFoundAnoLectivoIdFieldError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
     message: 'Ano lectivo inválido',
-    errors: { anoLectivoId: ['ID do ano lectivo não existe.'] },
+    errors: { anoLectivoId: ['Ano lectivo não existe.'] },
   });
 }

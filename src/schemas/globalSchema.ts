@@ -18,12 +18,6 @@ export const complexBadRequestSchema = defaultBadRequestSchema
   })
   .or(simpleBadRequestSchema);
 
-export const notFoundRequestSchema = defaultBadRequestSchema
-  .extend({
-    errors: z.record(z.string(), z.string()),
-  })
-  .or(defaultBadRequestSchema);
-
 export const getResourcesDefaultQueriesSchema = z.object({
   page_size: z.coerce
     .number({
@@ -49,5 +43,3 @@ export type simpleBadRequestResponseType = z.infer<
 export type complexBadRequestResponseType = z.infer<
   typeof complexBadRequestSchema
 >;
-
-export type notFoundRequestResponseType = z.infer<typeof notFoundRequestSchema>;

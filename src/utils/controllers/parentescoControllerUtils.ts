@@ -1,19 +1,18 @@
 import BadRequest from '../BadRequest';
 import HttpStatusCodes from '../HttpStatusCodes';
-import NotFoundRequest from '../NotFoundRequest';
 
 export function throwNotFoundParentescoIdFieldError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
     message: 'Parentesco inválido.',
-    errors: { parentescoId: ['parentescoId não existe.'] },
+    errors: { parentescoId: ['Parentesco não existe.'] },
   });
 }
 
 export function throwNotFoundParentescoIdError() {
-  throw new NotFoundRequest({
+  throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'ID de parentesco não existe.',
+    message: 'Parentesco não existe.',
   });
 }
 

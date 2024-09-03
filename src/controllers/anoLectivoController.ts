@@ -156,12 +156,12 @@ export async function createClasseToAnoLectivoController(
   const { anoLectivoId } = request.params;
   const { nome, cursoId, valorMatricula } = request.body;
 
-  const [anoLectivo, isCursoId] = await Promise.all([
-    await getAnoLectivo(anoLectivoId),
-    await getCursoId(cursoId),
+  const [isAnoLectivo, isCursoId] = await Promise.all([
+    getAnoLectivoId(anoLectivoId),
+    getCursoId(cursoId),
   ]);
 
-  if (!anoLectivo) throwNotFoundAnoLectivoIdError();
+  if (!isAnoLectivo) throwNotFoundAnoLectivoIdError();
   if (!isCursoId) throwNotFoundCursoIdFieldError();
 
   const isClasse = await getClasseByUniqueKey(nome, anoLectivoId, cursoId);
@@ -170,7 +170,7 @@ export async function createClasseToAnoLectivoController(
 
   // TODO: REFACTOR THIS
   const classe = await createClasse({
-    nome: `${nome} - ${anoLectivo!.nome}`,
+    nome,
     anoLectivoId,
     cursoId,
     valorMatricula: Number(valorMatricula.toFixed(2)),

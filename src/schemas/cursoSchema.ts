@@ -3,7 +3,6 @@ import { cursoNomeRegEx, descricaoRegEx } from '../utils/regexPatterns';
 import { classeBodySchema } from './classeSchemas';
 import {
   complexBadRequestSchema,
-  notFoundRequestSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
 
@@ -102,7 +101,7 @@ export const updateCursoSchema = {
   response: {
     200: cursoBodySchema,
     400: simpleBadRequestSchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -122,7 +121,7 @@ export const getCursoSchema = {
   params: cursoParamsSchema,
   response: {
     200: cursoBodySchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -156,7 +155,7 @@ export const cursoDisciplinasAssociationSchema = {
       disciplinas: z.array(z.number().int().positive()).optional(),
     }),
     400: complexBadRequestSchema,
-    404: complexBadRequestSchema.or(notFoundRequestSchema),
+    404: complexBadRequestSchema,
   },
 };
 
@@ -178,7 +177,7 @@ export const deleteCursoDisciplinaSchema = {
       .positive({ message: 'O id de disciplina deve ser positivo.' }),
   }),
   response: {
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -200,7 +199,7 @@ export const getCursoClassesSchema = {
         })
       ),
     }),
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -210,14 +209,16 @@ export const createClasseToCursoSchema = {
   params: cursoParamsSchema,
   body: classeBodySchema.omit({ id: true, cursoId: true }),
   response: {
-    200: classeBodySchema,
+    201: classeBodySchema.extend({
+      valorMatricula: z.coerce.number(),
+    }),
     400: simpleBadRequestSchema.or(
       z.object({
         statusCode: z.number().default(400),
         message: z.string(),
       })
     ),
-    404: simpleBadRequestSchema.or(notFoundRequestSchema),
+    404: simpleBadRequestSchema,
   },
 };
 

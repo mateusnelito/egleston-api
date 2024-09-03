@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
+import { simpleBadRequestSchema } from './globalSchema';
 import { turmaBodySchema } from './turmaSchemas';
 const salaBodySchema = z.object({
   id: z
@@ -72,7 +72,7 @@ export const updateSalaSchema = {
   response: {
     200: salaBodySchema,
     400: simpleBadRequestSchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -82,7 +82,7 @@ export const getSalaSchema = {
   params: salaParamsSchema,
   response: {
     200: salaBodySchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -108,7 +108,7 @@ export const getSalaTurmasSchema = {
         turmaBodySchema.omit({ salaId: true, classeId: true, turnoId: true })
       ),
     }),
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -120,7 +120,7 @@ export const createTurmaToSalaSchema = {
   response: {
     // TODO: SEND A BETTER RESPONSE BODY
     201: turmaBodySchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 

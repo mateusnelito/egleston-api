@@ -28,7 +28,6 @@ import {
   throwInvalidDisciplinasArrayError,
 } from '../utils/controllers/disciplinaControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import NotFoundRequest from '../utils/NotFoundRequest';
 import {
   arrayHasDuplicatedValue,
   calculateTimeBetweenDates,
@@ -40,9 +39,9 @@ import {
 } from '../utils/utilsFunctions';
 
 function throwNotFoundProfessorIdError() {
-  throw new NotFoundRequest({
+  throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'Id de professor não existe.',
+    message: 'Professor não existe.',
   });
 }
 
@@ -193,9 +192,12 @@ export async function createMultiplesProfessorDisciplinaByProfessorController(
   if (arrayHasDuplicatedValue(disciplinas)) throwInvalidDisciplinasArrayError();
 
   const isProfessorId = await getProfessorId(professorId);
+
   if (!isProfessorId) throwNotFoundProfessorIdError();
 
-  disciplinas.forEach(async (disciplinaId, index) => {
+  for (let index = 0; index < disciplinas.length; index++) {
+    const disciplinaId = disciplinas[index];
+
     const [isDisciplinaId, isDisciplinaProfessor] = await Promise.all([
       getDisciplinaId(disciplinaId),
       getDisciplinaProfessor(professorId, disciplinaId),
@@ -203,17 +205,14 @@ export async function createMultiplesProfessorDisciplinaByProfessorController(
 
     // TODO: Finish the verification before send the errors, to send all invalids disciplinas
     if (!isDisciplinaId)
-      throwNotFoundDisciplinaIdInArrayError(
-        index,
-        'ID da disciplina não existe.'
-      );
+      throwNotFoundDisciplinaIdInArrayError(index, 'Disciplina não existe.');
 
     if (isDisciplinaProfessor)
       throwNotFoundDisciplinaIdInArrayError(
         index,
-        'disciplinaId já está registrada ao professor.'
+        'Disciplina já associada ao professor.'
       );
-  });
+  }
 
   const cursoDisciplinas = await createMultiplesDisciplinaProfessorByProfessor(
     professorId,
@@ -236,9 +235,9 @@ export async function deleteProfessorDisciplinaController(
   );
 
   if (!isProfessorDisciplina) {
-    throw new NotFoundRequest({
+    throw new BadRequest({
       statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Disciplina não registrada ao professor.',
+      message: 'Disciplina não associada ao professor.',
     });
   }
 
@@ -266,7 +265,9 @@ export async function deleteMultiplesProfessorDisciplinaByProfessorController(
   const isProfessorId = await getProfessorId(professorId);
   if (!isProfessorId) throwNotFoundProfessorIdError();
 
-  disciplinas.forEach(async (disciplinaId, index) => {
+  for (let index = 0; index < disciplinas.length; index++) {
+    const disciplinaId = disciplinas[index];
+
     const isProfessorDisciplina = await getDisciplinaProfessor(
       professorId,
       disciplinaId
@@ -275,9 +276,9 @@ export async function deleteMultiplesProfessorDisciplinaByProfessorController(
     if (!isProfessorDisciplina)
       throwNotFoundDisciplinaIdInArrayError(
         index,
-        'Disciplina não registrada ao professor.'
+        'Disciplina não associada ao professor.'
       );
-  });
+  }
 
   const professorDisciplinas =
     await deleteMultiplesDisciplinaProfessorByProfessor(

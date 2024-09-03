@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
+import { simpleBadRequestSchema } from './globalSchema';
 
 const parentescoBodySchema = z.object({
   id: z
@@ -55,7 +55,7 @@ export const updateParentescoSchema = {
   response: {
     200: parentescoBodySchema,
     400: simpleBadRequestSchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -75,7 +75,7 @@ export const getParentescoSchema = {
   params: parentescoParamsSchema,
   response: {
     200: parentescoBodySchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 

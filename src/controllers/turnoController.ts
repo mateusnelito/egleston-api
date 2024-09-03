@@ -100,7 +100,7 @@ export async function updateTurnoController(
     getTurnoByInicioAndTermino(inicio, termino),
   ]);
 
-  if (!isTurnoId) throwNotFoundTurnoIdFieldError();
+  if (!isTurnoId) throwNotFoundTurnoIdError();
   if (turnoNome && turnoNome.id !== turnoId) throwDuplicatedTurnoNomeError();
   if (turno && turno.id !== turnoId) throwDuplicatedTurnoError();
 
@@ -127,3 +127,5 @@ export async function getTurnosController(
   const turnos = await getTurnos();
   return reply.send(turnos);
 }
+
+// TODO: ADD ENDPOINT TO ASSOCIATE TURNO TO CLASSE

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
+import { simpleBadRequestSchema } from './globalSchema';
 import { classeBodySchema } from './classeSchemas';
 
 const anoLectivoBodySchema = z.object({
@@ -68,7 +68,7 @@ export const updateAnoLectivoSchema = {
   body: anoLectivoBodySchema.omit({ id: true, nome: true }),
   response: {
     200: anoLectivoBodySchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
     400: simpleBadRequestSchema,
   },
 };
@@ -89,7 +89,7 @@ export const getAnoLectivoSchema = {
   params: anoLectivoParamsSchema,
   response: {
     200: anoLectivoBodySchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -115,9 +115,11 @@ export const createClasseToAnoLectivoSchema = {
   params: anoLectivoParamsSchema,
   body: classeBodySchema.omit({ id: true, anoLectivoId: true }),
   response: {
-    201: classeBodySchema,
+    201: classeBodySchema.extend({
+      valorMatricula: z.coerce.number(),
+    }),
     400: simpleBadRequestSchema,
-    404: simpleBadRequestSchema.or(notFoundRequestSchema),
+    404: simpleBadRequestSchema,
   },
 };
 

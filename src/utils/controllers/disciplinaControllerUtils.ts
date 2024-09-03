@@ -1,6 +1,5 @@
 import BadRequest from '../BadRequest';
 import HttpStatusCodes from '../HttpStatusCodes';
-import NotFoundRequest from '../NotFoundRequest';
 
 export function throwNotFoundDisciplinaIdInArrayError(
   index: number,
@@ -19,9 +18,9 @@ export function throwNotFoundDisciplinaIdInArrayError(
 }
 
 export function throwNotFoundDisciplinaIdError() {
-  throw new NotFoundRequest({
+  throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'ID da disciplina não existe.',
+    message: 'Disciplina não existe.',
   });
 }
 

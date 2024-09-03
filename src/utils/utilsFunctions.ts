@@ -30,7 +30,7 @@ export function throwDuplicatedEmailError() {
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Endereço de email inválido.',
     errors: {
-      contacto: { email: ['O endereço de email já está sendo usado.'] },
+      contacto: { email: ['Endereço de email existe.'] },
     },
   });
 }
@@ -40,7 +40,7 @@ export function throwDuplicatedTelefoneError() {
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Número de telefone inválido.',
     errors: {
-      contacto: { telefone: ['O número de telefone já está sendo usado.'] },
+      contacto: { telefone: ['Número de telefone já existe.'] },
     },
   });
 }

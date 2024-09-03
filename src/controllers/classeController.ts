@@ -5,7 +5,7 @@ import {
   createTurmaToClasseBodyType,
   updateClasseBodyType,
 } from '../schemas/classeSchemas';
-import { getAnoLectivo } from '../services/anoLectivoServices';
+import { getAnoLectivoId } from '../services/anoLectivoServices';
 import {
   createClasse,
   getClasse,
@@ -38,12 +38,12 @@ export async function createClasseController(
 ) {
   const { nome, anoLectivoId, cursoId, valorMatricula } = request.body;
 
-  const [anoLectivo, isCursoId] = await Promise.all([
-    getAnoLectivo(anoLectivoId),
+  const [isAnoLectivo, isCursoId] = await Promise.all([
+    getAnoLectivoId(anoLectivoId),
     getCursoId(cursoId),
   ]);
 
-  if (!anoLectivo) throwNotFoundAnoLectivoIdFieldError();
+  if (!isAnoLectivo) throwNotFoundAnoLectivoIdFieldError();
   if (!isCursoId) throwNotFoundCursoIdFieldError();
 
   const isClasseId = await getClasseByUniqueKey(nome, anoLectivoId, cursoId);
@@ -52,7 +52,7 @@ export async function createClasseController(
 
   // TODO: REFACTOR THIS
   const classe = await createClasse({
-    nome: `${nome} - ${anoLectivo!.nome}`,
+    nome,
     anoLectivoId,
     cursoId,
     valorMatricula: Number(valorMatricula.toFixed(2)),
@@ -72,14 +72,14 @@ export async function updateClasseController(
   const { classeId } = request.params;
   const { nome, anoLectivoId, cursoId, valorMatricula } = request.body;
 
-  const [isClasseId, anoLectivo, isCursoId] = await Promise.all([
+  const [isClasseId, isAnoLectivo, isCursoId] = await Promise.all([
     getClasseId(classeId),
-    getAnoLectivo(anoLectivoId),
+    getAnoLectivoId(anoLectivoId),
     getCursoId(cursoId),
   ]);
 
   if (!isClasseId) throwNotFoundClasseIdError();
-  if (!anoLectivo) throwNotFoundAnoLectivoIdFieldError();
+  if (!isAnoLectivo) throwNotFoundAnoLectivoIdFieldError();
   if (!isCursoId) throwNotFoundCursoIdFieldError();
 
   const classe = await getClasseByUniqueKey(nome, anoLectivoId, cursoId);
@@ -87,7 +87,7 @@ export async function updateClasseController(
   if (classe && classe.id !== classeId) throwDuplicatedClasseError();
 
   const updatedClasse = await updateClasse(classeId, {
-    nome: `${nome} - ${anoLectivo!.nome}`,
+    nome,
     anoLectivoId,
     cursoId,
     valorMatricula: Number(valorMatricula.toFixed(2)),

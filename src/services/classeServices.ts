@@ -50,12 +50,16 @@ export async function getClasse(id: number) {
     },
   });
 
-  return {
-    id: classe?.id,
-    nome: classe?.nome,
-    anoLectivo: classe?.AnoLectivo?.nome,
-    curso: classe?.Curso?.nome,
-  };
+  if (classe) {
+    return {
+      id: classe?.id,
+      nome: classe?.nome,
+      anoLectivo: classe?.AnoLectivo?.nome,
+      curso: classe?.Curso?.nome,
+    };
+  }
+
+  return classe;
 }
 
 export async function getClassesByAnoLectivo(anoLectivoId: number) {

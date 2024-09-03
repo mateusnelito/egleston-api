@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
+import { simpleBadRequestSchema } from './globalSchema';
 const metodoPagamentoBodySchema = z.object({
   id: z
     .number({
@@ -52,7 +52,7 @@ export const updateMetodoPagamentoSchema = {
   body: metodoPagamentoBodySchema.omit({ id: true }),
   response: {
     200: metodoPagamentoBodySchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -62,7 +62,7 @@ export const getMetodoPagamentoSchema = {
   params: metodoPagamentoParamsSchema,
   response: {
     200: metodoPagamentoBodySchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -73,7 +73,7 @@ export const getMetodosPagamentoSchema = {
     200: z.object({
       data: z.array(metodoPagamentoBodySchema),
     }),
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 

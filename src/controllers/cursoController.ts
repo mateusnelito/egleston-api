@@ -28,12 +28,12 @@ import {
   getCursoDisciplina,
 } from '../services/cursosDisciplinasServices';
 import { getDisciplinaId } from '../services/disciplinaServices';
+import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import NotFoundRequest from '../utils/NotFoundRequest';
 import { throwNotFoundAnoLectivoIdFieldError } from '../utils/controllers/anoLectivoControllerUtils';
 import { throwDuplicatedClasseError } from '../utils/controllers/classeControllerUtils';
 import {
-  throwDuplicatedCursoError,
+  throwDuplicatedCursoNomeError,
   throwNotFoundCursoIdError,
 } from '../utils/controllers/cursoControllerUtils';
 import {
@@ -52,7 +52,7 @@ export async function createCursoController(
     throwInvalidDisciplinasArrayError();
 
   const isCursoNome = await getCursoNome(nome);
-  if (isCursoNome) throwDuplicatedCursoError();
+  if (isCursoNome) throwDuplicatedCursoNomeError();
 
   // TODO: TRY TO USE PROMISE.ALL HERE
   if (disciplinas) {
@@ -62,10 +62,7 @@ export async function createCursoController(
 
       // TODO: Finish the verification before send the errors, to send all invalids disciplinas
       if (!isDisciplinaId)
-        throwNotFoundDisciplinaIdInArrayError(
-          i,
-          'ID da disciplina não existe.'
-        );
+        throwNotFoundDisciplinaIdInArrayError(i, 'Disciplina não existe.');
     }
   }
 
@@ -89,7 +86,7 @@ export async function updateCursoController(
   ]);
 
   if (!isCursoId) throwNotFoundCursoIdError();
-  if (curso && curso.id !== cursoId) throwDuplicatedCursoError();
+  if (curso && curso.id !== cursoId) throwDuplicatedCursoNomeError();
 
   const cursoUpdated = await updateCurso(cursoId, request.body);
   return reply.send(cursoUpdated);
@@ -141,10 +138,7 @@ export async function createMultiplesCursoDisciplinaByCursoController(
 
     // TODO: Finish the verification before send the errors, to send all invalids disciplinas
     if (!isDisciplinaId)
-      throwNotFoundDisciplinaIdInArrayError(
-        index,
-        'ID da disciplina não existe.'
-      );
+      throwNotFoundDisciplinaIdInArrayError(index, 'Disciplina não existe.');
 
     if (isCursoDisciplina)
       throwNotFoundDisciplinaIdInArrayError(
@@ -173,9 +167,9 @@ export async function deleteCursoDisciplinaController(
   const isCursoDisciplina = await getCursoDisciplina(cursoId, disciplinaId);
 
   if (!isCursoDisciplina) {
-    throw new NotFoundRequest({
+    throw new BadRequest({
       statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Disciplina não registrada no curso.',
+      message: 'Disciplina não associada ao curso.',
     });
   }
   const cursoDisciplina = await deleteCursoDisciplina(cursoId, disciplinaId);
@@ -206,7 +200,7 @@ export async function deleteMultiplesCursoDisciplinasController(
     if (!isCursoDisciplina)
       throwNotFoundDisciplinaIdInArrayError(
         index,
-        'Disciplina não registrada no curso.'
+        'Disciplina não associada ao curso.'
       );
   }
 
@@ -259,7 +253,7 @@ export async function createClasseToCursoController(
 
   // TODO: REFACTOR THIS
   const classe = await createClasse({
-    nome: `${nome} - ${anoLectivo!.nome}`,
+    nome,
     anoLectivoId,
     cursoId,
     valorMatricula: Number(valorMatricula.toFixed(2)),

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { notFoundRequestSchema, simpleBadRequestSchema } from './globalSchema';
+import { simpleBadRequestSchema } from './globalSchema';
 export const turmaBodySchema = z.object({
   id: z
     .number({
@@ -61,7 +61,7 @@ export const createTurmaSchema = {
   response: {
     201: turmaBodySchema,
     400: simpleBadRequestSchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -73,7 +73,7 @@ export const updateTurmaSchema = {
   response: {
     200: turmaBodySchema.omit({ id: true }),
     400: simpleBadRequestSchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -85,7 +85,7 @@ export const getTurmaSchema = {
     200: turmaBodySchema
       .omit({ classeId: true, salaId: true, turnoId: true })
       .extend({ classe: z.string(), sala: z.string() }),
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 

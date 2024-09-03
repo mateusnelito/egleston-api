@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import {
   complexBadRequestSchema,
-  notFoundRequestSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
 
@@ -67,7 +66,7 @@ export const updateTurnoSchema = {
   body: turnoBodySchema.omit({ id: true }),
   response: {
     200: turnoBodySchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
     400: simpleBadRequestSchema,
   },
 };
@@ -78,7 +77,7 @@ export const getTurnoSchema = {
   params: turnoParamsSchema,
   response: {
     200: turnoBodySchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 
@@ -119,7 +118,7 @@ export const createMultiplesClassesInTurnoSchema = {
   }),
   response: {
     400: complexBadRequestSchema,
-    404: complexBadRequestSchema.or(notFoundRequestSchema),
+    404: complexBadRequestSchema,
   },
 };
 

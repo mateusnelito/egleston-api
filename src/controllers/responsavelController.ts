@@ -15,17 +15,17 @@ import {
   updateResponsavel,
 } from '../services/responsavelServices';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import NotFoundRequest from '../utils/NotFoundRequest';
 import { throwNotFoundParentescoIdFieldError } from '../utils/controllers/parentescoControllerUtils';
 import {
   throwDuplicatedEmailError,
   throwDuplicatedTelefoneError,
 } from '../utils/utilsFunctions';
+import BadRequest from '../utils/BadRequest';
 
 function throwNotFoundResponsavelId() {
-  throw new NotFoundRequest({
+  throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'ID de responsavel não existe.',
+    message: 'Responsavel não existe.',
   });
 }
 

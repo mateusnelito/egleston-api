@@ -127,14 +127,10 @@ export async function createMultiplesCursoDisciplinaByDisciplinaController(
     ]);
 
     // TODO: Finish the verification before send the errors, to send all invalids cursos
-    if (!isCursoId)
-      throwInvalidCursoIdInArrayError(i, 'ID do curso não existe.');
+    if (!isCursoId) throwInvalidCursoIdInArrayError(i, 'Curso não existe.');
 
     if (isCursoDisciplina)
-      throwInvalidCursoIdInArrayError(
-        i,
-        'cursoId Já está registrado com a disciplina.'
-      );
+      throwInvalidCursoIdInArrayError(i, 'Disciplina já associada ao curso.');
   }
 
   const cursoDisciplinas = await createMultiplesCursoDisciplinaByDisciplina(

@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { createAlunoBodySchema } from './alunoSchemas';
 import {
   complexBadRequestSchema,
-  notFoundRequestSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
 
@@ -98,7 +97,7 @@ export const updateMatriculaSchema = {
   response: {
     // 200: {},
     400: simpleBadRequestSchema,
-    404: notFoundRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 

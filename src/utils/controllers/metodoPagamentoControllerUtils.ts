@@ -1,6 +1,5 @@
 import BadRequest from '../BadRequest';
 import HttpStatusCodes from '../HttpStatusCodes';
-import NotFoundRequest from '../NotFoundRequest';
 
 export function throwInvalidMetodoPagamentoNomeError() {
   throw new BadRequest({
@@ -11,9 +10,9 @@ export function throwInvalidMetodoPagamentoNomeError() {
 }
 
 export function throwNotFoundMetodoPagamentoIdError() {
-  throw new NotFoundRequest({
+  throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'ID de metodo de pagamento não existe.',
+    message: 'Metodo de pagamento não existe.',
   });
 }
 
