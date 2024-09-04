@@ -13,7 +13,7 @@ export function throwNotFoundTurmaIdFieldError() {
     statusCode: HttpStatusCodes.NOT_FOUND,
     message: 'Turma inválida.',
     errors: {
-      turmaId: ['ID da turma não existe.'],
+      turmaId: ['Turma não existe.'],
     },
   });
 }

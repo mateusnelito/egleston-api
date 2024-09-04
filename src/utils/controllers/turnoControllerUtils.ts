@@ -10,7 +10,7 @@ export function throwNotFoundTurnoIdFieldError() {
   throw new BadRequest({
     statusCode: HttpStatusCodes.NOT_FOUND,
     message: 'Turno inválido',
-    errors: { turnoId: 'ID do turno não existe.' },
+    errors: { turnoId: ['Turno não existe.'] },
   });
 }
 

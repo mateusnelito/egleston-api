@@ -21,7 +21,7 @@ export function throwNotFoundMetodoPagamentoIdFieldError() {
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Metodo de pagamento inválido.',
     errors: {
-      metodoPagamentoId: ['ID metodo de pagamento não existe.'],
+      metodoPagamentoId: ['Metodo de pagamento não existe.'],
     },
   });
 }
