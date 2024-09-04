@@ -219,11 +219,12 @@ model Sala {
 }
 
 model Turno {
-  id      Int     @id @default(autoincrement()) @db.SmallInt
-  nome    String  @unique @db.VarChar(30)
-  inicio  String  @db.VarChar(8)
-  termino String  @db.VarChar(8)
-  Turma   Turma[]
+  id        Int         @id @default(autoincrement()) @db.SmallInt
+  nome      String      @unique @db.VarChar(30)
+  inicio    String      @db.VarChar(8)
+  termino   String      @db.VarChar(8)
+  Turma     Turma[]
+  Matricula Matricula[]
 
   @@unique([inicio, termino])
   @@map("turnos")
@@ -256,6 +257,8 @@ model Matricula {
   Curso        Curso      @relation(fields: [cursoId], references: [id], onDelete: Cascade)
   turmaId      Int        @map("turma_id")
   Turma        Turma      @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+  turnoId      Int        @map("turno_id")
+  Turno        Turno      @relation(fields: [turnoId], references: [id], onDelete: Cascade)
   anoLectivoId Int        @map("ano_lectivo_id") @db.SmallInt
   AnoLectivo   AnoLectivo @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade)
   createdAt    DateTime   @default(now()) @map("created_at")
