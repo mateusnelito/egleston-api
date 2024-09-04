@@ -192,6 +192,7 @@ export async function createAlunoMatricula(
             classeId: matriculaData.classeId,
             cursoId: matriculaData.cursoId,
             turmaId: matriculaData.turmaId,
+            turnoId: matriculaData.turnoId,
             anoLectivoId: matriculaData.anoLectivoId,
           },
         },
@@ -221,11 +222,11 @@ export async function createAlunoMatricula(
             Turma: {
               select: {
                 nome: true,
-                Turno: {
-                  select: {
-                    nome: true,
-                  },
-                },
+              },
+            },
+            Turno: {
+              select: {
+                nome: true,
               },
             },
             AnoLectivo: {
@@ -297,7 +298,7 @@ export async function createAlunoMatricula(
       classe: matricula.Classe.nome,
       curso: matricula.Curso.nome,
       turma: matricula.Turma.nome,
-      turno: matricula.Turma.Turno.nome,
+      turno: matricula.Turno.nome,
       anoLectivo: matricula.AnoLectivo.nome,
       data: formatDate(matricula.createdAt),
       pagamento: {

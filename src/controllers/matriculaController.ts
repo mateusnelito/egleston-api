@@ -17,8 +17,14 @@ export async function createAlunoMatriculaController(
   const { body: data } = request;
   const { aluno: alunoData } = data;
   const { responsaveis: alunoResponsaveis } = alunoData;
-  const { classeId, cursoId, turmaId, anoLectivoId, metodoPagamentoId } =
-    request.body;
+  const {
+    classeId,
+    cursoId,
+    turmaId,
+    turnoId,
+    anoLectivoId,
+    metodoPagamentoId,
+  } = request.body;
 
   const responsaveisTelefone = alunoResponsaveis.map(
     (responsavel) => responsavel.contacto.telefone
@@ -46,14 +52,16 @@ export async function createAlunoMatriculaController(
 
   await validateAlunoData(alunoData);
 
-  alunoResponsaveis.forEach(async (responsavel, index) => {
+  for (let index = 0; index < alunoResponsaveis.length; index++) {
+    const responsavel = alunoResponsaveis[index];
     await validateResponsavelData(responsavel, index);
-  });
+  }
 
   await validateMatriculaData({
     classeId,
     cursoId,
     turmaId,
+    turnoId,
     anoLectivoId,
     metodoPagamentoId,
   });

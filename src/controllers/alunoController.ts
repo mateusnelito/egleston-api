@@ -196,6 +196,7 @@ export async function getAlunoMatriculasController(
   return reply.send(alunoMatriculas);
 }
 
+// TODO: RENAME TO OTHER NAME, TO AVOID CONFLICT
 export async function createAlunoMatriculaController(
   request: FastifyRequest<{
     Params: alunoParamsType;
@@ -204,8 +205,14 @@ export async function createAlunoMatriculaController(
   reply: FastifyReply
 ) {
   const { alunoId } = request.params;
-  const { classeId, cursoId, turmaId, anoLectivoId, metodoPagamentoId } =
-    request.body;
+  const {
+    classeId,
+    cursoId,
+    turmaId,
+    turnoId,
+    anoLectivoId,
+    metodoPagamentoId,
+  } = request.body;
   const isAlunoId = await getAlunoId(alunoId);
 
   if (!isAlunoId) throwNotFoundAlunoIdError();
@@ -214,6 +221,7 @@ export async function createAlunoMatriculaController(
     classeId,
     cursoId,
     turmaId,
+    turnoId,
     anoLectivoId,
     metodoPagamentoId,
   });
@@ -245,6 +253,5 @@ export async function createAlunoMatriculaController(
   matriculaPdfDocument.end();
 
   // TODO: SET THE FILE NAME BEFORE SEND
-
   return reply;
 }
