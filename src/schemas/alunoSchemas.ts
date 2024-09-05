@@ -255,14 +255,6 @@ export const createAlunoMatriculaSchema = {
       })
       .int({ message: 'O id do metodo de pagamento deve ser inteiro.' })
       .positive({ message: 'O id do metodo de pagamento deve ser positivo.' }),
-    // FIXME: REMOVE, IT'S MUST BE DYNAMIC
-    anoLectivoId: z
-      .number({
-        required_error: 'O id do ano lectivo é obrigatório.',
-        invalid_type_error: 'O id do ano lectivo deve ser número.',
-      })
-      .int({ message: 'O id do ano lectivo deve ser inteiro.' })
-      .positive({ message: 'O id do ano lectivo deve ser positivo.' }),
   }),
   response: {
     // 200: {},

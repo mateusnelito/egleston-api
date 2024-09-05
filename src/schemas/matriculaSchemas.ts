@@ -55,14 +55,6 @@ const matriculaBodySchema = z.object({
     })
     .int({ message: 'O id do metodo de pagamento deve ser inteiro.' })
     .positive({ message: 'O id do metodo de pagamento deve ser positivo.' }),
-  // FIXME: REMOVE, IT'S MUST BE DYNAMIC
-  anoLectivoId: z
-    .number({
-      required_error: 'O id do ano lectivo é obrigatório.',
-      invalid_type_error: 'O id do ano lectivo deve ser número.',
-    })
-    .int({ message: 'O id do ano lectivo deve ser inteiro.' })
-    .positive({ message: 'O id do ano lectivo deve ser positivo.' }),
   createdAt: z.date({ message: 'createdAt deve ser uma data.' }).nullable(),
 });
 
@@ -98,7 +90,6 @@ export const updateMatriculaSchema = {
   body: matriculaBodySchema.omit({
     id: true,
     alunoId: true,
-    anoLectivoId: true,
     createdAt: true,
   }),
   response: {

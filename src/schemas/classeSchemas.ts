@@ -16,13 +16,6 @@ export const classeBodySchema = z.object({
   nome: z.enum(['10ª', '11ª', '12ª', '13ª'], {
     message: 'São permitidas apenas classes do ensino médio (10ª-13ª).',
   }),
-  anoLectivoId: z
-    .number({
-      required_error: 'O id do ano lectivo é obrigatório.',
-      invalid_type_error: 'O id do ano lectivo deve ser número.',
-    })
-    .int({ message: 'O id do ano lectivo deve ser inteiro.' })
-    .positive({ message: 'O id do ano lectivo deve ser positivo.' }),
   cursoId: z
     .number({
       required_error: 'O id de curso é obrigatório.',
@@ -81,9 +74,9 @@ export const getClasseSchema = {
   params: classeParamsSchema,
   response: {
     // 200: classeBodySchema
-    //   .omit({ anoLectivoId: true, cursoId: true })
+    //   .omit({  cursoId: true })
     //   .extend({ anoLectivo: z.string(), curso: z.string() }),
-    // 404: simpleBadRequestSchema,
+    404: simpleBadRequestSchema,
   },
 };
 

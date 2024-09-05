@@ -134,7 +134,7 @@ export const createClasseToAnoLectivoSchema = {
   summary: 'Adiciona uma classe ao ano lectivo',
   tags: ['ano-lectivo'],
   params: anoLectivoParamsSchema,
-  body: classeBodySchema.omit({ id: true, anoLectivoId: true }),
+  body: classeBodySchema.omit({ id: true }),
   response: {
     201: classeBodySchema.extend({
       valorMatricula: z.coerce.number(),
