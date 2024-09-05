@@ -5,7 +5,7 @@ import {
   TableCell,
   TDocumentDefinitions,
 } from 'pdfmake/interfaces';
-import { matriculaData } from './interfaces';
+import { matriculaPdfPrintDataInterface } from './interfaces';
 
 export const pdfDefaultFonts = {
   Helvetica: {
@@ -79,7 +79,7 @@ export function createPdfFooter(
 }
 
 export function createMatriculaPdf(
-  matricula: matriculaData
+  matricula: matriculaPdfPrintDataInterface
 ): TDocumentDefinitions {
   const tableWidths = ['40%', '*'];
   return {

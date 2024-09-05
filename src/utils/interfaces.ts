@@ -1,4 +1,4 @@
-export interface matriculaData {
+export interface matriculaPdfPrintDataInterface {
   id: number;
   aluno: {
     nome: string;
@@ -22,4 +22,12 @@ export interface matriculaData {
   };
   funcionario: string;
   data: String; // FIXME: CHANGE THE TYPE TO string
+}
+
+export interface matriculaCreateDataInterface {
+  classeId: number;
+  cursoId: number;
+  turmaId: number;
+  turnoId: number;
+  metodoPagamentoId: number;
 }
