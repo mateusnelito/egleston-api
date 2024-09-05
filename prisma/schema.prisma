@@ -179,14 +179,15 @@ model DisciplinasProfessores {
 }
 
 model AnoLectivo {
-  id        Int         @id @default(autoincrement()) @db.SmallInt
-  nome      String      @unique @db.VarChar(9)
-  inicio    DateTime    @db.Date
-  termino   DateTime    @db.Date
-  activo    Boolean     @default(false)
-  Classe    Classe[]
-  Matricula Matricula[]
-  Pagamento Pagamento[]
+  id              Int         @id @default(autoincrement()) @db.SmallInt
+  nome            String      @unique @db.VarChar(9)
+  inicio          DateTime    @db.Date
+  termino         DateTime    @db.Date
+  activo          Boolean     @default(false)
+  matriculaAberta Boolean     @default(false) @map("matricula_aberta")
+  Classe          Classe[]
+  Matricula       Matricula[]
+  Pagamento       Pagamento[]
 
   @@index([activo])
   @@map("ano_lectivos")
