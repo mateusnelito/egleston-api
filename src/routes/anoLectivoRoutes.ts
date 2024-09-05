@@ -1,21 +1,23 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
+  createAnoLectivoController,
+  createClasseToAnoLectivoController,
+  getAnoLectivoClassesController,
+  getAnoLectivoController,
+  getAnoLectivosController,
+  patchAnoLectivoController,
+  updateAnoLectivoController,
+} from '../controllers/anoLectivoController';
+import {
+  createAnoLectivoSchema,
+  createClasseToAnoLectivoSchema,
   getAnoLectivoClassesSchema,
   getAnoLectivoSchema,
   getAnoLectivosSchema,
-  createAnoLectivoSchema,
-  createClasseToAnoLectivoSchema,
+  patchAnoLectivoSchema,
   updateAnoLectivoSchema,
 } from '../schemas/anoLectivoSchema';
-import {
-  createClasseToAnoLectivoController,
-  createAnoLectivoController,
-  getAnoLectivoController,
-  getAnoLectivoClassesController,
-  getAnoLectivosController,
-  updateAnoLectivoController,
-} from '../controllers/anoLectivoController';
 
 export const anoLectivoRoutes: FastifyPluginAsync = async (
   server: FastifyInstance
@@ -30,6 +32,12 @@ export const anoLectivoRoutes: FastifyPluginAsync = async (
   server.withTypeProvider<ZodTypeProvider>().put('/:anoLectivoId', {
     schema: updateAnoLectivoSchema,
     handler: updateAnoLectivoController,
+  });
+
+  // PATCH
+  server.withTypeProvider<ZodTypeProvider>().patch('/:anoLectivoId', {
+    schema: patchAnoLectivoSchema,
+    handler: patchAnoLectivoController,
   });
 
   // GET

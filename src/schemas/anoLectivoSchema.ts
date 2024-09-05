@@ -39,6 +39,10 @@ const anoLectivoBodySchema = z.object({
     })
     .trim()
     .date('O termino deve ser uma data válida.'),
+  activo: z.boolean({
+    required_error: 'O status do ano lectivo é obrigatório.',
+    invalid_type_error: 'O status do ano lectivo deve ser boolean.',
+  }),
 });
 
 const anoLectivoParamsSchema = z.object({
@@ -54,7 +58,7 @@ const anoLectivoParamsSchema = z.object({
 export const createAnoLectivoSchema = {
   summary: 'Adiciona um ano lectivo ',
   tags: ['ano-lectivo'],
-  body: anoLectivoBodySchema.omit({ id: true, nome: true }),
+  body: anoLectivoBodySchema.omit({ id: true, nome: true, activo: true }),
   response: {
     201: anoLectivoBodySchema,
     400: simpleBadRequestSchema,
@@ -65,9 +69,26 @@ export const updateAnoLectivoSchema = {
   summary: 'Atualiza um ano lectivo existente',
   tags: ['ano-lectivo'],
   params: anoLectivoParamsSchema,
-  body: anoLectivoBodySchema.omit({ id: true, nome: true }),
+  body: anoLectivoBodySchema.omit({ id: true, nome: true, activo: true }),
   response: {
     200: anoLectivoBodySchema,
+    404: simpleBadRequestSchema,
+    400: simpleBadRequestSchema,
+  },
+};
+
+export const patchAnoLectivoSchema = {
+  summary: 'Altera o status de um ano lectivo existente',
+  tags: ['ano-lectivo'],
+  params: anoLectivoParamsSchema,
+  body: anoLectivoBodySchema.omit({
+    id: true,
+    nome: true,
+    inicio: true,
+    termino: true,
+  }),
+  response: {
+    // 200: anoLectivoBodySchema,
     404: simpleBadRequestSchema,
     400: simpleBadRequestSchema,
   },
@@ -129,4 +150,7 @@ export type createAnoLectivoBodyType = z.infer<
 export type anoLectivoParamsType = z.infer<typeof anoLectivoParamsSchema>;
 export type createClasseToAnoLectivoBodyType = z.infer<
   typeof createClasseToAnoLectivoSchema.body
+>;
+export type patchAnoLectivoBodyType = z.infer<
+  typeof patchAnoLectivoSchema.body
 >;

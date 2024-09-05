@@ -3,10 +3,13 @@ import {
   anoLectivoParamsType,
   createAnoLectivoBodyType,
   createClasseToAnoLectivoBodyType,
+  patchAnoLectivoBodyType,
 } from '../schemas/anoLectivoSchema';
 import {
+  changeAnoLectivoActiveState,
   createAnoLectivo,
   getAnoLectivo,
+  getAnoLectivoByActivo,
   getAnoLectivoByNome,
   getAnoLectivoId,
   getAnoLectivos,
@@ -18,6 +21,7 @@ import {
   getClassesByAnoLectivo,
 } from '../services/classeServices';
 import { getCursoId } from '../services/cursoServices';
+import BadRequest from '../utils/BadRequest';
 import {
   ANO_LECTIVO_MONTH_LENGTH,
   throwDuplicatedAnoLectivoError,
@@ -63,6 +67,7 @@ export async function createAnoLectivoController(
     nome: anoLectivo.nome,
     inicio: formatDate(anoLectivo.inicio),
     termino: formatDate(anoLectivo.termino),
+    activo: anoLectivo.activo,
   });
 }
 
@@ -106,6 +111,7 @@ export async function updateAnoLectivoController(
     nome: anoLectivoUpdated.nome,
     inicio: formatDate(anoLectivoUpdated.inicio),
     termino: formatDate(anoLectivoUpdated.termino),
+    activo: anoLectivoUpdated.activo,
   });
 }
 
@@ -130,6 +136,7 @@ export async function getAnoLectivoController(
     nome: anoLectivo!.nome,
     inicio: formatDate(anoLectivo!.inicio),
     termino: formatDate(anoLectivo!.termino),
+    activo: anoLectivo!.activo,
   });
 }
 
@@ -178,4 +185,33 @@ export async function createClasseToAnoLectivoController(
 
   // TODO: Send a appropriate response
   return reply.status(HttpStatusCodes.CREATED).send(classe);
+}
+
+export async function patchAnoLectivoController(
+  request: FastifyRequest<{
+    Params: anoLectivoParamsType;
+    Body: patchAnoLectivoBodyType;
+  }>,
+  reply: FastifyReply
+) {
+  const { anoLectivoId } = request.params;
+  const { activo } = request.body;
+
+  const [isAnoLectivoId, activeAnoLectivo] = await Promise.all([
+    getAnoLectivoId(anoLectivoId),
+    getAnoLectivoByActivo(activo),
+  ]);
+
+  if (!isAnoLectivoId) throwNotFoundAnoLectivoIdError();
+
+  if (activo && activeAnoLectivo && activeAnoLectivo?.id !== anoLectivoId) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+      message: 'Ano lectivo inválido',
+      errors: { activo: ['Apenas um ano lectivo pode estar activo por vez.'] },
+    });
+  }
+
+  const anoLectivo = await changeAnoLectivoActiveState(anoLectivoId, activo);
+  return reply.send(anoLectivo);
 }

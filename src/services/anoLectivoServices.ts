@@ -34,7 +34,7 @@ export async function updateAnoLectivo(id: number, data: anoLectivoInterface) {
 export async function getAnoLectivos() {
   return {
     data: await prisma.anoLectivo.findMany({
-      select: { id: true, nome: true },
+      select: { id: true, nome: true, activo: true },
       orderBy: { id: 'desc' },
     }),
   };
@@ -42,4 +42,15 @@ export async function getAnoLectivos() {
 
 export async function getAnoLectivo(id: number) {
   return await prisma.anoLectivo.findUnique({ where: { id } });
+}
+
+export async function getAnoLectivoByActivo(activo: boolean) {
+  return await prisma.anoLectivo.findFirst({
+    where: { activo },
+    select: { id: true },
+  });
+}
+
+export async function changeAnoLectivoActiveState(id: number, activo: boolean) {
+  return await prisma.anoLectivo.update({ where: { id }, data: { activo } });
 }
