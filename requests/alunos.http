@@ -48,4 +48,4 @@ Content-Type: application/json
 }
 
 ### GET all matriculas
-GET http://localhost:8000/api/alunos/6/matriculas
+GET http://localhost:8000/api/alunos/1/matriculas
