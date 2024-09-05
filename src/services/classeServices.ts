@@ -63,17 +63,46 @@ export async function getClasse(id: number) {
 }
 
 export async function getClassesByAnoLectivo(anoLectivoId: number) {
+  const classes = await prisma.classe.findMany({
+    where: { anoLectivoId },
+    select: {
+      id: true,
+      nome: true,
+      Curso: {
+        select: {
+          id: true,
+          nome: true,
+        },
+      },
+    },
+    orderBy: {
+      Curso: { nome: 'asc' },
+    },
+  });
+
+  // TODO: SEARCH FOR BETTER WAY TO TYPE acc
+  const groupedClassesByCurso = classes.reduce((acc: any, classe) => {
+    const { Curso } = classe;
+    const { id, nome } = Curso;
+
+    if (!acc[id]) {
+      acc[id] = {
+        nome,
+        classes: [],
+      };
+    }
+    acc[id].classes.push({
+      id: classe.id,
+      nome: classe.nome,
+    });
+
+    return acc;
+  }, {});
+
   return {
-    data: await prisma.classe.findMany({
-      where: { anoLectivoId },
-      select: {
-        id: true,
-        nome: true,
-      },
-      orderBy: {
-        Curso: { nome: 'asc' },
-      },
-    }),
+    data: {
+      cursos: groupedClassesByCurso,
+    },
   };
 }
 

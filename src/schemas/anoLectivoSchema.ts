@@ -120,13 +120,28 @@ export const getAnoLectivoClassesSchema = {
   params: anoLectivoParamsSchema,
   response: {
     200: z.object({
-      data: z.array(
-        z.object({
-          id: z.number().int().positive(),
-          nome: z.string(),
-        })
-      ),
+      data: z.object({
+        cursos: z.record(
+          z.string(),
+          z.object({
+            nome: z.string(),
+            classes: z.array(
+              z.object({
+                id: z.number().int().positive(),
+                nome: z.string(),
+              })
+            ),
+          })
+        ),
+      }),
+      // data: z.array(
+      //   z.object({
+      //     id: z.number().int().positive(),
+      //     nome: z.string(),
+      //   })
+      // ),
     }),
+    404: simpleBadRequestSchema,
   },
 };
 
