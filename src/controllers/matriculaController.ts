@@ -9,7 +9,7 @@ import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
 import { arrayHasDuplicatedValue } from '../utils/utilsFunctions';
-import { getAnoLectivoByActivo } from '../services/anoLectivoServices';
+import { getAnoLectivoActivo } from '../services/anoLectivoServices';
 import { throwActiveAnoLectivoNotFoundError } from '../utils/controllers/anoLectivoControllerUtils';
 
 export async function createAlunoMatriculaController(
@@ -61,7 +61,7 @@ export async function createAlunoMatriculaController(
     metodoPagamentoId,
   });
 
-  const activeAnoLectivo = await getAnoLectivoByActivo(true);
+  const activeAnoLectivo = await getAnoLectivoActivo(true);
 
   if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
 

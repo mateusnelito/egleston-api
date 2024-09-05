@@ -49,7 +49,7 @@ import {
   throwDuplicatedTelefoneError,
   throwInvalidDataNascimentoError,
 } from '../utils/utilsFunctions';
-import { getAnoLectivoByActivo } from '../services/anoLectivoServices';
+import { getAnoLectivoActivo } from '../services/anoLectivoServices';
 import { throwActiveAnoLectivoNotFoundError } from '../utils/controllers/anoLectivoControllerUtils';
 import { throwDuplicatedMatriculaError } from '../utils/controllers/matriculaControllerUtils';
 
@@ -222,7 +222,7 @@ export async function createAlunoMatriculaController(
     metodoPagamentoId,
   });
 
-  const activeAnoLectivo = await getAnoLectivoByActivo(true);
+  const activeAnoLectivo = await getAnoLectivoActivo(true);
 
   if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
 

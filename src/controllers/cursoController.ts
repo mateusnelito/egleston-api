@@ -10,7 +10,7 @@ import {
 } from '../schemas/cursoSchema';
 import {
   getAnoLectivo,
-  getAnoLectivoByActivo,
+  getAnoLectivoActivo,
   getAnoLectivoId,
 } from '../services/anoLectivoServices';
 import {
@@ -234,7 +234,7 @@ export async function getCursoClassesController(
 
   const [isCursoId, anoLectivo] = await Promise.all([
     getCursoId(cursoId),
-    anoLectivoId ? getAnoLectivoId(anoLectivoId) : getAnoLectivoByActivo(true),
+    anoLectivoId ? getAnoLectivoId(anoLectivoId) : getAnoLectivoActivo(true),
   ]);
 
   if (!isCursoId) throwNotFoundCursoIdError();
@@ -256,7 +256,7 @@ export async function createClasseToCursoController(
 
   const [isCursoId, activeAnoLectivo] = await Promise.all([
     getCursoId(cursoId),
-    getAnoLectivoByActivo(true),
+    getAnoLectivoActivo(true),
   ]);
 
   if (!isCursoId) throwNotFoundCursoIdError();

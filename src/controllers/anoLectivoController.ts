@@ -9,7 +9,7 @@ import {
   changeAnoLectivoActiveState,
   createAnoLectivo,
   getAnoLectivo,
-  getAnoLectivoByActivo,
+  getAnoLectivoActivo,
   getAnoLectivoByNome,
   getAnoLectivoId,
   getAnoLectivos,
@@ -199,7 +199,7 @@ export async function patchAnoLectivoController(
 
   const [isAnoLectivoId, activeAnoLectivo] = await Promise.all([
     getAnoLectivoId(anoLectivoId),
-    getAnoLectivoByActivo(activo),
+    getAnoLectivoActivo(activo),
   ]);
 
   if (!isAnoLectivoId) throwNotFoundAnoLectivoIdError();

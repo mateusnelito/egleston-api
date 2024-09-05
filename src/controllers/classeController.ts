@@ -6,7 +6,7 @@ import {
   updateClasseBodyType,
 } from '../schemas/classeSchemas';
 import {
-  getAnoLectivoByActivo,
+  getAnoLectivoActivo,
   getAnoLectivoId,
 } from '../services/anoLectivoServices';
 import {
@@ -45,7 +45,7 @@ export async function createClasseController(
   const { nome, cursoId, valorMatricula } = request.body;
 
   const [activeAnoLectivo, isCursoId] = await Promise.all([
-    getAnoLectivoByActivo(true),
+    getAnoLectivoActivo(true),
     getCursoId(cursoId),
   ]);
 
@@ -84,7 +84,7 @@ export async function updateClasseController(
 
   const [isClasseId, activeAnoLectivo, isCursoId] = await Promise.all([
     getClasseId(classeId),
-    getAnoLectivoByActivo(true),
+    getAnoLectivoActivo(true),
     getCursoId(cursoId),
   ]);
 
