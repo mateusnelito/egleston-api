@@ -7,7 +7,10 @@ import {
   deleteCursoDisciplinaParamsType,
   updateCursoBodyType,
 } from '../schemas/cursoSchema';
-import { getAnoLectivo } from '../services/anoLectivoServices';
+import {
+  getAnoLectivo,
+  getAnoLectivoByActivo,
+} from '../services/anoLectivoServices';
 import {
   createClasse,
   getClasseByUniqueKey,
@@ -30,7 +33,10 @@ import {
 import { getDisciplinaId } from '../services/disciplinaServices';
 import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import { throwNotFoundAnoLectivoIdFieldError } from '../utils/controllers/anoLectivoControllerUtils';
+import {
+  throwActiveAnoLectivoNotFoundError,
+  throwNotFoundAnoLectivoIdFieldError,
+} from '../utils/controllers/anoLectivoControllerUtils';
 import { throwDuplicatedClasseError } from '../utils/controllers/classeControllerUtils';
 import {
   throwDuplicatedCursoNomeError,
@@ -237,24 +243,28 @@ export async function createClasseToCursoController(
   reply: FastifyReply
 ) {
   const { cursoId } = request.params;
-  const { nome, anoLectivoId, valorMatricula } = request.body;
+  const { nome, valorMatricula } = request.body;
 
-  const [isCursoId, anoLectivo] = await Promise.all([
+  const [isCursoId, activeAnoLectivo] = await Promise.all([
     getCursoId(cursoId),
-    getAnoLectivo(anoLectivoId),
+    getAnoLectivoByActivo(true),
   ]);
 
   if (!isCursoId) throwNotFoundCursoIdError();
-  if (!anoLectivo) throwNotFoundAnoLectivoIdFieldError();
+  if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
 
-  const isClasse = await getClasseByUniqueKey(nome, anoLectivoId, cursoId);
+  const isClasse = await getClasseByUniqueKey(
+    nome,
+    activeAnoLectivo!.id,
+    cursoId
+  );
 
   if (isClasse) throwDuplicatedClasseError();
 
   // TODO: REFACTOR THIS
   const classe = await createClasse({
     nome,
-    anoLectivoId,
+    anoLectivoId: activeAnoLectivo!.id,
     cursoId,
     valorMatricula: Number(valorMatricula.toFixed(2)),
   });

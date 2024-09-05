@@ -9,6 +9,8 @@ import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
 import { arrayHasDuplicatedValue } from '../utils/utilsFunctions';
+import { getAnoLectivoByActivo } from '../services/anoLectivoServices';
+import { throwActiveAnoLectivoNotFoundError } from '../utils/controllers/anoLectivoControllerUtils';
 
 export async function createAlunoMatriculaController(
   request: FastifyRequest<{ Body: createAlunoMatriculaBodyType }>,
@@ -17,14 +19,8 @@ export async function createAlunoMatriculaController(
   const { body: data } = request;
   const { aluno: alunoData } = data;
   const { responsaveis: alunoResponsaveis } = alunoData;
-  const {
-    classeId,
-    cursoId,
-    turmaId,
-    turnoId,
-    anoLectivoId,
-    metodoPagamentoId,
-  } = request.body;
+  const { classeId, cursoId, turmaId, turnoId, metodoPagamentoId } =
+    request.body;
 
   const responsaveisTelefone = alunoResponsaveis.map(
     (responsavel) => responsavel.contacto.telefone
@@ -62,11 +58,14 @@ export async function createAlunoMatriculaController(
     cursoId,
     turmaId,
     turnoId,
-    anoLectivoId,
     metodoPagamentoId,
   });
 
-  const matricula = await createAlunoMatricula(data);
+  const activeAnoLectivo = await getAnoLectivoByActivo(true);
+
+  if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
+
+  const matricula = await createAlunoMatricula(activeAnoLectivo!.id, data);
 
   // -> Making the PDF
   const pdfPrinter = new PdfPrinter(pdfDefaultFonts);

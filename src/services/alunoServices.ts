@@ -163,14 +163,10 @@ export async function getAlunoResponsaveis(alunoId: number) {
 }
 
 export async function createAlunoMatricula(
+  anoLectivoId: number,
   matriculaData: createAlunoMatriculaBodyType
 ) {
-  const {
-    aluno: alunoData,
-    classeId,
-    metodoPagamentoId,
-    anoLectivoId,
-  } = matriculaData;
+  const { aluno: alunoData, classeId, metodoPagamentoId } = matriculaData;
 
   return await prisma.$transaction(async (transaction) => {
     const aluno = await transaction.aluno.create({
@@ -193,7 +189,7 @@ export async function createAlunoMatricula(
             cursoId: matriculaData.cursoId,
             turmaId: matriculaData.turmaId,
             turnoId: matriculaData.turnoId,
-            anoLectivoId: matriculaData.anoLectivoId,
+            anoLectivoId,
           },
         },
       },

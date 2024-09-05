@@ -5,7 +5,10 @@ import {
   createTurmaToClasseBodyType,
   updateClasseBodyType,
 } from '../schemas/classeSchemas';
-import { getAnoLectivoId } from '../services/anoLectivoServices';
+import {
+  getAnoLectivoByActivo,
+  getAnoLectivoId,
+} from '../services/anoLectivoServices';
 import {
   createClasse,
   getClasse,
@@ -21,7 +24,10 @@ import {
   getTurmasByClasse,
 } from '../services/turmaServices';
 import { getTurnoId } from '../services/turnoServices';
-import { throwNotFoundAnoLectivoIdFieldError } from '../utils/controllers/anoLectivoControllerUtils';
+import {
+  throwActiveAnoLectivoNotFoundError,
+  throwNotFoundAnoLectivoIdFieldError,
+} from '../utils/controllers/anoLectivoControllerUtils';
 import {
   throwDuplicatedClasseError,
   throwNotFoundClasseIdError,
@@ -36,24 +42,28 @@ export async function createClasseController(
   request: FastifyRequest<{ Body: createClasseBodyType }>,
   reply: FastifyReply
 ) {
-  const { nome, anoLectivoId, cursoId, valorMatricula } = request.body;
+  const { nome, cursoId, valorMatricula } = request.body;
 
-  const [isAnoLectivo, isCursoId] = await Promise.all([
-    getAnoLectivoId(anoLectivoId),
+  const [activeAnoLectivo, isCursoId] = await Promise.all([
+    getAnoLectivoByActivo(true),
     getCursoId(cursoId),
   ]);
 
-  if (!isAnoLectivo) throwNotFoundAnoLectivoIdFieldError();
+  if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
   if (!isCursoId) throwNotFoundCursoIdFieldError();
 
-  const isClasseId = await getClasseByUniqueKey(nome, anoLectivoId, cursoId);
+  const isClasseId = await getClasseByUniqueKey(
+    nome,
+    activeAnoLectivo!.id,
+    cursoId
+  );
 
   if (isClasseId) throwDuplicatedClasseError();
 
   // TODO: REFACTOR THIS
   const classe = await createClasse({
     nome,
-    anoLectivoId,
+    anoLectivoId: activeAnoLectivo!.id,
     cursoId,
     valorMatricula: Number(valorMatricula.toFixed(2)),
   });
@@ -70,25 +80,29 @@ export async function updateClasseController(
   reply: FastifyReply
 ) {
   const { classeId } = request.params;
-  const { nome, anoLectivoId, cursoId, valorMatricula } = request.body;
+  const { nome, cursoId, valorMatricula } = request.body;
 
-  const [isClasseId, isAnoLectivo, isCursoId] = await Promise.all([
+  const [isClasseId, activeAnoLectivo, isCursoId] = await Promise.all([
     getClasseId(classeId),
-    getAnoLectivoId(anoLectivoId),
+    getAnoLectivoByActivo(true),
     getCursoId(cursoId),
   ]);
 
   if (!isClasseId) throwNotFoundClasseIdError();
-  if (!isAnoLectivo) throwNotFoundAnoLectivoIdFieldError();
+  if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
   if (!isCursoId) throwNotFoundCursoIdFieldError();
 
-  const classe = await getClasseByUniqueKey(nome, anoLectivoId, cursoId);
+  const classe = await getClasseByUniqueKey(
+    nome,
+    activeAnoLectivo!.id,
+    cursoId
+  );
 
   if (classe && classe.id !== classeId) throwDuplicatedClasseError();
 
   const updatedClasse = await updateClasse(classeId, {
     nome,
-    anoLectivoId,
+    anoLectivoId: activeAnoLectivo!.id,
     cursoId,
     valorMatricula: Number(valorMatricula.toFixed(2)),
   });

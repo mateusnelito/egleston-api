@@ -40,3 +40,10 @@ export function throwNotFoundAnoLectivoIdFieldError() {
     errors: { anoLectivoId: ['Ano lectivo não existe.'] },
   });
 }
+
+export function throwActiveAnoLectivoNotFoundError() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.NOT_FOUND,
+    message: 'Nenhum ano lectivo activo definido.',
+  });
+}

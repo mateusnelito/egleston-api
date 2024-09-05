@@ -42,6 +42,7 @@ export async function getMatriculasByAlunoId(alunoId: number) {
 }
 
 export async function createMatricula(
+  anoLectivoId: number,
   alunoId: number,
   data: createAlunoMatriculaBodyType
 ) {
@@ -53,7 +54,7 @@ export async function createMatricula(
         cursoId: data.cursoId,
         turmaId: data.turmaId,
         turnoId: data.turnoId,
-        anoLectivoId: data.anoLectivoId,
+        anoLectivoId,
       },
       select: {
         id: true,
@@ -113,7 +114,7 @@ export async function createMatricula(
         tipoPagamento: 'Matricula',
         valor: classe!.valorMatricula,
         metodoPagamentoId: data.metodoPagamentoId,
-        anoLectivoId: data.anoLectivoId,
+        anoLectivoId,
       },
       include: {
         MetodoPagamento: {

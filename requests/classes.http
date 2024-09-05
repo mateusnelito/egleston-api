@@ -4,7 +4,6 @@ Content-Type: application/json
 
 {
   "nome": "12ª",
-  "anoLectivoId": 1,
   "cursoId": 1,
   "valorMatricula": 3000
 }
@@ -15,7 +14,6 @@ Content-Type: application/json
 
 {
   "nome": "13ª",
-  "anoLectivoId": 1,
   "cursoId": 1,
   "valorMatricula": 3000
 }

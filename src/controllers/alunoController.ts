@@ -49,6 +49,9 @@ import {
   throwDuplicatedTelefoneError,
   throwInvalidDataNascimentoError,
 } from '../utils/utilsFunctions';
+import { getAnoLectivoByActivo } from '../services/anoLectivoServices';
+import { throwActiveAnoLectivoNotFoundError } from '../utils/controllers/anoLectivoControllerUtils';
+import { throwDuplicatedMatriculaError } from '../utils/controllers/matriculaControllerUtils';
 
 export async function updateAlunoController(
   request: FastifyRequest<{
@@ -205,14 +208,8 @@ export async function createAlunoMatriculaController(
   reply: FastifyReply
 ) {
   const { alunoId } = request.params;
-  const {
-    classeId,
-    cursoId,
-    turmaId,
-    turnoId,
-    anoLectivoId,
-    metodoPagamentoId,
-  } = request.body;
+  const { classeId, cursoId, turmaId, turnoId, metodoPagamentoId } =
+    request.body;
   const isAlunoId = await getAlunoId(alunoId);
 
   if (!isAlunoId) throwNotFoundAlunoIdError();
@@ -222,24 +219,26 @@ export async function createAlunoMatriculaController(
     cursoId,
     turmaId,
     turnoId,
-    anoLectivoId,
     metodoPagamentoId,
   });
+
+  const activeAnoLectivo = await getAnoLectivoByActivo(true);
+
+  if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
 
   const isMatriculaId = await getMatriculaByUniqueKey(
     alunoId,
     classeId,
-    anoLectivoId
+    activeAnoLectivo!.id
   );
 
-  if (isMatriculaId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Matricula já existe.',
-    });
-  }
+  if (isMatriculaId) throwDuplicatedMatriculaError();
 
-  const matricula = await createMatricula(alunoId, request.body);
+  const matricula = await createMatricula(
+    activeAnoLectivo!.id,
+    alunoId,
+    request.body
+  );
 
   // Criando o PDF
   const pdfPrinter = new PdfPrinter(pdfDefaultFonts);
