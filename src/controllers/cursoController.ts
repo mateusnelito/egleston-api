@@ -5,11 +5,13 @@ import {
   cursoDisciplinaAssociationBodyType,
   cursoParamsType,
   deleteCursoDisciplinaParamsType,
+  getCursoClassesQueryType,
   updateCursoBodyType,
 } from '../schemas/cursoSchema';
 import {
   getAnoLectivo,
   getAnoLectivoByActivo,
+  getAnoLectivoId,
 } from '../services/anoLectivoServices';
 import {
   createClasse,
@@ -35,6 +37,7 @@ import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import {
   throwActiveAnoLectivoNotFoundError,
+  throwNotFoundAnoLectivoIdError,
   throwNotFoundAnoLectivoIdFieldError,
 } from '../utils/controllers/anoLectivoControllerUtils';
 import { throwDuplicatedClasseError } from '../utils/controllers/classeControllerUtils';
@@ -219,19 +222,25 @@ export async function deleteMultiplesCursoDisciplinasController(
   return reply.send(cursoDisciplinas);
 }
 
-// TODO: CHECK IF THIS ENDPOINT SHOULD EXIST
 export async function getCursoClassesController(
   request: FastifyRequest<{
     Params: cursoParamsType;
+    Querystring: getCursoClassesQueryType;
   }>,
   reply: FastifyReply
 ) {
   const { cursoId } = request.params;
-  const isCursoId = await getCursoId(cursoId);
+  const { anoLectivoId } = request.query;
+
+  const [isCursoId, anoLectivo] = await Promise.all([
+    getCursoId(cursoId),
+    anoLectivoId ? getAnoLectivoId(anoLectivoId) : getAnoLectivoByActivo(true),
+  ]);
 
   if (!isCursoId) throwNotFoundCursoIdError();
+  if (!anoLectivo) throwNotFoundAnoLectivoIdError();
 
-  const classes = await getClassesByCurso(cursoId);
+  const classes = await getClassesByCurso(cursoId, anoLectivo!.id);
   return reply.send(classes);
 }
 

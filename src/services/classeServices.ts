@@ -106,10 +106,10 @@ export async function getClassesByAnoLectivo(anoLectivoId: number) {
   };
 }
 
-export async function getClassesByCurso(cursoId: number) {
+export async function getClassesByCurso(cursoId: number, anoLectivoId: number) {
   return {
     data: await prisma.classe.findMany({
-      where: { cursoId },
+      where: { cursoId, anoLectivoId },
       select: {
         id: true,
         nome: true,

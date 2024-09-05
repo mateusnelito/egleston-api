@@ -190,6 +190,16 @@ export const getCursoClassesSchema = {
   summary: 'Retorna todas as classes do curso',
   tags: ['cursos'],
   params: cursoParamsSchema,
+  querystring: z.object({
+    anoLectivoId: z.coerce
+      .number({
+        required_error: 'O id do ano lectivo é obrigatório.',
+        invalid_type_error: 'O id do ano lectivo deve ser número.',
+      })
+      .int({ message: 'O id do ano lectivo deve ser inteiro.' })
+      .positive({ message: 'O id do ano lectivo deve ser positivo.' })
+      .nullish(),
+  }),
   response: {
     200: z.object({
       data: z.array(
@@ -237,4 +247,8 @@ export type deleteCursoDisciplinaParamsType = z.infer<
 
 export type createClasseToCursoBodyType = z.infer<
   typeof createClasseToCursoSchema.body
+>;
+
+export type getCursoClassesQueryType = z.infer<
+  typeof getCursoClassesSchema.querystring
 >;
