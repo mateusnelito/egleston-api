@@ -109,11 +109,12 @@ model ResponsavelContacto {
 
 // FIXME: add more details and unique field
 model Professor {
-  id                     Int                      @id @default(autoincrement())
-  nomeCompleto           String                   @map("nome_completo") @db.VarChar(100)
-  dataNascimento         DateTime                 @map("data_nascimento") @db.Date
-  Contacto               ProfessorContacto?
-  DisciplinasProfessores DisciplinasProfessores[]
+  id                        Int                         @id @default(autoincrement())
+  nomeCompleto              String                      @map("nome_completo") @db.VarChar(100)
+  dataNascimento            DateTime                    @map("data_nascimento") @db.Date
+  Contacto                  ProfessorContacto?
+  DisciplinasProfessores    DisciplinasProfessores[]
+  ProfessorDisciplinaClasse ProfessorDisciplinaClasse[]
 
   @@index([nomeCompleto])
   @@map("professores")
@@ -146,11 +147,12 @@ model Curso {
 }
 
 model Disciplina {
-  id                     Int                      @id @default(autoincrement())
-  nome                   String                   @unique @db.VarChar(50)
-  descricao              String                   @db.Text
-  CursosDisciplinas      CursosDisciplinas[]
-  DisciplinasProfessores DisciplinasProfessores[]
+  id                        Int                         @id @default(autoincrement())
+  nome                      String                      @unique @db.VarChar(50)
+  descricao                 String                      @db.Text
+  CursosDisciplinas         CursosDisciplinas[]
+  DisciplinasProfessores    DisciplinasProfessores[]
+  ProfessorDisciplinaClasse ProfessorDisciplinaClasse[]
 
   @@map("disciplinas")
   @@schema("cadastro")
@@ -176,6 +178,21 @@ model DisciplinasProfessores {
   @@id([disciplinaId, professorId])
   @@map("disciplinas_professores")
   @@schema("cadastro")
+}
+
+model ProfessorDisciplinaClasse {
+  professorId  Int        @map("professor_id")
+  Professor    Professor  @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  disciplinaId Int        @map("disciplina_id")
+  Disciplina   Disciplina @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+  classeId     Int        @map("classe_id")
+  Classe       Classe     @relation(fields: [classeId], references: [id], onDelete: Cascade)
+  turmaId      Int        @map("turma_id")
+  Turma        Turma      @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+
+  @@id([professorId, disciplinaId, classeId, turmaId])
+  @@map("professores_disciplinas_classes")
+  @@schema("academico")
 }
 
 model AnoLectivo {
@@ -209,15 +226,16 @@ model Trimestre {
 }
 
 model Classe {
-  id             Int         @id @default(autoincrement())
-  nome           String      @db.VarChar(15)
-  AnoLectivo     AnoLectivo  @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade)
-  anoLectivoId   Int         @map("ano_lectivo_id") @db.SmallInt
-  Curso          Curso       @relation(fields: [cursoId], references: [id], onDelete: Cascade)
-  cursoId        Int         @map("curso_id") @db.SmallInt
-  valorMatricula Decimal     @map("valor_matricula") @db.Decimal(10, 2)
-  Turma          Turma[]
-  Matricula      Matricula[]
+  id                        Int                         @id @default(autoincrement())
+  nome                      String                      @db.VarChar(15)
+  AnoLectivo                AnoLectivo                  @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade)
+  anoLectivoId              Int                         @map("ano_lectivo_id") @db.SmallInt
+  Curso                     Curso                       @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  cursoId                   Int                         @map("curso_id") @db.SmallInt
+  valorMatricula            Decimal                     @map("valor_matricula") @db.Decimal(10, 2)
+  Turma                     Turma[]
+  Matricula                 Matricula[]
+  ProfessorDisciplinaClasse ProfessorDisciplinaClasse[]
 
   @@unique([nome, anoLectivoId, cursoId])
   @@map("classes")
@@ -249,15 +267,16 @@ model Turno {
 }
 
 model Turma {
-  id        Int         @id @default(autoincrement())
-  nome      String      @db.VarChar(30)
-  Classe    Classe      @relation(fields: [classeId], references: [id], onDelete: Cascade)
-  classeId  Int         @map("classe_id")
-  Sala      Sala        @relation(fields: [salaId], references: [id], onDelete: Cascade)
-  salaId    Int         @map("sala_id") @db.SmallInt
-  turnoId   Int         @db.SmallInt
-  Turno     Turno       @relation(fields: [turnoId], references: [id], onDelete: Cascade)
-  Matricula Matricula[]
+  id                        Int                         @id @default(autoincrement())
+  nome                      String                      @db.VarChar(30)
+  Classe                    Classe                      @relation(fields: [classeId], references: [id], onDelete: Cascade)
+  classeId                  Int                         @map("classe_id")
+  Sala                      Sala                        @relation(fields: [salaId], references: [id], onDelete: Cascade)
+  salaId                    Int                         @map("sala_id") @db.SmallInt
+  turnoId                   Int                         @db.SmallInt
+  Turno                     Turno                       @relation(fields: [turnoId], references: [id], onDelete: Cascade)
+  Matricula                 Matricula[]
+  ProfessorDisciplinaClasse ProfessorDisciplinaClasse[]
 
   @@unique([nome, classeId, salaId, turnoId])
   @@map("turmas")
