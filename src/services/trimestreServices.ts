@@ -49,3 +49,22 @@ export async function createTrimestre(
     termino: formatDate(trimestre.termino),
   };
 }
+
+export async function getTrimestreByAnoLectivo(anoLectivoId: number) {
+  const trimestres = await prisma.trimestre.findMany({
+    where: { anoLectivoId },
+    select: { id: true, numero: true, inicio: true, termino: true },
+    orderBy: { numero: 'asc' },
+  });
+
+  return {
+    data: trimestres.map(({ id, numero, inicio, termino }) => {
+      return {
+        id,
+        numero,
+        inicio: formatDate(inicio),
+        termino: formatDate(termino),
+      };
+    }),
+  };
+}
