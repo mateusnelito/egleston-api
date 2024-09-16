@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { simpleBadRequestSchema } from './globalSchema';
 import { classeBodySchema } from './classeSchemas';
+import { trimestreBodySchema } from './trimestreSchemas';
 
 const anoLectivoBodySchema = z.object({
   id: z
@@ -155,6 +156,28 @@ export const createClasseToAnoLectivoSchema = {
       valorMatricula: z.coerce.number(),
     }),
     400: simpleBadRequestSchema,
+    404: simpleBadRequestSchema,
+  },
+};
+
+export const getAnoLectivoTrimestresSchema = {
+  summary: 'Retorna todos os trimestres do ano-lectivo',
+  tags: ['ano-lectivo'],
+  params: anoLectivoParamsSchema,
+  response: {
+    200: z.object({
+      // TODO: REFACTOR THIS CODE TO OWN SCHEMA
+      data: z.array(
+        trimestreBodySchema
+          .omit({
+            anoLectivoId: true,
+          })
+          .extend({
+            inicio: z.string().date(),
+            termino: z.string().date(),
+          })
+      ),
+    }),
     404: simpleBadRequestSchema,
   },
 };

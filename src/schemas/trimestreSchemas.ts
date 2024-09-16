@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { simpleBadRequestSchema } from './globalSchema';
 
-const trimestreBodySchema = z.object({
+export const trimestreBodySchema = z.object({
   id: z
     .number({
       required_error: 'O id do trimestre é obrigatório.',
