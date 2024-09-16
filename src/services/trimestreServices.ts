@@ -38,6 +38,7 @@ export async function createTrimestre(
     },
   });
 
+  // TODO: REFACTOR THIS CODE TO A FUNCTION
   return {
     id: trimestre.id,
     anoLectivo: {
@@ -67,4 +68,30 @@ export async function getTrimestreByAnoLectivo(anoLectivoId: number) {
       };
     }),
   };
+}
+
+export async function getTrimestre(id: number) {
+  const trimestre = await prisma.trimestre.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      numero: true,
+      inicio: true,
+      termino: true,
+      AnoLectivo: { select: { id: true, nome: true } },
+    },
+  });
+
+  return trimestre
+    ? {
+        id: trimestre.id,
+        anoLectivo: {
+          id: trimestre.AnoLectivo.id,
+          nome: trimestre.AnoLectivo.nome,
+        },
+        numero: trimestre.numero,
+        inicio: formatDate(trimestre.inicio),
+        termino: formatDate(trimestre.termino),
+      }
+    : trimestre;
 }
