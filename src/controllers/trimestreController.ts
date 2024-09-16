@@ -5,6 +5,7 @@ import {
   createTrimestre,
   getLastTrimestreAddedInAnoLectivo,
   getTotalTrimestresInAnoLectivo,
+  getTrimestreByAnoLectivo,
   getTrimestreByUniqueKey,
 } from '../services/trimestreServices';
 import { throwActiveAnoLectivoNotFoundError } from '../utils/controllers/anoLectivoControllerUtils';
@@ -16,6 +17,7 @@ import {
   throwInvalidTrimestreInicioError,
   throwMinimumAnoLectivoReachedError,
 } from '../utils/controllers/trimestreControllerUtils';
+import HttpStatusCodes from '../utils/HttpStatusCodes';
 import {
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
@@ -27,6 +29,8 @@ export async function createTrimestreController(
 ) {
   const { numero, inicio, termino } = request.body;
   const trimestreMonths = calculateTimeBetweenDates(inicio, termino, 'M');
+
+  // TODO: VERIFICAR SE O INICIO E FIM DO TRIMESTRE ESTÃO NO INTERVALO DE DURAÇÃO DO ANO LECTIVO
 
   if (trimestreMonths > MINIMUM_TRIMESTRE_MONTH_DURATION)
     throwInvalidTrimestreDurationError();
@@ -60,5 +64,16 @@ export async function createTrimestreController(
     termino,
   });
 
-  return reply.send(newTrimestre);
+  return reply.status(HttpStatusCodes.CREATED).send(newTrimestre);
+}
+
+export async function getTrimestresController(
+  _: FastifyRequest,
+  reply: FastifyReply
+) {
+  const activeAnoLectivo = await getAnoLectivoActivo(true);
+
+  if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
+
+  return reply.send(await getTrimestreByAnoLectivo(activeAnoLectivo!.id));
 }
