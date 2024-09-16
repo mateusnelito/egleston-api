@@ -28,14 +28,14 @@ const anoLectivoBodySchema = z.object({
   inicio: z
     .string({
       required_error: 'O inicio do ano lectivo é obrigatório.',
-      invalid_type_error: 'O inicio do ano lectivo é obrigatório.',
+      invalid_type_error: 'O inicio do ano lectivo deve ser uma data.',
     })
     .trim()
     .date('O inicio deve ser uma data válida.'),
   termino: z
     .string({
       required_error: 'O termino do ano lectivo é obrigatório.',
-      invalid_type_error: 'O termino do ano lectivo é obrigatório.',
+      invalid_type_error: 'O termino do ano lectivo deve ser uma data.',
     })
     .trim()
     .date('O termino deve ser uma data válida.'),
