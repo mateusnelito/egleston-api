@@ -54,7 +54,3 @@ export async function getAnoLectivoActivo(activo: boolean) {
 export async function changeAnoLectivoActiveState(id: number, activo: boolean) {
   return await prisma.anoLectivo.update({ where: { id }, data: { activo } });
 }
-
-export async function getTotalTrimestres(anoLectivoId: number) {
-  return await prisma.trimestre.count({ where: { anoLectivoId } });
-}
