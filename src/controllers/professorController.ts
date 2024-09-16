@@ -1,12 +1,17 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   createProfessorBodyType,
+  createProfessorDisciplinaClasseAssociationBodyType,
   deleteProfessorDisciplinaParamsType,
   getProfessoresQueryStringType,
   professorDisciplinaBodyType,
-  professorParamsSchema,
+  professorParamsType,
   updateProfessorBodyType,
 } from '../schemas/professorSchemas';
+import {
+  getClasseAndAnoLectivoActivoStatus,
+  getClasseId,
+} from '../services/classeServices';
 import { getDisciplinaId } from '../services/disciplinaServices';
 import {
   createMultiplesDisciplinaProfessorByProfessor,
@@ -22,10 +27,12 @@ import {
   getProfessores,
   updateProfessor,
 } from '../services/professorServices';
+import { getTurmaByIdAndClasse } from '../services/turmaServices';
 import BadRequest from '../utils/BadRequest';
+import { throwNotFoundClasseIdFieldError } from '../utils/controllers/classeControllerUtils';
 import {
-  throwNotFoundDisciplinaIdInArrayError,
   throwInvalidDisciplinasArrayError,
+  throwNotFoundDisciplinaIdInArrayError,
 } from '../utils/controllers/disciplinaControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import {
@@ -37,6 +44,10 @@ import {
   throwDuplicatedTelefoneError,
   throwInvalidDataNascimentoError,
 } from '../utils/utilsFunctions';
+import {
+  createProfessorDisciplinaClasse,
+  getProfessorDisciplinaClasseById,
+} from '../services/professorDisciplinaClasseServices';
 
 function throwNotFoundProfessorIdError() {
   throw new BadRequest({
@@ -98,7 +109,7 @@ export async function createProfessorController(
 
 export async function updateProfessorController(
   request: FastifyRequest<{
-    Params: professorParamsSchema;
+    Params: professorParamsType;
     Body: updateProfessorBodyType;
   }>,
   reply: FastifyReply
@@ -141,7 +152,7 @@ export async function updateProfessorController(
 
 export async function getProfessorController(
   request: FastifyRequest<{
-    Params: professorParamsSchema;
+    Params: professorParamsType;
   }>,
   reply: FastifyReply
 ) {
@@ -182,7 +193,7 @@ export async function getProfessoresController(
 export async function createMultiplesProfessorDisciplinaByProfessorController(
   request: FastifyRequest<{
     Body: professorDisciplinaBodyType;
-    Params: professorParamsSchema;
+    Params: professorParamsType;
   }>,
   reply: FastifyReply
 ) {
@@ -253,7 +264,7 @@ export async function deleteProfessorDisciplinaController(
 export async function deleteMultiplesProfessorDisciplinaByProfessorController(
   request: FastifyRequest<{
     Body: professorDisciplinaBodyType;
-    Params: professorParamsSchema;
+    Params: professorParamsType;
   }>,
   reply: FastifyReply
 ) {
@@ -288,4 +299,88 @@ export async function deleteMultiplesProfessorDisciplinaByProfessorController(
 
   // TODO: Send an appropriate response
   return reply.send(professorDisciplinas);
+}
+
+// TODO: SEE WITH GPT HOW TO OPTIMIZE THIS CONTROLLER
+export async function createProfessorDisciplinaClasseAssociationController(
+  request: FastifyRequest<{
+    Params: professorParamsType;
+    Body: createProfessorDisciplinaClasseAssociationBodyType;
+  }>,
+  reply: FastifyReply
+) {
+  const { professorId } = request.params;
+  const { classeId, disciplinaId, turmaId } = request.body;
+
+  const [
+    professor,
+    disciplinaProfessor,
+    classe,
+    turma,
+    professorDisciplinaClasse,
+  ] = await Promise.all([
+    getProfessorId(professorId),
+    getDisciplinaProfessor(professorId, disciplinaId),
+    getClasseAndAnoLectivoActivoStatus(classeId),
+    getTurmaByIdAndClasse(turmaId, classeId),
+    getProfessorDisciplinaClasseById(
+      professorId,
+      disciplinaId,
+      classeId,
+      turmaId
+    ),
+  ]);
+
+  if (!professor) throwNotFoundProfessorIdError();
+
+  if (!disciplinaProfessor) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.NOT_FOUND,
+      message: 'Disciplina inválida',
+      errors: {
+        disciplinaId: ['Disciplina não associada ao professor.'],
+      },
+    });
+  }
+
+  if (!classe) throwNotFoundClasseIdFieldError();
+
+  if (!classe!.AnoLectivo.activo) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+      message: 'Classe inválida.',
+      errors: {
+        // TODO: MAKE THIS ERROR MESSAGE BETTER
+        classeId: ['Classe *Passada.'],
+      },
+    });
+  }
+
+  if (!turma) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.NOT_FOUND,
+      message: 'Turma inválida',
+      errors: {
+        turmaId: ['Turma não associada a classe.'],
+      },
+    });
+  }
+
+  if (professorDisciplinaClasse) {
+    throw new BadRequest({
+      statusCode: HttpStatusCodes.BAD_REQUEST,
+      message: 'Professor já associado a classe.',
+    });
+  }
+
+  const newProfessorDisciplinaClasse = await createProfessorDisciplinaClasse({
+    professorId,
+    disciplinaId,
+    classeId,
+    turmaId,
+  });
+
+  // TODO: ADICIONAR LIMITE MÁXIMO PARA O Nº DE DISCIPLINA QUE UM PROFESSOR PÔDE LECIONAR EM UM CLASSE
+
+  return reply.send(newProfessorDisciplinaClasse);
 }
