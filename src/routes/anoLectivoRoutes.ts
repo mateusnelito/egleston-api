@@ -6,6 +6,7 @@ import {
   getAnoLectivoClassesController,
   getAnoLectivoController,
   getAnoLectivosController,
+  getAnoLectivoTrimestresController,
   patchAnoLectivoController,
   updateAnoLectivoController,
 } from '../controllers/anoLectivoController';
@@ -15,6 +16,7 @@ import {
   getAnoLectivoClassesSchema,
   getAnoLectivoSchema,
   getAnoLectivosSchema,
+  getAnoLectivoTrimestresSchema,
   patchAnoLectivoSchema,
   updateAnoLectivoSchema,
 } from '../schemas/anoLectivoSchema';
@@ -62,5 +64,11 @@ export const anoLectivoRoutes: FastifyPluginAsync = async (
   server.withTypeProvider<ZodTypeProvider>().post('/:anoLectivoId/classes', {
     schema: createClasseToAnoLectivoSchema,
     handler: createClasseToAnoLectivoController,
+  });
+
+  // GET Trimestres
+  server.withTypeProvider<ZodTypeProvider>().get('/:anoLectivoId/trimestres', {
+    schema: getAnoLectivoTrimestresSchema,
+    handler: getAnoLectivoTrimestresController,
   });
 };

@@ -37,6 +37,7 @@ import {
   formatDate,
   isBeginDateAfterEndDate,
 } from '../utils/utilsFunctions';
+import { getTrimestreByAnoLectivo } from '../services/trimestreServices';
 
 export async function createAnoLectivoController(
   request: FastifyRequest<{ Body: createAnoLectivoBodyType }>,
@@ -214,4 +215,16 @@ export async function patchAnoLectivoController(
 
   const anoLectivo = await changeAnoLectivoActiveState(anoLectivoId, activo);
   return reply.send(anoLectivo);
+}
+
+export async function getAnoLectivoTrimestresController(
+  request: FastifyRequest<{ Params: anoLectivoParamsType }>,
+  reply: FastifyReply
+) {
+  const { anoLectivoId } = request.params;
+  const anoLectivo = await getAnoLectivoId(anoLectivoId);
+
+  if (!anoLectivo) throwNotFoundAnoLectivoIdError();
+
+  return reply.send(await getTrimestreByAnoLectivo(anoLectivoId));
 }
