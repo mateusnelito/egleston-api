@@ -89,6 +89,25 @@ export const getTrimestresSchema = {
   },
 };
 
+export const getTrimestreSchema = {
+  summary: 'Retorna detalhes de um trimestre',
+  params: trimestreParamsSchema,
+  tags: ['trimestres'],
+  response: {
+    200: trimestreBodySchema.omit({ anoLectivoId: true }).extend({
+      anoLectivo: z.object({
+        id: z.number(),
+        nome: z.string(),
+      }),
+      inicio: z.string().date(),
+      termino: z.string().date(),
+    }),
+    404: simpleBadRequestSchema,
+    400: simpleBadRequestSchema,
+  },
+};
+
 export type createTrimestreBodyType = z.infer<
   typeof createTrimestreSchema.body
 >;
+export type trimestreParamsType = z.infer<typeof trimestreParamsSchema>;
