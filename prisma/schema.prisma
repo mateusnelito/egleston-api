@@ -188,10 +188,24 @@ model AnoLectivo {
   Classe          Classe[]
   Matricula       Matricula[]
   Pagamento       Pagamento[]
+  Trimestre       Trimestre[]
 
   @@index([activo])
   @@map("ano_lectivos")
   @@schema("cadastro")
+}
+
+model Trimestre {
+  id           Int        @id @default(autoincrement()) @db.SmallInt
+  anoLectivoId Int        @map("ano_lectivo_id")
+  AnoLectivo   AnoLectivo @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  numero       Int        @db.SmallInt
+  inicio       DateTime   @db.Date
+  termino      DateTime   @db.Date
+
+  @@unique([anoLectivoId, numero])
+  @@map("trimestres")
+  @@schema("academico")
 }
 
 model Classe {
