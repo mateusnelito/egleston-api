@@ -10,7 +10,7 @@ export async function getLastTrimestreAddedInAnoLectivo(anoLectivoId: number) {
   return await prisma.trimestre.findFirst({
     where: { anoLectivoId },
     select: { id: true, termino: true },
-    orderBy: { id: 'asc' },
+    orderBy: { id: 'desc' },
   });
 }
 
