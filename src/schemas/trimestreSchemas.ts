@@ -70,6 +70,25 @@ export const createTrimestreSchema = {
   },
 };
 
+export const getTrimestresSchema = {
+  summary: 'Retorna todos os anos trimestres do ano-lectivo activo',
+  tags: ['trimestres'],
+  response: {
+    200: z.object({
+      data: z.array(
+        trimestreBodySchema
+          .omit({
+            anoLectivoId: true,
+          })
+          .extend({
+            inicio: z.string().date(),
+            termino: z.string().date(),
+          })
+      ),
+    }),
+  },
+};
+
 export type createTrimestreBodyType = z.infer<
   typeof createTrimestreSchema.body
 >;
