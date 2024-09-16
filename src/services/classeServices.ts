@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 
 export async function getClasseByUniqueKey(
@@ -11,14 +12,7 @@ export async function getClasseByUniqueKey(
   });
 }
 
-interface classeDataInterface {
-  nome: string;
-  anoLectivoId: number;
-  cursoId: number;
-  valorMatricula: number;
-}
-
-export async function createClasse(data: classeDataInterface) {
+export async function createClasse(data: Prisma.ClasseUncheckedCreateInput) {
   return await prisma.classe.create({ data });
 }
 
@@ -29,7 +23,10 @@ export async function getClasseId(id: number) {
   });
 }
 
-export async function updateClasse(id: number, data: classeDataInterface) {
+export async function updateClasse(
+  id: number,
+  data: Prisma.ClasseUncheckedUpdateInput
+) {
   return await prisma.classe.update({ where: { id }, data });
 }
 
@@ -119,4 +116,11 @@ export async function getClassesByCurso(cursoId: number, anoLectivoId: number) {
       },
     }),
   };
+}
+
+export async function getClasseAndAnoLectivoActivoStatus(id: number) {
+  return await prisma.classe.findUnique({
+    where: { id },
+    select: { id: true, AnoLectivo: { select: { id: true, activo: true } } },
+  });
 }
