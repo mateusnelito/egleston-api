@@ -69,3 +69,10 @@ export async function getTurmasBySala(salaId: number) {
     }),
   };
 }
+
+export async function getTurmaByIdAndClasse(id: number, classeId: number) {
+  return await prisma.turma.findFirst({
+    where: { id, classeId },
+    select: { id: true },
+  });
+}
