@@ -1,0 +1,15 @@
+### Create
+POST http://localhost:8000/api/trimestres
+Content-Type: application/json
+
+{
+  "numero": 1,
+  "inicio": "2024-09-02",
+  "termino": "2025-08-01"
+}
+
+### Get
+GET http://localhost:8000/api/trimestres
+
+### Get/{id}
+GET http://localhost:8000/api/trimestres/4
