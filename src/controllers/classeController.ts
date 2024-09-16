@@ -5,10 +5,7 @@ import {
   createTurmaToClasseBodyType,
   updateClasseBodyType,
 } from '../schemas/classeSchemas';
-import {
-  getAnoLectivoActivo,
-  getAnoLectivoId,
-} from '../services/anoLectivoServices';
+import { getAnoLectivoActivo } from '../services/anoLectivoServices';
 import {
   createClasse,
   getClasse,
@@ -24,10 +21,7 @@ import {
   getTurmasByClasse,
 } from '../services/turmaServices';
 import { getTurnoId } from '../services/turnoServices';
-import {
-  throwActiveAnoLectivoNotFoundError,
-  throwNotFoundAnoLectivoIdFieldError,
-} from '../utils/controllers/anoLectivoControllerUtils';
+import { throwActiveAnoLectivoNotFoundError } from '../utils/controllers/anoLectivoControllerUtils';
 import {
   throwDuplicatedClasseError,
   throwNotFoundClasseIdError,
