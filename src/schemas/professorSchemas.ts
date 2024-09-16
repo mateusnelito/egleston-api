@@ -194,7 +194,40 @@ export const deleteMultiplesProfessorDisciplinaSchema = {
   ...professorDisciplinaSchema,
 };
 
-export type professorParamsSchema = z.infer<typeof professorParamsSchema>;
+export const createProfessorDisciplinaClasseAssociationSchema = {
+  summary: 'Cria uma associação entre professor e classe',
+  tags: ['professores'],
+  params: professorParamsSchema,
+  body: z.object({
+    disciplinaId: z
+      .number({
+        required_error: 'O id de disciplina é obrigatório.',
+        invalid_type_error: 'O id de disciplina deve ser número.',
+      })
+      .int({ message: 'O id de disciplina deve ser inteiro.' })
+      .positive({ message: 'O id de disciplina deve ser positivo.' }),
+    classeId: z
+      .number({
+        required_error: 'O id da classe é obrigatório.',
+        invalid_type_error: 'O id da classe deve ser número.',
+      })
+      .int({ message: 'O id da classe deve ser inteiro.' })
+      .positive({ message: 'O id da classe deve ser positivo.' }),
+    turmaId: z
+      .number({
+        required_error: 'O id da turma é obrigatório.',
+        invalid_type_error: 'O id da turma deve ser número.',
+      })
+      .int({ message: 'O id da turma deve ser inteiro.' })
+      .positive({ message: 'O id da turma deve ser positivo.' }),
+  }),
+  response: {
+    400: simpleBadRequestSchema,
+    404: simpleBadRequestSchema,
+  },
+};
+
+export type professorParamsType = z.infer<typeof professorParamsSchema>;
 export type createProfessorBodyType = z.infer<
   typeof createProfessorSchema.body
 >;
@@ -213,4 +246,7 @@ export type professorDisciplinaBodyType = z.infer<
 
 export type deleteProfessorDisciplinaParamsType = z.infer<
   typeof deleteProfessorDisciplinaSchema.params
+>;
+export type createProfessorDisciplinaClasseAssociationBodyType = z.infer<
+  typeof createProfessorDisciplinaClasseAssociationSchema.body
 >;
