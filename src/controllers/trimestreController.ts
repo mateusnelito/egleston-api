@@ -1,10 +1,14 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { createTrimestreBodyType } from '../schemas/trimestreSchemas';
+import {
+  createTrimestreBodyType,
+  trimestreParamsType,
+} from '../schemas/trimestreSchemas';
 import { getAnoLectivoActivo } from '../services/anoLectivoServices';
 import {
   createTrimestre,
   getLastTrimestreAddedInAnoLectivo,
   getTotalTrimestresInAnoLectivo,
+  getTrimestre,
   getTrimestreByAnoLectivo,
   getTrimestreByUniqueKey,
 } from '../services/trimestreServices';
@@ -16,6 +20,7 @@ import {
   throwInvalidTrimestreDurationError,
   throwInvalidTrimestreInicioError,
   throwMinimumAnoLectivoReachedError,
+  throwNotFoundTrimestreIdError,
 } from '../utils/controllers/trimestreControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import {
@@ -76,4 +81,16 @@ export async function getTrimestresController(
   if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
 
   return reply.send(await getTrimestreByAnoLectivo(activeAnoLectivo!.id));
+}
+
+export async function getTrimestreController(
+  request: FastifyRequest<{ Params: trimestreParamsType }>,
+  reply: FastifyReply
+) {
+  const { trimestreId } = request.params;
+  const trimestre = await getTrimestre(trimestreId);
+
+  if (!trimestre) throwNotFoundTrimestreIdError();
+
+  return reply.send(trimestre);
 }

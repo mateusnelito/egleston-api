@@ -43,3 +43,10 @@ export function throwDuplicatedTrimestreError() {
     message: 'Trimestre já existe.',
   });
 }
+
+export function throwNotFoundTrimestreIdError() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.NOT_FOUND,
+    message: 'Trimestre não existe.',
+  });
+}
