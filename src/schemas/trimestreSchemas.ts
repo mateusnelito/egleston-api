@@ -30,14 +30,16 @@ const trimestreBodySchema = z.object({
       invalid_type_error: 'O inicio do trimestre deve ser uma data.',
     })
     .trim()
-    .date('O inicio deve ser uma data válida.'),
+    .date('O inicio deve ser uma data válida.')
+    .transform((inicio) => new Date(inicio)),
   termino: z
     .string({
       required_error: 'O termino do trimestre é obrigatório.',
       invalid_type_error: 'O termino do trimestre deve ser uma data.',
     })
     .trim()
-    .date('O termino deve ser uma data válida.'),
+    .date('O termino deve ser uma data válida.')
+    .transform((termino) => new Date(termino)),
 });
 
 const trimestreParamsSchema = z.object({
@@ -55,7 +57,14 @@ export const createTrimestreSchema = {
   tags: ['trimestres'],
   body: trimestreBodySchema.omit({ id: true, anoLectivoId: true }),
   response: {
-    // 201: trimestreBodySchema,
+    201: trimestreBodySchema.omit({ anoLectivoId: true }).extend({
+      anoLectivo: z.object({
+        id: z.number(),
+        nome: z.string(),
+      }),
+      inicio: z.string().date(),
+      termino: z.string().date(),
+    }),
     404: simpleBadRequestSchema,
     400: simpleBadRequestSchema,
   },
