@@ -5,7 +5,7 @@ import { formatDate } from '../utils/utilsFunctions';
 export async function createProfessor(data: createProfessorBodyType) {
   const { disciplinas } = data;
 
-  const disciplinaProfessorClause = disciplinas
+  const createManyDisciplinaProfessorClause = disciplinas
     ? {
         createMany: {
           data: disciplinas.map((disciplinaId) => {
@@ -22,7 +22,7 @@ export async function createProfessor(data: createProfessorBodyType) {
       Contacto: {
         create: data.contacto,
       },
-      DisciplinasProfessores: disciplinaProfessorClause,
+      DisciplinasProfessores: createManyDisciplinaProfessorClause,
     },
     include: {
       Contacto: {
