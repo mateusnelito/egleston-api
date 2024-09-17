@@ -41,3 +41,16 @@ export function throwInvalidDisciplinasArrayError() {
     },
   });
 }
+
+export function throwInvalidDisciplinaIdFieldError(
+  errorMessage: string,
+  statusCode = HttpStatusCodes.NOT_FOUND
+) {
+  throw new BadRequest({
+    statusCode,
+    message: 'Disciplina inválida.',
+    errors: {
+      disciplinaId: [errorMessage],
+    },
+  });
+}
