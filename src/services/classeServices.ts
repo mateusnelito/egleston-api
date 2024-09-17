@@ -118,9 +118,13 @@ export async function getClassesByCurso(cursoId: number, anoLectivoId: number) {
   };
 }
 
-export async function getClasseAndAnoLectivoActivoStatus(id: number) {
+export async function getClasseAnoLectivoAndCursoById(id: number) {
   return await prisma.classe.findUnique({
     where: { id },
-    select: { id: true, AnoLectivo: { select: { id: true, activo: true } } },
+    select: {
+      id: true,
+      AnoLectivo: { select: { id: true, activo: true } },
+      Curso: { select: { id: true } },
+    },
   });
 }
