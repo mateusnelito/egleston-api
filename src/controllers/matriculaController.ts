@@ -3,14 +3,14 @@ import PdfPrinter from 'pdfmake';
 import { createAlunoMatriculaBodyType } from '../schemas/matriculaSchemas';
 import { createAlunoMatricula } from '../services/alunoServices';
 import { validateAlunoData } from '../services/alunoValidationService';
+import { getAnoLectivoActivo } from '../services/anoLectivoServices';
 import { validateMatriculaData } from '../services/matriculaValidationService';
 import { validateResponsavelData } from '../services/responsaveisValidationServices';
 import BadRequest from '../utils/BadRequest';
+import { throwActiveAnoLectivoNotFoundError } from '../utils/controllers/anoLectivoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
-import { arrayHasDuplicatedValue } from '../utils/utilsFunctions';
-import { getAnoLectivoActivo } from '../services/anoLectivoServices';
-import { throwActiveAnoLectivoNotFoundError } from '../utils/controllers/anoLectivoControllerUtils';
+import { arrayHasDuplicatedItems } from '../utils/utilsFunctions';
 
 export async function createAlunoMatriculaController(
   request: FastifyRequest<{ Body: createAlunoMatriculaBodyType }>,
@@ -32,8 +32,8 @@ export async function createAlunoMatriculaController(
 
   // TODO: CHECK IF THERE'S DUPLICATED RESPONSAVEIS OBJECT, NOT ONLY DUPLICATED CONTACTS
   if (
-    arrayHasDuplicatedValue(responsaveisTelefone) ||
-    arrayHasDuplicatedValue(responsaveisEmails)
+    arrayHasDuplicatedItems(responsaveisTelefone) ||
+    arrayHasDuplicatedItems(responsaveisEmails)
   ) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
@@ -86,37 +86,3 @@ export async function createAlunoMatriculaController(
 
   return reply;
 }
-
-// -> WORKING...
-// export async function updateMatriculaController(
-//   request: FastifyRequest<{
-//     Params: matriculaParamsType;
-//     Body: updateMatriculaBodyType;
-//   }>,
-//   reply: FastifyReply
-// ) {
-//   const { matriculaId } = request.params;
-//   const { classeId, cursoId, turmaId, metodoPagamentoId } = request.body;
-
-//   const [isMatriculaId, isCursoId, isTurmaId, isMetodoPagamentoId] =
-//     await Promise.all([
-//       getMatriculaIdById(matriculaId),
-//       getClasseId(classeId),
-//       getCursoId(cursoId),
-//       getTurmaId(turmaId),
-//       getMetodoPagamentoById(metodoPagamentoId),
-//     ]);
-
-//   if (!isCursoId) throwNotFoundCursoIdFieldError();
-//   if (!isTurmaId) throwNotFoundTurmaIdFieldError();
-
-//   if (!isMetodoPagamentoId) {
-//     throw new BadRequest({
-//       statusCode: HttpStatusCodes.BAD_REQUEST,
-//       message: 'Metodo de pagamento inválido.',
-//       errors: {
-//         metodoPagamentoId: ['ID metodo de pagamento não existe.'],
-//       },
-//     });
-//   }
-// }

@@ -9,7 +9,6 @@ import {
   updateCursoBodyType,
 } from '../schemas/cursoSchema';
 import {
-  getAnoLectivo,
   getAnoLectivoActivo,
   getAnoLectivoId,
 } from '../services/anoLectivoServices';
@@ -38,7 +37,6 @@ import HttpStatusCodes from '../utils/HttpStatusCodes';
 import {
   throwActiveAnoLectivoNotFoundError,
   throwNotFoundAnoLectivoIdError,
-  throwNotFoundAnoLectivoIdFieldError,
 } from '../utils/controllers/anoLectivoControllerUtils';
 import { throwDuplicatedClasseError } from '../utils/controllers/classeControllerUtils';
 import {
@@ -49,7 +47,7 @@ import {
   throwInvalidDisciplinasArrayError,
   throwNotFoundDisciplinaIdInArrayError,
 } from '../utils/controllers/disciplinaControllerUtils';
-import { arrayHasDuplicatedValue } from '../utils/utilsFunctions';
+import { arrayHasDuplicatedItems } from '../utils/utilsFunctions';
 
 export async function createCursoController(
   request: FastifyRequest<{ Body: createCursoBodyType }>,
@@ -57,7 +55,7 @@ export async function createCursoController(
 ) {
   const { nome, disciplinas } = request.body;
 
-  if (disciplinas && arrayHasDuplicatedValue(disciplinas))
+  if (disciplinas && arrayHasDuplicatedItems(disciplinas))
     throwInvalidDisciplinasArrayError();
 
   const isCursoNome = await getCursoNome(nome);
@@ -132,7 +130,7 @@ export async function createMultiplesCursoDisciplinaByCursoController(
   const { cursoId } = request.params;
   const { disciplinas } = request.body;
 
-  if (arrayHasDuplicatedValue(disciplinas)) throwInvalidDisciplinasArrayError();
+  if (arrayHasDuplicatedItems(disciplinas)) throwInvalidDisciplinasArrayError();
 
   const isCursoId = await getCursoId(cursoId);
   if (!isCursoId) throwNotFoundCursoIdError();
@@ -197,7 +195,7 @@ export async function deleteMultiplesCursoDisciplinasController(
   const { cursoId } = request.params;
   const { disciplinas } = request.body;
 
-  if (arrayHasDuplicatedValue(disciplinas)) throwInvalidDisciplinasArrayError();
+  if (arrayHasDuplicatedItems(disciplinas)) throwInvalidDisciplinasArrayError();
 
   const isCursoId = await getCursoId(cursoId);
   if (!isCursoId) throwNotFoundCursoIdError();

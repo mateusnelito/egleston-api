@@ -21,7 +21,7 @@ export function calculateTimeBetweenDates(
 
 // Only work with primitive values: 1, 2, 3 || "a", "b", "c"
 // Not with objects
-export function arrayHasDuplicatedValue(array: Array<any>) {
+export function arrayHasDuplicatedItems(array: Array<any>) {
   return new Set(array).size !== array.length;
 }
 

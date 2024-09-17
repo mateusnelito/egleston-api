@@ -26,7 +26,7 @@ import {
   throwNotFoundDisciplinaIdError,
 } from '../utils/controllers/disciplinaControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import { arrayHasDuplicatedValue } from '../utils/utilsFunctions';
+import { arrayHasDuplicatedItems } from '../utils/utilsFunctions';
 
 export async function createDisciplinaController(
   request: FastifyRequest<{ Body: createDisciplinaBodyType }>,
@@ -105,7 +105,7 @@ export async function createMultiplesCursoDisciplinaByDisciplinaController(
   const { disciplinaId } = request.params;
   const { cursos } = request.body;
 
-  if (arrayHasDuplicatedValue(cursos)) {
+  if (arrayHasDuplicatedItems(cursos)) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
       message: 'Cursos inválidos.',
