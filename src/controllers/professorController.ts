@@ -8,10 +8,8 @@ import {
   professorParamsType,
   updateProfessorBodyType,
 } from '../schemas/professorSchemas';
-import {
-  getClasseAndAnoLectivoActivoStatus,
-  getClasseId,
-} from '../services/classeServices';
+import { getClasseAnoLectivoAndCursoById } from '../services/classeServices';
+import { getCursoDisciplina } from '../services/cursosDisciplinasServices';
 import { getDisciplinaId } from '../services/disciplinaServices';
 import {
   createMultiplesDisciplinaProfessorByProfessor,
@@ -20,6 +18,11 @@ import {
   getDisciplinaProfessor,
 } from '../services/disciplinasProfessoresServices';
 import { getEmail, getTelefone } from '../services/professorContactoServices';
+import {
+  createProfessorDisciplinaClasse,
+  getProfessorDisciplinaClasseById,
+  getTotalProfessorDisciplina,
+} from '../services/professorDisciplinaClasseServices';
 import {
   createProfessor,
   getProfessor,
@@ -31,9 +34,15 @@ import { getTurmaByIdAndClasse } from '../services/turmaServices';
 import BadRequest from '../utils/BadRequest';
 import { throwNotFoundClasseIdFieldError } from '../utils/controllers/classeControllerUtils';
 import {
+  throwInvalidDisciplinaIdFieldError,
   throwInvalidDisciplinasArrayError,
   throwNotFoundDisciplinaIdInArrayError,
 } from '../utils/controllers/disciplinaControllerUtils';
+import {
+  MAXIMUM_PROFESSOR_AGE,
+  MAXIMUM_PROFESSOR_DISCIPLINA_CLASSE,
+} from '../utils/controllers/professorControllerUtils';
+import { throwNotFoundTurmaIdFieldError } from '../utils/controllers/turmaControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import {
   arrayHasDuplicatedValue,
@@ -44,10 +53,6 @@ import {
   throwDuplicatedTelefoneError,
   throwInvalidDataNascimentoError,
 } from '../utils/utilsFunctions';
-import {
-  createProfessorDisciplinaClasse,
-  getProfessorDisciplinaClasseById,
-} from '../services/professorDisciplinaClasseServices';
 
 function throwNotFoundProfessorIdError() {
   throw new BadRequest({
@@ -55,8 +60,6 @@ function throwNotFoundProfessorIdError() {
     message: 'Professor não existe.',
   });
 }
-
-const MAXIMUM_AGE = 80;
 
 export async function createProfessorController(
   request: FastifyRequest<{ Body: createProfessorBodyType }>,
@@ -76,8 +79,10 @@ export async function createProfessorController(
     new Date(),
     'y'
   );
-  if (professorAge > MAXIMUM_AGE) {
-    throwInvalidDataNascimentoError(`Idade maior que ${MAXIMUM_AGE} anos.`);
+  if (professorAge > MAXIMUM_PROFESSOR_AGE) {
+    throwInvalidDataNascimentoError(
+      `Idade maior que ${MAXIMUM_PROFESSOR_AGE} anos.`
+    );
   }
 
   if (disciplinas && arrayHasDuplicatedValue(disciplinas))
@@ -129,8 +134,10 @@ export async function updateProfessorController(
     new Date(),
     'y'
   );
-  if (professorAge > MAXIMUM_AGE) {
-    throwInvalidDataNascimentoError(`Idade maior que ${MAXIMUM_AGE} anos.`);
+  if (professorAge > MAXIMUM_PROFESSOR_AGE) {
+    throwInvalidDataNascimentoError(
+      `Idade maior que ${MAXIMUM_PROFESSOR_AGE} anos.`
+    );
   }
 
   const [isProfessorId, professorTelefone, professorEmail] = await Promise.all([
@@ -301,7 +308,6 @@ export async function deleteMultiplesProfessorDisciplinaByProfessorController(
   return reply.send(professorDisciplinas);
 }
 
-// TODO: SEE WITH GPT HOW TO OPTIMIZE THIS CONTROLLER
 export async function createProfessorDisciplinaClasseAssociationController(
   request: FastifyRequest<{
     Params: professorParamsType;
@@ -312,17 +318,37 @@ export async function createProfessorDisciplinaClasseAssociationController(
   const { professorId } = request.params;
   const { classeId, disciplinaId, turmaId } = request.body;
 
+  const professor = await getProfessorId(professorId);
+
+  if (!professor) throwNotFoundProfessorIdError();
+
+  const [classe, disciplinaProfessor, turma] = await Promise.all([
+    getClasseAnoLectivoAndCursoById(classeId),
+    getDisciplinaProfessor(professorId, disciplinaId),
+    getTurmaByIdAndClasse(turmaId, classeId),
+  ]);
+
+  if (!classe) throwNotFoundClasseIdFieldError();
+
+  if (!classe!.AnoLectivo.activo)
+    throwNotFoundClasseIdFieldError(
+      'Classe não associada ao ano-lectivo activo.'
+    );
+
+  if (!disciplinaProfessor)
+    throwInvalidDisciplinaIdFieldError(
+      'Disciplina não associada ao professor.'
+    );
+
+  if (!turma) throwNotFoundTurmaIdFieldError('Turma não associada a classe.');
+
   const [
-    professor,
-    disciplinaProfessor,
-    classe,
-    turma,
+    totalProfessorDisciplinaClasse,
+    cursoDisciplina,
     professorDisciplinaClasse,
   ] = await Promise.all([
-    getProfessorId(professorId),
-    getDisciplinaProfessor(professorId, disciplinaId),
-    getClasseAndAnoLectivoActivoStatus(classeId),
-    getTurmaByIdAndClasse(turmaId, classeId),
+    getTotalProfessorDisciplina(professorId, classeId, turmaId),
+    getCursoDisciplina(classe!.Curso.id, disciplinaId),
     getProfessorDisciplinaClasseById(
       professorId,
       disciplinaId,
@@ -331,40 +357,18 @@ export async function createProfessorDisciplinaClasseAssociationController(
     ),
   ]);
 
-  if (!professor) throwNotFoundProfessorIdError();
-
-  if (!disciplinaProfessor) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Disciplina inválida',
-      errors: {
-        disciplinaId: ['Disciplina não associada ao professor.'],
-      },
-    });
-  }
-
-  if (!classe) throwNotFoundClasseIdFieldError();
-
-  if (!classe!.AnoLectivo.activo) {
+  if (totalProfessorDisciplinaClasse >= MAXIMUM_PROFESSOR_DISCIPLINA_CLASSE) {
     throw new BadRequest({
       statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Classe inválida.',
-      errors: {
-        // TODO: MAKE THIS ERROR MESSAGE BETTER
-        classeId: ['Classe *Passada.'],
-      },
+      message:
+        'Número máximo de disciplina que o professor pôde lecionar a classe atingido.',
     });
   }
 
-  if (!turma) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Turma inválida',
-      errors: {
-        turmaId: ['Turma não associada a classe.'],
-      },
-    });
-  }
+  if (!cursoDisciplina)
+    throwInvalidDisciplinaIdFieldError(
+      'Disciplina não associada ao curso associado a classe.'
+    );
 
   if (professorDisciplinaClasse) {
     throw new BadRequest({
@@ -380,7 +384,7 @@ export async function createProfessorDisciplinaClasseAssociationController(
     turmaId,
   });
 
-  // TODO: ADICIONAR LIMITE MÁXIMO PARA O Nº DE DISCIPLINA QUE UM PROFESSOR PÔDE LECIONAR EM UM CLASSE
-
-  return reply.send(newProfessorDisciplinaClasse);
+  return reply
+    .status(HttpStatusCodes.CREATED)
+    .send(newProfessorDisciplinaClasse);
 }
