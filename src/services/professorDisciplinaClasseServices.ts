@@ -24,3 +24,13 @@ export async function createProfessorDisciplinaClasse(
 ) {
   return await prisma.professorDisciplinaClasse.create({ data });
 }
+
+export async function getTotalProfessorDisciplina(
+  professorId: number,
+  classeId: number,
+  turmaId: number
+) {
+  return await prisma.professorDisciplinaClasse.count({
+    where: { professorId, classeId, turmaId },
+  });
+}
