@@ -41,11 +41,12 @@ import {
 import {
   MAXIMUM_PROFESSOR_AGE,
   MAXIMUM_PROFESSOR_DISCIPLINA_CLASSE,
+  throwNotFoundProfessorIdError,
 } from '../utils/controllers/professorControllerUtils';
 import { throwNotFoundTurmaIdFieldError } from '../utils/controllers/turmaControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import {
-  arrayHasDuplicatedValue,
+  arrayHasDuplicatedItems,
   calculateTimeBetweenDates,
   formatDate,
   isBeginDateAfterEndDate,
@@ -53,13 +54,6 @@ import {
   throwDuplicatedTelefoneError,
   throwInvalidDataNascimentoError,
 } from '../utils/utilsFunctions';
-
-function throwNotFoundProfessorIdError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'Professor não existe.',
-  });
-}
 
 export async function createProfessorController(
   request: FastifyRequest<{ Body: createProfessorBodyType }>,
@@ -79,13 +73,14 @@ export async function createProfessorController(
     new Date(),
     'y'
   );
+
   if (professorAge > MAXIMUM_PROFESSOR_AGE) {
     throwInvalidDataNascimentoError(
       `Idade maior que ${MAXIMUM_PROFESSOR_AGE} anos.`
     );
   }
 
-  if (disciplinas && arrayHasDuplicatedValue(disciplinas))
+  if (disciplinas && arrayHasDuplicatedItems(disciplinas))
     throwInvalidDisciplinasArrayError();
 
   const [isProfessorTelefone, isProfessorEmail] = await Promise.all([
@@ -97,18 +92,15 @@ export async function createProfessorController(
   if (isProfessorEmail) throwDuplicatedEmailError();
 
   if (disciplinas) {
-    disciplinas.forEach(async (disciplinaId, index) => {
-      const disciplina = await getDisciplinaId(disciplinaId);
-      if (!disciplina) {
-        throwNotFoundDisciplinaIdInArrayError(
-          index,
-          'ID da disciplina não existe.'
-        );
-      }
-    });
+    // TODO: Finish the verification before send the errors, to send all invalids disciplinas
+    for (let index = 0; index < disciplinas.length; index++) {
+      const disciplina = await getDisciplinaId(disciplinas[index]);
+      if (!disciplina)
+        throwNotFoundDisciplinaIdInArrayError(index, 'Disciplina não existe.');
+    }
   }
 
-  const professor = await createProfessor(request.body);
+  const professor = await createProfessor(data);
   return reply.status(HttpStatusCodes.CREATED).send(professor);
 }
 
@@ -134,6 +126,7 @@ export async function updateProfessorController(
     new Date(),
     'y'
   );
+
   if (professorAge > MAXIMUM_PROFESSOR_AGE) {
     throwInvalidDataNascimentoError(
       `Idade maior que ${MAXIMUM_PROFESSOR_AGE} anos.`
@@ -197,7 +190,7 @@ export async function getProfessoresController(
   });
 }
 
-export async function createMultiplesProfessorDisciplinaByProfessorController(
+export async function createMultiplesProfessorDisciplinaAssociationController(
   request: FastifyRequest<{
     Body: professorDisciplinaBodyType;
     Params: professorParamsType;
@@ -207,7 +200,7 @@ export async function createMultiplesProfessorDisciplinaByProfessorController(
   const { professorId } = request.params;
   const { disciplinas } = request.body;
 
-  if (arrayHasDuplicatedValue(disciplinas)) throwInvalidDisciplinasArrayError();
+  if (arrayHasDuplicatedItems(disciplinas)) throwInvalidDisciplinasArrayError();
 
   const isProfessorId = await getProfessorId(professorId);
 
@@ -268,7 +261,7 @@ export async function deleteProfessorDisciplinaController(
   return reply.send(professorDisciplina);
 }
 
-export async function deleteMultiplesProfessorDisciplinaByProfessorController(
+export async function deleteMultiplesProfessorDisciplinaAssociationController(
   request: FastifyRequest<{
     Body: professorDisciplinaBodyType;
     Params: professorParamsType;
@@ -278,11 +271,13 @@ export async function deleteMultiplesProfessorDisciplinaByProfessorController(
   const { professorId } = request.params;
   const { disciplinas } = request.body;
 
-  if (arrayHasDuplicatedValue(disciplinas)) throwInvalidDisciplinasArrayError();
+  if (arrayHasDuplicatedItems(disciplinas)) throwInvalidDisciplinasArrayError();
 
   const isProfessorId = await getProfessorId(professorId);
+
   if (!isProfessorId) throwNotFoundProfessorIdError();
 
+  // TODO: Finish the verification before send the errors, to send all invalids disciplinas
   for (let index = 0; index < disciplinas.length; index++) {
     const disciplinaId = disciplinas[index];
 
