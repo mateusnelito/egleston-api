@@ -8,12 +8,15 @@ export function throwDuplicatedTurmaError() {
   });
 }
 
-export function throwNotFoundTurmaIdFieldError() {
+export function throwNotFoundTurmaIdFieldError(
+  errorMessage = 'Turma não existe.',
+  statusCode = HttpStatusCodes.NOT_FOUND
+) {
   throw new BadRequest({
-    statusCode: HttpStatusCodes.NOT_FOUND,
+    statusCode,
     message: 'Turma inválida.',
     errors: {
-      turmaId: ['Turma não existe.'],
+      turmaId: [errorMessage],
     },
   });
 }

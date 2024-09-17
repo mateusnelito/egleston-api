@@ -15,12 +15,15 @@ export function throwDuplicatedClasseError() {
   });
 }
 
-export function throwNotFoundClasseIdFieldError() {
+export function throwNotFoundClasseIdFieldError(
+  errorMessage = 'Classe não existe.',
+  statusCode = HttpStatusCodes.NOT_FOUND
+) {
   throw new BadRequest({
-    statusCode: HttpStatusCodes.NOT_FOUND,
+    statusCode,
     message: 'Classe inválida.',
     errors: {
-      classeId: ['Classe não existe.'],
+      classeId: [errorMessage],
     },
   });
 }
