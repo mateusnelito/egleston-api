@@ -50,31 +50,32 @@ const professorParamsSchema = z.object({
     .positive({ message: 'O id do professor deve ser positivo.' }),
 });
 
+const disciplinaArraySchema = z
+  .array(
+    z
+      .number({
+        message: 'O array de disciplinas deve conter apenas números.',
+      })
+      .int({
+        message: 'O array de disciplinas deve conter apenas números inteiros.',
+      })
+      .positive({
+        message:
+          'O array de disciplinas deve conter apenas números inteiros positivos.',
+      }),
+    {
+      invalid_type_error:
+        'As disciplinas devem ser  enviadas no formato de array.',
+    }
+  )
+  .nonempty({ message: 'O array de disciplinas não deve estar vazio.' });
+
 export const createProfessorSchema = {
   summary: 'Adiciona um novo professor',
   tags: ['professores'],
   body: professorBodySchema.omit({ id: true }).extend({
     contacto: contactoSchema,
-    disciplinas: z
-      .array(
-        z
-          .number({
-            message: 'O array de disciplinas deve conter apenas números.',
-          })
-          .int({
-            message:
-              'O array de disciplinas deve conter apenas números inteiros.',
-          })
-          .positive({
-            message:
-              'O array de disciplinas deve conter apenas números inteiros positivos.',
-          }),
-        {
-          invalid_type_error:
-            'As disciplinas devem ser  enviadas no formato de array.',
-        }
-      )
-      .optional(),
+    disciplinas: disciplinaArraySchema.optional(),
   }),
   response: {
     201: professorBodySchema.extend({
@@ -135,43 +136,26 @@ const professorDisciplinaSchema = {
   tags: ['professores'],
   params: professorParamsSchema,
   body: z.object({
-    disciplinas: z
-      .array(
-        z
-          .number({
-            message: 'O array de disciplinas deve conter apenas números.',
-          })
-          .int({
-            message:
-              'O array de disciplinas deve conter apenas números inteiros.',
-          })
-          .positive({
-            message:
-              'O array de disciplinas deve conter apenas números inteiros positivos.',
-          }),
-        {
-          invalid_type_error:
-            'As disciplinas devem ser  enviadas no formato de array.',
-        }
-      )
-      .nonempty({ message: 'O array de disciplinas não deve estar vazio.' }),
+    disciplinas: disciplinaArraySchema,
   }),
   response: {
-    // TODO: MAKE THIS DYNAMIC
-    // 200: professorBodySchema.extend({
-    //   dataNascimento: z.string().date(),
-    //   disciplinas: z.number().int().positive(),
-    // }),
+    // TODO: ADD 200 HTTP RESPONSE DOC
     400: complexBadRequestSchema,
     404: complexBadRequestSchema,
   },
 };
 
-export const createMultiplesProfessorDisciplinaSchema = {
+export const createMultiplesProfessorDisciplinaAssociationSchema = {
   summary: 'Associa Múltiplas disciplinas à um professor',
   ...professorDisciplinaSchema,
 };
 
+export const deleteMultiplesProfessorDisciplinaAssociationSchema = {
+  summary: 'Deleta múltiplas disciplinas associadas à um professor',
+  ...professorDisciplinaSchema,
+};
+
+// FIXME: ISSO PODE EXISTIR?!
 export const deleteProfessorDisciplinaSchema = {
   summary: 'Remove associação entre professor e disciplina',
   tags: ['professores'],
@@ -187,11 +171,6 @@ export const deleteProfessorDisciplinaSchema = {
   response: {
     404: simpleBadRequestSchema,
   },
-};
-
-export const deleteMultiplesProfessorDisciplinaSchema = {
-  summary: 'Deleta múltiplas disciplinas associadas à um professor',
-  ...professorDisciplinaSchema,
 };
 
 export const createProfessorDisciplinaClasseAssociationSchema = {
@@ -241,7 +220,7 @@ export type getProfessoresQueryStringType = z.infer<
 >;
 
 export type professorDisciplinaBodyType = z.infer<
-  typeof createMultiplesProfessorDisciplinaSchema.body
+  typeof createMultiplesProfessorDisciplinaAssociationSchema.body
 >;
 
 export type deleteProfessorDisciplinaParamsType = z.infer<

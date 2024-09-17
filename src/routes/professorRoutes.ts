@@ -1,20 +1,20 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
-  createMultiplesProfessorDisciplinaByProfessorController,
+  createMultiplesProfessorDisciplinaAssociationController,
   createProfessorController,
   createProfessorDisciplinaClasseAssociationController,
-  deleteMultiplesProfessorDisciplinaByProfessorController,
+  deleteMultiplesProfessorDisciplinaAssociationController,
   deleteProfessorDisciplinaController,
   getProfessorController,
   getProfessoresController,
   updateProfessorController,
 } from '../controllers/professorController';
 import {
-  createMultiplesProfessorDisciplinaSchema,
+  createMultiplesProfessorDisciplinaAssociationSchema,
   createProfessorDisciplinaClasseAssociationSchema,
   createProfessorSchema,
-  deleteMultiplesProfessorDisciplinaSchema,
+  deleteMultiplesProfessorDisciplinaAssociationSchema,
   deleteProfessorDisciplinaSchema,
   getProfessorSchema,
   getProfessoresSchema,
@@ -50,8 +50,8 @@ const professoresRoutes: FastifyPluginAsync = async (
 
   // POST MULTIPLES disciplinas TO ONE Professor
   server.withTypeProvider<ZodTypeProvider>().post('/:professorId/disciplinas', {
-    schema: createMultiplesProfessorDisciplinaSchema,
-    handler: createMultiplesProfessorDisciplinaByProfessorController,
+    schema: createMultiplesProfessorDisciplinaAssociationSchema,
+    handler: createMultiplesProfessorDisciplinaAssociationController,
   });
 
   // DELETE ASSOCIATION BETWEEN PROFESSOR AND DISCIPLINA
@@ -66,8 +66,8 @@ const professoresRoutes: FastifyPluginAsync = async (
   server
     .withTypeProvider<ZodTypeProvider>()
     .delete('/:professorId/disciplinas', {
-      schema: deleteMultiplesProfessorDisciplinaSchema,
-      handler: deleteMultiplesProfessorDisciplinaByProfessorController,
+      schema: deleteMultiplesProfessorDisciplinaAssociationSchema,
+      handler: deleteMultiplesProfessorDisciplinaAssociationController,
     });
 
   server.withTypeProvider<ZodTypeProvider>().post('/:professorId/classes', {
