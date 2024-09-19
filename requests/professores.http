@@ -51,3 +51,16 @@ Content-Type: application/json
 {
     "disciplinas": [1]
 }
+
+### Create association between professor and classe
+POST http://localhost:8000/api/professores/2/classes
+Content-Type: application/json
+
+{
+  "disciplinaId": 3,
+  "classeId": 2,
+  "turmaId": 2
+}
+
+### Get classes associated with professor
+GET http://localhost:8000/api/professores/1/classes
