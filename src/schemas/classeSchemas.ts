@@ -128,6 +128,18 @@ export const getClasseAlunosSchema = {
   },
 };
 
+export const getClasseDisciplinasSchema = {
+  summary: 'Retorna todas as disciplinas lecionadas na classe',
+  tags: ['classes'],
+  params: classeParamsSchema,
+  response: {
+    200: z.object({
+      data: z.array(z.object({ id: z.number(), nome: z.string() })),
+    }),
+    404: simpleBadRequestSchema,
+  },
+};
+
 export type createClasseBodyType = z.infer<typeof createClasseSchema.body>;
 export type updateClasseBodyType = z.infer<typeof updateClasseSchema.body>;
 export type classeParamsType = z.infer<typeof classeParamsSchema>;
