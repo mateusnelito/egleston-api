@@ -33,6 +33,7 @@ import { throwDuplicatedTurmaError } from '../utils/controllers/turmaControllerU
 import { throwNotFoundTurnoIdFieldError } from '../utils/controllers/turnoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { getAlunosMatriculaByClasse } from '../services/matriculaServices';
+import { getClasseDisciplinas } from '../services/professorDisciplinaClasseServices';
 
 export async function createClasseController(
   request: FastifyRequest<{ Body: createClasseBodyType }>,
@@ -145,6 +146,21 @@ export async function getClasseAlunosController(
   if (!isClasseId) throwNotFoundClasseIdError();
 
   return reply.send(await getAlunosMatriculaByClasse(classeId, turmaId));
+}
+
+export async function getClasseDisciplinasController(
+  request: FastifyRequest<{
+    Params: classeParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { classeId } = request.params;
+
+  const isClasseId = await getClasseId(classeId);
+
+  if (!isClasseId) throwNotFoundClasseIdError();
+
+  return reply.send(await getClasseDisciplinas(classeId));
 }
 
 export async function createTurmaInClasseController(
