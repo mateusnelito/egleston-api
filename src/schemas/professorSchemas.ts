@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { number, z } from 'zod';
 import { fullNameRegEx } from '../utils/regexPatterns';
 import { contactoSchema } from './contactoSchema';
 import {
@@ -201,6 +201,28 @@ export const createProfessorDisciplinaClasseAssociationSchema = {
       .positive({ message: 'O id da turma deve ser positivo.' }),
   }),
   response: {
+    400: simpleBadRequestSchema,
+    404: simpleBadRequestSchema,
+  },
+};
+
+export const getProfessorDisciplinaClassesAssociationSchema = {
+  summary: 'Retorna as classes em que o professor leciona no ano letivo atual',
+  tags: ['professores'],
+  params: professorParamsSchema,
+  response: {
+    200: z.object({
+      data: z.array(
+        z.object({
+          id: z.number(),
+          nome: z.string(),
+          curso: z.object({
+            id: z.number(),
+            nome: z.string(),
+          }),
+        })
+      ),
+    }),
     400: simpleBadRequestSchema,
     404: simpleBadRequestSchema,
   },
