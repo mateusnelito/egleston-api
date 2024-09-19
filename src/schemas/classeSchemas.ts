@@ -110,6 +110,16 @@ export const getClasseAlunosSchema = {
   summary: 'Retorna todas os alunos de uma classe',
   tags: ['classes'],
   params: classeParamsSchema,
+  querystring: z.object({
+    turmaId: z.coerce
+      .number({
+        required_error: 'O id da turma é obrigatório.',
+        invalid_type_error: 'O id da turma deve ser número.',
+      })
+      .int({ message: 'O id da turma deve ser inteiro.' })
+      .positive({ message: 'O id da turma deve ser positivo.' })
+      .optional(),
+  }),
   response: {
     200: z.object({
       data: z.array(z.object({ id: z.number(), nomeCompleto: z.string() })),
@@ -123,4 +133,8 @@ export type updateClasseBodyType = z.infer<typeof updateClasseSchema.body>;
 export type classeParamsType = z.infer<typeof classeParamsSchema>;
 export type createTurmaToClasseBodyType = z.infer<
   typeof createTurmaToClasseSchema.body
+>;
+
+export type getClasseAlunosQueryStringType = z.infer<
+  typeof getClasseAlunosSchema.querystring
 >;
