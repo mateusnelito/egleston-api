@@ -7,6 +7,7 @@ import {
   deleteMultiplesProfessorDisciplinaAssociationController,
   deleteProfessorDisciplinaController,
   getProfessorController,
+  getProfessorDisciplinaAssociationsController,
   getProfessorDisciplinaClassesAssociationController,
   getProfessoresController,
   updateProfessorController,
@@ -17,6 +18,7 @@ import {
   createProfessorSchema,
   deleteMultiplesProfessorDisciplinaAssociationSchema,
   deleteProfessorDisciplinaSchema,
+  getProfessorDisciplinaAssociationsSchema,
   getProfessorDisciplinaClassesAssociationSchema,
   getProfessorSchema,
   getProfessoresSchema,
@@ -48,6 +50,12 @@ const professoresRoutes: FastifyPluginAsync = async (
   server.withTypeProvider<ZodTypeProvider>().get('/', {
     schema: getProfessoresSchema,
     handler: getProfessoresController,
+  });
+
+  // GET ---
+  server.withTypeProvider<ZodTypeProvider>().get('/:professorId/disciplinas', {
+    schema: getProfessorDisciplinaAssociationsSchema,
+    handler: getProfessorDisciplinaAssociationsController,
   });
 
   // POST MULTIPLES disciplinas TO ONE Professor
