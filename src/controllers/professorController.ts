@@ -16,6 +16,7 @@ import {
   deleteDisciplinaProfessor,
   deleteMultiplesDisciplinaProfessorByProfessor,
   getDisciplinaProfessor,
+  getProfessorDisciplinas,
 } from '../services/disciplinasProfessoresServices';
 import { getEmail, getTelefone } from '../services/professorContactoServices';
 import {
@@ -192,6 +193,20 @@ export async function getProfessoresController(
     data,
     next_cursor,
   });
+}
+
+export async function getProfessorDisciplinaAssociationsController(
+  request: FastifyRequest<{
+    Params: professorParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { professorId } = request.params;
+  const professor = await getProfessorId(professorId);
+
+  if (!professor) throw throwNotFoundProfessorIdError();
+
+  return reply.send(await getProfessorDisciplinas(professorId));
 }
 
 export async function createMultiplesProfessorDisciplinaAssociationController(
