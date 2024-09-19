@@ -20,6 +20,8 @@ import {
 import { getEmail, getTelefone } from '../services/professorContactoServices';
 import {
   createProfessorDisciplinaClasse,
+  getDisciplinaClasse,
+  getProfessorClasses,
   getProfessorDisciplinaClasseById,
   getTotalProfessorDisciplina,
 } from '../services/professorDisciplinaClasseServices';
@@ -99,6 +101,8 @@ export async function createProfessorController(
         throwNotFoundDisciplinaIdInArrayError(index, 'Disciplina não existe.');
     }
   }
+
+  // TODO: VERIFICAR SE A DISCIPLINA PRETENDIDA PARA A CLASSE JÁ ESTÁ SENDO LECIONADA POR OUTRO PROFESSOR
 
   const professor = await createProfessor(data);
   return reply.status(HttpStatusCodes.CREATED).send(professor);
@@ -338,10 +342,12 @@ export async function createProfessorDisciplinaClasseAssociationController(
   if (!turma) throwNotFoundTurmaIdFieldError('Turma não associada a classe.');
 
   const [
+    disciplinaClasse,
     totalProfessorDisciplinaClasse,
     cursoDisciplina,
     professorDisciplinaClasse,
   ] = await Promise.all([
+    getDisciplinaClasse(disciplinaId, classeId, turmaId),
     getTotalProfessorDisciplina(professorId, classeId, turmaId),
     getCursoDisciplina(classe!.Curso.id, disciplinaId),
     getProfessorDisciplinaClasseById(
@@ -351,6 +357,12 @@ export async function createProfessorDisciplinaClasseAssociationController(
       turmaId
     ),
   ]);
+
+  if (disciplinaClasse)
+    throwInvalidDisciplinaIdFieldError(
+      'Disciplina já associada a outro professor.',
+      HttpStatusCodes.BAD_REQUEST
+    );
 
   if (totalProfessorDisciplinaClasse >= MAXIMUM_PROFESSOR_DISCIPLINA_CLASSE) {
     throw new BadRequest({
@@ -382,4 +394,20 @@ export async function createProfessorDisciplinaClasseAssociationController(
   return reply
     .status(HttpStatusCodes.CREATED)
     .send(newProfessorDisciplinaClasse);
+}
+
+export async function getProfessorDisciplinaClassesAssociationController(
+  request: FastifyRequest<{
+    Params: professorParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { professorId } = request.params;
+  const professor = await getProfessorId(professorId);
+
+  if (!professor) throw throwNotFoundProfessorIdError();
+
+  const professorClasses = await getProfessorClasses(professorId);
+
+  return reply.send(professorClasses);
 }
