@@ -64,3 +64,6 @@ Content-Type: application/json
 
 ### Get classes associated with professor
 GET http://localhost:8000/api/professores/1/classes
+
+### Get associated disciplinas with professor
+GET http://localhost:8000/api/professores/1/disciplinas
