@@ -106,6 +106,18 @@ export const createTurmaToClasseSchema = {
   },
 };
 
+export const getClasseAlunosSchema = {
+  summary: 'Retorna todas os alunos de uma classe',
+  tags: ['classes'],
+  params: classeParamsSchema,
+  response: {
+    200: z.object({
+      data: z.array(z.object({ id: z.number(), nomeCompleto: z.string() })),
+    }),
+    404: simpleBadRequestSchema,
+  },
+};
+
 export type createClasseBodyType = z.infer<typeof createClasseSchema.body>;
 export type updateClasseBodyType = z.infer<typeof updateClasseSchema.body>;
 export type classeParamsType = z.infer<typeof classeParamsSchema>;
