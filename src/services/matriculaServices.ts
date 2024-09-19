@@ -175,9 +175,14 @@ export async function getMatriculaIdById(id: number) {
 }
 
 // TODO: ADD CURSOR-BASED PAGINATION
-export async function getAlunosMatriculaByClasse(classeId: number) {
+export async function getAlunosMatriculaByClasse(
+  classeId: number,
+  turmaId?: number
+) {
+  const whereClause = turmaId ? { classeId, turmaId } : { classeId };
+
   const alunoMatriculas = await prisma.matricula.findMany({
-    where: { classeId },
+    where: whereClause,
     select: {
       Aluno: {
         select: { id: true, nomeCompleto: true },
