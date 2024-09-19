@@ -88,3 +88,21 @@ export async function getDisciplinaClasse(
     select: { professorId: true },
   });
 }
+
+export async function getClasseDisciplinas(classeId: number) {
+  const classeDisciplinas = await prisma.professorDisciplinaClasse.findMany({
+    where: { classeId },
+    // TODO: THINK IF IS CORRECT RETURN THIS WAY OR USE turmaId TO CATEGORIZE
+    distinct: ['disciplinaId'],
+    select: { Disciplina: { select: { id: true, nome: true } } },
+  });
+
+  return {
+    data: classeDisciplinas.map(({ Disciplina: disciplina }) => {
+      return {
+        id: disciplina.id,
+        nome: disciplina.nome,
+      };
+    }),
+  };
+}
