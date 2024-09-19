@@ -7,6 +7,7 @@ import {
   deleteMultiplesProfessorDisciplinaAssociationController,
   deleteProfessorDisciplinaController,
   getProfessorController,
+  getProfessorDisciplinaClassesAssociationController,
   getProfessoresController,
   updateProfessorController,
 } from '../controllers/professorController';
@@ -16,6 +17,7 @@ import {
   createProfessorSchema,
   deleteMultiplesProfessorDisciplinaAssociationSchema,
   deleteProfessorDisciplinaSchema,
+  getProfessorDisciplinaClassesAssociationSchema,
   getProfessorSchema,
   getProfessoresSchema,
   updateProfessorSchema,
@@ -70,9 +72,16 @@ const professoresRoutes: FastifyPluginAsync = async (
       handler: deleteMultiplesProfessorDisciplinaAssociationController,
     });
 
+  // POST
   server.withTypeProvider<ZodTypeProvider>().post('/:professorId/classes', {
     schema: createProfessorDisciplinaClasseAssociationSchema,
     handler: createProfessorDisciplinaClasseAssociationController,
+  });
+
+  // GET
+  server.withTypeProvider<ZodTypeProvider>().get('/:professorId/classes', {
+    schema: getProfessorDisciplinaClassesAssociationSchema,
+    handler: getProfessorDisciplinaClassesAssociationController,
   });
 };
 
