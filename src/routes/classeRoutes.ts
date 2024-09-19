@@ -5,6 +5,7 @@ import {
   createTurmaInClasseController,
   getClasseAlunosController,
   getClasseController,
+  getClasseDisciplinasController,
   getClasseTurmasController,
   updateClasseController,
 } from '../controllers/classeController';
@@ -12,6 +13,7 @@ import {
   createClasseSchema,
   createTurmaToClasseSchema,
   getClasseAlunosSchema,
+  getClasseDisciplinasSchema,
   getClasseSchema,
   getClasseTurmasSchema,
   updateClasseSchema,
@@ -48,6 +50,12 @@ export const classeRoutes: FastifyPluginAsync = async (
   server.withTypeProvider<ZodTypeProvider>().get('/:classeId/alunos', {
     schema: getClasseAlunosSchema,
     handler: getClasseAlunosController,
+  });
+
+  // GET Classe Disciplinas
+  server.withTypeProvider<ZodTypeProvider>().get('/:classeId/disciplinas', {
+    schema: getClasseDisciplinasSchema,
+    handler: getClasseDisciplinasController,
   });
 
   // POST Turma
