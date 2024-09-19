@@ -31,6 +31,7 @@ import { throwNotFoundSalaIdFieldError } from '../utils/controllers/salaControll
 import { throwDuplicatedTurmaError } from '../utils/controllers/turmaControllerUtils';
 import { throwNotFoundTurnoIdFieldError } from '../utils/controllers/turnoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
+import { getAlunosMatriculaByClasse } from '../services/matriculaServices';
 
 export async function createClasseController(
   request: FastifyRequest<{ Body: createClasseBodyType }>,
@@ -126,6 +127,18 @@ export async function getClasseTurmasController(
 
   const turmas = await getTurmasByClasse(classeId);
   return reply.send(turmas);
+}
+
+export async function getClasseAlunosController(
+  request: FastifyRequest<{ Params: classeParamsType }>,
+  reply: FastifyReply
+) {
+  const { classeId } = request.params;
+  const isClasseId = await getClasseId(classeId);
+
+  if (!isClasseId) throwNotFoundClasseIdError();
+
+  return reply.send(await getAlunosMatriculaByClasse(classeId));
 }
 
 export async function createTurmaInClasseController(
