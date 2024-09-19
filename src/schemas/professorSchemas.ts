@@ -145,6 +145,23 @@ const professorDisciplinaSchema = {
   },
 };
 
+export const getProfessorDisciplinaAssociationsSchema = {
+  tags: ['professores'],
+  summary: 'Retorna todas as disciplinas associadas ao professor',
+  params: professorParamsSchema,
+  response: {
+    200: z.object({
+      data: z.array(
+        z.object({
+          id: z.number(),
+          nome: z.string(),
+        })
+      ),
+    }),
+    404: simpleBadRequestSchema,
+  },
+};
+
 export const createMultiplesProfessorDisciplinaAssociationSchema = {
   summary: 'Associa Múltiplas disciplinas à um professor',
   ...professorDisciplinaSchema,
