@@ -3,6 +3,7 @@ import {
   classeParamsType,
   createClasseBodyType,
   createTurmaToClasseBodyType,
+  getClasseAlunosQueryStringType,
   updateClasseBodyType,
 } from '../schemas/classeSchemas';
 import { getAnoLectivoActivo } from '../services/anoLectivoServices';
@@ -130,15 +131,20 @@ export async function getClasseTurmasController(
 }
 
 export async function getClasseAlunosController(
-  request: FastifyRequest<{ Params: classeParamsType }>,
+  request: FastifyRequest<{
+    Params: classeParamsType;
+    Querystring: getClasseAlunosQueryStringType;
+  }>,
   reply: FastifyReply
 ) {
   const { classeId } = request.params;
+  const { turmaId } = request.query;
+
   const isClasseId = await getClasseId(classeId);
 
   if (!isClasseId) throwNotFoundClasseIdError();
 
-  return reply.send(await getAlunosMatriculaByClasse(classeId));
+  return reply.send(await getAlunosMatriculaByClasse(classeId, turmaId));
 }
 
 export async function createTurmaInClasseController(
