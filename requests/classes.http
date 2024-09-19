@@ -24,6 +24,9 @@ GET http://localhost:8000/api/classes/1
 ### Get Classe Turmas
 GET http://localhost:8000/api/classes/1/turmas
 
+### Get Classe Alunos
+GET http://localhost:8000/api/classes/3/alunos
+
 ### Create Turma in Classe
 POST http://localhost:8000/api/classes/1/turmas
 Content-Type: application/json
