@@ -10,6 +10,28 @@ export async function getDisciplinaProfessor(
   });
 }
 
+export async function getProfessorDisciplinas(professorId: number) {
+  const professorDisciplinas = await prisma.disciplinasProfessores.findMany({
+    where: { professorId },
+    select: {
+      Disciplina: {
+        select: {
+          id: true,
+          nome: true,
+        },
+      },
+    },
+  });
+  return {
+    data: professorDisciplinas.map(({ Disciplina: disciplina }) => {
+      return {
+        id: disciplina.id,
+        nome: disciplina.nome,
+      };
+    }),
+  };
+}
+
 export async function createMultiplesDisciplinaProfessorByProfessor(
   professorId: number,
   disciplinas: Array<number>
