@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
 import BadRequest from './BadRequest';
 import HttpStatusCodes from './HttpStatusCodes';
 
@@ -9,6 +10,15 @@ export function formatDate(date: Date): String {
 
 export function isBeginDateAfterEndDate(begin: Date, end: Date): boolean {
   return dayjs(begin).isAfter(dayjs(end));
+}
+
+export function isDateBetweenDateIntervals(
+  date: Date,
+  begin: Date,
+  end: Date
+): boolean {
+  dayjs.extend(isBetween);
+  return dayjs(date).isBetween(begin, end);
 }
 
 export function calculateTimeBetweenDates(
