@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma';
-import { createAlunoMatriculaBodyType } from '../schemas/alunoSchemas';
+import { createMatriculaToAlunoBodyType } from '../schemas/alunoSchemas';
 import { formatDate } from '../utils/utilsFunctions';
 
 export async function getMatriculasByAlunoId(alunoId: number) {
@@ -41,17 +41,18 @@ export async function getMatriculasByAlunoId(alunoId: number) {
   };
 }
 
-export async function createMatricula(
+export async function createMatriculaByAluno(
   anoLectivoId: number,
   alunoId: number,
-  data: createAlunoMatriculaBodyType
+  cursoId: number,
+  data: createMatriculaToAlunoBodyType
 ) {
   return await prisma.$transaction(async (transaction) => {
     const matricula = await transaction.matricula.create({
       data: {
         alunoId,
         classeId: data.classeId,
-        cursoId: data.cursoId,
+        cursoId,
         turmaId: data.turmaId,
         turnoId: data.turnoId,
         anoLectivoId,
@@ -198,4 +199,12 @@ export async function getAlunosMatriculaByClasse(
       };
     }),
   };
+}
+
+export async function getLastAlunoMatriculaCurso(alunoId: number) {
+  return await prisma.matricula.findFirst({
+    where: { alunoId },
+    select: { cursoId: true },
+    orderBy: { id: 'desc' },
+  });
 }
