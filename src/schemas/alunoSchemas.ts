@@ -184,10 +184,6 @@ export const createAlunoResponsavelSchema = {
   body: createResponsavelBodySchema,
   response: {
     // TODO: SEND A BETTER RESPONSE
-    // 201: z.object({
-    //   id: z.number().int().positive(),
-    //   nomeCompleto: z.string(),
-    // }),
     400: complexBadRequestSchema,
     404: simpleBadRequestSchema,
   },
@@ -227,13 +223,6 @@ export const createAlunoMatriculaSchema = {
       })
       .int({ message: 'O id da classe deve ser inteiro.' })
       .positive({ message: 'O id da classe deve ser positivo.' }),
-    cursoId: z
-      .number({
-        required_error: 'O id de curso é obrigatório.',
-        invalid_type_error: 'O id de curso deve ser número.',
-      })
-      .int({ message: 'O id de curso deve ser inteiro.' })
-      .positive({ message: 'O id de curso deve ser positivo.' }),
     turmaId: z
       .number({
         required_error: 'O id da turma é obrigatório.',
