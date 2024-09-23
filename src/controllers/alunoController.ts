@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import PdfPrinter from 'pdfmake';
 import {
   alunoParamsType,
-  createAlunoMatriculaBodyType,
+  createMatriculaToAlunoBodyType,
   getAlunosQueryStringType,
   updateAlunoBodyType,
 } from '../schemas/alunoSchemas';
@@ -19,7 +19,8 @@ import {
   updateAluno,
 } from '../services/alunoServices';
 import {
-  createMatricula,
+  createMatriculaByAluno,
+  getLastAlunoMatriculaCurso,
   getMatriculaByUniqueKey,
   getMatriculasByAlunoId,
 } from '../services/matriculaServices';
@@ -199,24 +200,21 @@ export async function getAlunoMatriculasController(
   return reply.send(alunoMatriculas);
 }
 
-// TODO: RENAME TO OTHER NAME, TO AVOID CONFLICT
-export async function createAlunoMatriculaController(
+export async function createMatriculaToAlunoController(
   request: FastifyRequest<{
     Params: alunoParamsType;
-    Body: createAlunoMatriculaBodyType;
+    Body: createMatriculaToAlunoBodyType;
   }>,
   reply: FastifyReply
 ) {
   const { alunoId } = request.params;
-  const { classeId, cursoId, turmaId, turnoId, metodoPagamentoId } =
-    request.body;
+  const { classeId, turmaId, turnoId, metodoPagamentoId } = request.body;
   const isAlunoId = await getAlunoId(alunoId);
 
   if (!isAlunoId) throwNotFoundAlunoIdError();
 
   await validateMatriculaData({
     classeId,
-    cursoId,
     turmaId,
     turnoId,
     metodoPagamentoId,
@@ -234,9 +232,12 @@ export async function createAlunoMatriculaController(
 
   if (isMatriculaId) throwDuplicatedMatriculaError();
 
-  const matricula = await createMatricula(
+  const alunoMatriculaLastCurso = await getLastAlunoMatriculaCurso(alunoId);
+
+  const matricula = await createMatriculaByAluno(
     activeAnoLectivo!.id,
     alunoId,
+    alunoMatriculaLastCurso!.cursoId,
     request.body
   );
 
