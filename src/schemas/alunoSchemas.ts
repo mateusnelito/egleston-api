@@ -209,8 +209,7 @@ export const getAlunoMatriculasSchema = {
   },
 };
 
-// TODO: RENAME TO OTHER NAME, TO AVOID CONFLICT
-export const createAlunoMatriculaSchema = {
+export const createMatriculaToAlunoSchema = {
   summary: 'Cria uma matrícula para o aluno',
   tags: ['alunos'],
   params: alunoParamsSchema,
@@ -258,6 +257,6 @@ export type alunoParamsType = z.infer<typeof alunoParamsSchema>;
 export type getAlunosQueryStringType = z.infer<
   typeof getAlunosSchema.querystring
 >;
-export type createAlunoMatriculaBodyType = z.infer<
-  typeof createAlunoMatriculaSchema.body
+export type createMatriculaToAlunoBodyType = z.infer<
+  typeof createMatriculaToAlunoSchema.body
 >;
