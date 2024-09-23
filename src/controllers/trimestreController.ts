@@ -19,6 +19,7 @@ import {
   throwDuplicatedTrimestreError,
   throwInvalidTrimestreDurationError,
   throwInvalidTrimestreInicioError,
+  throwInvalidTrimestreTerminoError,
   throwMinimumAnoLectivoReachedError,
   throwNotFoundTrimestreIdError,
 } from '../utils/controllers/trimestreControllerUtils';
@@ -26,6 +27,7 @@ import HttpStatusCodes from '../utils/HttpStatusCodes';
 import {
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
+  isDateBetweenDateIntervals,
 } from '../utils/utilsFunctions';
 
 export async function createTrimestreController(
@@ -43,6 +45,28 @@ export async function createTrimestreController(
   const activeAnoLectivo = await getAnoLectivoActivo(true);
 
   if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
+
+  if (
+    !isDateBetweenDateIntervals(
+      inicio,
+      activeAnoLectivo!.inicio,
+      activeAnoLectivo!.termino
+    )
+  ) {
+    throwInvalidTrimestreInicioError(
+      'O inicio do trimestre deve estar dentro da duração do ano-lectivo.'
+    );
+  }
+
+  if (
+    !isDateBetweenDateIntervals(
+      termino,
+      activeAnoLectivo!.inicio,
+      activeAnoLectivo!.termino
+    )
+  ) {
+    throwInvalidTrimestreTerminoError();
+  }
 
   const [trimestre, totalAnoLectivoTrimestre, lastAnoLectivoTrimestre] =
     await Promise.all([
