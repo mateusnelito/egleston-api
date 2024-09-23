@@ -13,13 +13,25 @@ export function throwMinimumAnoLectivoReachedError() {
   });
 }
 
-export function throwInvalidTrimestreInicioError() {
+export function throwInvalidTrimestreInicioError(
+  message = 'O inicio do trimestre não pôde ser anterior ao término do último trimestre.'
+) {
   throw new BadRequest({
     statusCode: HttpStatusCodes.BAD_REQUEST,
     message: 'Inicio de trimestre inválido.',
     errors: {
-      inicio: [
-        'O inicio do trimestre não pôde ser anterior ao término do trimestre anterior.',
+      inicio: [message],
+    },
+  });
+}
+
+export function throwInvalidTrimestreTerminoError() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Termino de trimestre inválido.',
+    errors: {
+      termino: [
+        'O termino do trimestre deve estar dentro da duração do ano-lectivo.',
       ],
     },
   });
