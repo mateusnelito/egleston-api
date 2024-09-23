@@ -19,14 +19,14 @@ export async function validateMatriculaData(
   const [classe, isCursoId, isTurmaId, isTurnoId, isMetodoPagamentoId] =
     await Promise.all([
       getClasseId(classeId),
-      getCursoId(cursoId),
+      cursoId ? getCursoId(cursoId) : null,
       getTurmaId(turmaId),
       getTurnoId(turnoId),
       getMetodoPagamentoById(metodoPagamentoId),
     ]);
 
   if (!classe) throwNotFoundClasseIdFieldError();
-  if (!isCursoId) throwNotFoundCursoIdFieldError();
+  if (cursoId && !isCursoId) throwNotFoundCursoIdFieldError();
   if (!isTurmaId) throwNotFoundTurmaIdFieldError();
   if (!isTurnoId) throwNotFoundTurnoIdFieldError();
   if (!isMetodoPagamentoId) throwNotFoundMetodoPagamentoIdFieldError();
