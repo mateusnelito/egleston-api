@@ -29,6 +29,7 @@ model Aluno {
   Responsaveis    Responsavel[]
   Matricula       Matricula[]
   Pagamento       Pagamento[]
+  AlunoNota       Nota[]
 
   @@map("alunos")
   @@schema("cadastro")
@@ -153,6 +154,7 @@ model Disciplina {
   CursosDisciplinas         CursosDisciplinas[]
   DisciplinasProfessores    DisciplinasProfessores[]
   ProfessorDisciplinaClasse ProfessorDisciplinaClasse[]
+  AlunoNota                 Nota[]
 
   @@map("disciplinas")
   @@schema("cadastro")
@@ -219,6 +221,7 @@ model Trimestre {
   numero       Int        @db.SmallInt
   inicio       DateTime   @db.Date
   termino      DateTime   @db.Date
+  AlunoNota    Nota[]
 
   @@unique([anoLectivoId, numero])
   @@map("trimestres")
@@ -236,6 +239,7 @@ model Classe {
   Turma                     Turma[]
   Matricula                 Matricula[]
   ProfessorDisciplinaClasse ProfessorDisciplinaClasse[]
+  AlunoNota                 Nota[]
 
   @@unique([nome, anoLectivoId, cursoId])
   @@map("classes")
@@ -337,4 +341,21 @@ model MetodoPagamento {
 
   @@map("metodos_pagamento")
   @@schema("financeiro")
+}
+
+model Nota {
+  alunoId      Int     @map("aluno_id")
+  classeId     Int     @map("classe_id")
+  disciplinaId Int     @map("disciplina_id")
+  trimestreId  Int     @map("trimestre_id")
+  nota         Decimal @db.Decimal(3, 1)
+
+  Aluno      Aluno      @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  Classe     Classe     @relation(fields: [classeId], references: [id], onDelete: Cascade)
+  Disciplina Disciplina @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+  Trimestre  Trimestre  @relation(fields: [trimestreId], references: [id], onDelete: Cascade)
+
+  @@id([alunoId, classeId, disciplinaId, trimestreId])
+  @@map("notas")
+  @@schema("academico")
 }
