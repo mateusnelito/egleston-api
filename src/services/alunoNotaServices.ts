@@ -1,4 +1,6 @@
+import { prisma } from '../lib/prisma';
 import { createAlunoNotaBodyType } from '../schemas/alunoSchemas';
+import { notaDataType } from '../schemas/notaSchema';
 import { throwNotFoundClasseIdFieldError } from '../utils/controllers/classeControllerUtils';
 import { throwInvalidDisciplinaIdFieldError } from '../utils/controllers/disciplinaControllerUtils';
 import { throwInvalidTrimestreIdFieldError } from '../utils/controllers/trimestreControllerUtils';
@@ -20,4 +22,11 @@ export async function validateAlunoNotaData(data: createAlunoNotaBodyType) {
   if (!disciplina) throwInvalidDisciplinaIdFieldError('Disciplina não existe');
 
   if (!trimestre) throwInvalidTrimestreIdFieldError();
+}
+
+export async function getAlunoNotaByUniqueId(data: notaDataType) {
+  return await prisma.nota.findUnique({
+    where: { alunoId_classeId_disciplinaId_trimestreId: data },
+    select: { nota: true },
+  });
 }
