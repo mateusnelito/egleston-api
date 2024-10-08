@@ -2,6 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import PdfPrinter from 'pdfmake';
 import {
   alunoParamsType,
+  createAlunoNotaBodyType,
   createMatriculaToAlunoBodyType,
   getAlunosQueryStringType,
   updateAlunoBodyType,
@@ -12,12 +13,18 @@ import {
   getAlunoTelefone,
 } from '../services/alunoContactoServices';
 import {
+  createAlunoNota,
+  getAlunoNotaByUniqueId,
+  validateAlunoNotaData,
+} from '../services/alunoNotaServices';
+import {
   getAluno,
   getAlunoId,
   getAlunoResponsaveis,
   getAlunos,
   updateAluno,
 } from '../services/alunoServices';
+import { getAnoLectivoActivo } from '../services/anoLectivoServices';
 import {
   createMatriculaByAluno,
   getLastAlunoMatriculaCurso,
@@ -38,8 +45,11 @@ import BadRequest from '../utils/BadRequest';
 import {
   MINIMUM_ALUNO_AGE,
   MINIMUM_ALUNO_RESPONSAVEIS,
+  throwDuplicatedAlunoNotaError,
   throwNotFoundAlunoIdError,
 } from '../utils/controllers/alunoControllerUtils';
+import { throwActiveAnoLectivoNotFoundError } from '../utils/controllers/anoLectivoControllerUtils';
+import { throwDuplicatedMatriculaError } from '../utils/controllers/matriculaControllerUtils';
 import { throwNotFoundParentescoIdFieldError } from '../utils/controllers/parentescoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
@@ -50,9 +60,6 @@ import {
   throwDuplicatedTelefoneError,
   throwInvalidDataNascimentoError,
 } from '../utils/utilsFunctions';
-import { getAnoLectivoActivo } from '../services/anoLectivoServices';
-import { throwActiveAnoLectivoNotFoundError } from '../utils/controllers/anoLectivoControllerUtils';
-import { throwDuplicatedMatriculaError } from '../utils/controllers/matriculaControllerUtils';
 
 export async function updateAlunoController(
   request: FastifyRequest<{
@@ -254,4 +261,28 @@ export async function createMatriculaToAlunoController(
 
   // TODO: SET THE FILE NAME BEFORE SEND
   return reply;
+}
+
+export async function createAlunoNotaController(
+  request: FastifyRequest<{
+    Params: alunoParamsType;
+    Body: createAlunoNotaBodyType;
+  }>,
+  reply: FastifyReply
+) {
+  const { alunoId } = request.params;
+  const { body: data } = request;
+  const isAlunoId = await getAlunoId(alunoId);
+
+  if (!isAlunoId) throwNotFoundAlunoIdError();
+
+  await validateAlunoNotaData(data);
+
+  const nota = await getAlunoNotaByUniqueId({ alunoId, ...data });
+
+  if (nota) throwDuplicatedAlunoNotaError();
+
+  const newNota = await createAlunoNota({ alunoId, ...data });
+
+  return reply.status(HttpStatusCodes.CREATED).send(newNota);
 }
