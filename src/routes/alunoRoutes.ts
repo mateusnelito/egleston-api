@@ -1,8 +1,9 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
-  createMatriculaToAlunoController,
+  createAlunoNotaController,
   createAlunoResponsavelController,
+  createMatriculaToAlunoController,
   getAlunoController,
   getAlunoMatriculasController,
   getAlunoResponsaveisController,
@@ -10,8 +11,9 @@ import {
   updateAlunoController,
 } from '../controllers/alunoController';
 import {
-  createMatriculaToAlunoSchema,
+  createAlunoNotaSchema,
   createAlunoResponsavelSchema,
+  createMatriculaToAlunoSchema,
   getAlunoMatriculasSchema,
   getAlunoResponsaveisSchema,
   getAlunoSchema,
@@ -61,5 +63,12 @@ const alunosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
     schema: createMatriculaToAlunoSchema,
     handler: createMatriculaToAlunoController,
   });
+
+  // POST
+  server.withTypeProvider<ZodTypeProvider>().post('/:alunoId/notas', {
+    schema: createAlunoNotaSchema,
+    handler: createAlunoNotaController,
+  });
 };
+
 export default alunosRoutes;
