@@ -95,3 +95,10 @@ export async function getTrimestre(id: number) {
       }
     : trimestre;
 }
+
+export async function getTrimestreId(id: number) {
+  return await prisma.trimestre.findUnique({
+    where: { id },
+    select: { id: true },
+  });
+}
