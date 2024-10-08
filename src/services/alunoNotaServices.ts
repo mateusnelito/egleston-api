@@ -30,3 +30,7 @@ export async function getAlunoNotaByUniqueId(data: alunoNotaDataType) {
     select: { nota: true },
   });
 }
+
+export async function createAlunoNota(data: alunoNotaDataType) {
+  return await prisma.nota.create({ data });
+}
