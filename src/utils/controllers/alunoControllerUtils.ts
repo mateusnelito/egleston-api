@@ -10,3 +10,10 @@ export function throwNotFoundAlunoIdError() {
     message: 'Aluno não existe.',
   });
 }
+
+export function throwDuplicatedAlunoNotaError() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Nota já existe.',
+  });
+}
