@@ -62,3 +62,14 @@ export function throwNotFoundTrimestreIdError() {
     message: 'Trimestre não existe.',
   });
 }
+
+// TODO: MAKE A MORE GENERIC FUN TO throwNotFoundIdField
+export function throwInvalidTrimestreIdFieldError() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.NOT_FOUND,
+    message: 'Trimestre inválido.',
+    errors: {
+      disciplinaId: ['id de trimestre não existe.'],
+    },
+  });
+}
