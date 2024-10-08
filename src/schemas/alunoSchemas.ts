@@ -8,6 +8,7 @@ import {
   simpleBadRequestSchema,
 } from './globalSchema';
 import { createResponsavelBodySchema } from './responsavelSchema';
+import { notaSchema } from './notaSchema';
 
 const alunoBodySchema = z.object({
   id: z
@@ -251,6 +252,18 @@ export const createMatriculaToAlunoSchema = {
   },
 };
 
+export const createAlunoNotaSchema = {
+  summary: 'Cria uma nota para o aluno',
+  tags: ['alunos'],
+  params: alunoParamsSchema,
+  body: notaSchema.omit({ alunoId: true }),
+  response: {
+    // 200: {},
+    400: simpleBadRequestSchema,
+    404: simpleBadRequestSchema,
+  },
+};
+
 export type createAlunoBodyType = z.infer<typeof createAlunoBodySchema>;
 export type updateAlunoBodyType = z.infer<typeof updateAlunoSchema.body>;
 export type alunoParamsType = z.infer<typeof alunoParamsSchema>;
@@ -259,4 +272,8 @@ export type getAlunosQueryStringType = z.infer<
 >;
 export type createMatriculaToAlunoBodyType = z.infer<
   typeof createMatriculaToAlunoSchema.body
+>;
+
+export type createAlunoNotaBodyType = z.infer<
+  typeof createAlunoNotaSchema.body
 >;
