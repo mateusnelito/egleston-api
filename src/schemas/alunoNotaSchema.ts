@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const notaSchema = z.object({
+export const alunoNotaSchema = z.object({
   alunoId: z
     .number({
       required_error: 'O id do aluno é obrigatório.',
@@ -38,3 +38,5 @@ export const notaSchema = z.object({
     .max(20, { message: 'O valor máximo da nota é 20.' })
     .transform((value) => value.toFixed(1)),
 });
+
+export type alunoNotaDataType = z.infer<typeof alunoNotaSchema>;

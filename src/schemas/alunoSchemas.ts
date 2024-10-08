@@ -8,7 +8,7 @@ import {
   simpleBadRequestSchema,
 } from './globalSchema';
 import { createResponsavelBodySchema } from './responsavelSchema';
-import { notaSchema } from './notaSchema';
+import { alunoNotaSchema } from './alunoNotaSchema';
 
 const alunoBodySchema = z.object({
   id: z
@@ -256,7 +256,7 @@ export const createAlunoNotaSchema = {
   summary: 'Cria uma nota para o aluno',
   tags: ['alunos'],
   params: alunoParamsSchema,
-  body: notaSchema.omit({ alunoId: true }),
+  body: alunoNotaSchema.omit({ alunoId: true }),
   response: {
     // 200: {},
     400: simpleBadRequestSchema,
