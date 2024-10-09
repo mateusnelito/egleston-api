@@ -58,7 +58,7 @@ export const getAlunosWithoutNotaSchema = {
       })
       .int({ message: 'O id do trimestre deve ser inteiro.' })
       .positive({ message: 'O id do trimestre deve ser positivo.' }),
-    disciplinaId: z
+    disciplinaId: z.coerce
       .number({
         required_error: 'O id de disciplina é obrigatório.',
         invalid_type_error: 'O id de disciplina deve ser número.',
