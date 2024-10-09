@@ -31,3 +31,16 @@ export interface matriculaCreateDataInterface {
   turnoId: number;
   metodoPagamentoId: number;
 }
+
+export interface validateAlunoNotaDataType {
+  classeId: number;
+  disciplinaId: number;
+  trimestreId: number;
+}
+
+export interface alunoNotaUniqueKeyDataType {
+  alunoId: number;
+  classeId: number;
+  disciplinaId: number;
+  trimestreId: number;
+}
