@@ -271,18 +271,29 @@ export async function createAlunoNotaController(
   reply: FastifyReply
 ) {
   const { alunoId } = request.params;
-  const { body: data } = request;
+  const { classeId, disciplinaId, trimestreId, nota } = request.body;
   const isAlunoId = await getAlunoId(alunoId);
 
   if (!isAlunoId) throwNotFoundAlunoIdError();
 
-  await validateAlunoNotaData(data);
+  await validateAlunoNotaData({ classeId, disciplinaId, trimestreId });
 
-  const nota = await getAlunoNotaByUniqueId({ alunoId, ...data });
+  const storedNota = await getAlunoNotaByUniqueId({
+    alunoId,
+    classeId,
+    disciplinaId,
+    trimestreId,
+  });
 
-  if (nota) throwDuplicatedAlunoNotaError();
+  if (storedNota) throwDuplicatedAlunoNotaError();
 
-  const newNota = await createAlunoNota({ alunoId, ...data });
+  const newNota = await createAlunoNota({
+    alunoId,
+    classeId,
+    disciplinaId,
+    trimestreId,
+    nota,
+  });
 
   return reply.status(HttpStatusCodes.CREATED).send(newNota);
 }
