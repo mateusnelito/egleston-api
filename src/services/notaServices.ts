@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma';
-import { alunoNotaDataType } from '../schemas/alunoNotaSchema';
+import { alunoNotaDataType } from '../schemas/notaSchema';
 import { throwNotFoundClasseIdFieldError } from '../utils/controllers/classeControllerUtils';
 import { throwInvalidDisciplinaIdFieldError } from '../utils/controllers/disciplinaControllerUtils';
 import { throwInvalidTrimestreIdFieldError } from '../utils/controllers/trimestreControllerUtils';

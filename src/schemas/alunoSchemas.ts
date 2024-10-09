@@ -8,7 +8,7 @@ import {
   simpleBadRequestSchema,
 } from './globalSchema';
 import { createResponsavelBodySchema } from './responsavelSchema';
-import { alunoNotaSchema } from './alunoNotaSchema';
+import { alunoNotaSchema } from './notaSchema';
 
 const alunoBodySchema = z.object({
   id: z

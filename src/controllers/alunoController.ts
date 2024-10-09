@@ -16,7 +16,7 @@ import {
   createAlunoNota,
   getAlunoNotaByUniqueId,
   validateAlunoNotaData,
-} from '../services/alunoNotaServices';
+} from '../services/notaServices';
 import {
   getAluno,
   getAlunoId,
