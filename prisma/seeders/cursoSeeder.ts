@@ -46,7 +46,7 @@ export async function seedCurso() {
         duracao: 3,
       },
       {
-        nome: 'Gestão de Recursos Humanos (GRH)',
+        nome: 'Gestão de Recursos Humanos',
         descricao:
           'Formação em gestão de pessoas, abordando recrutamento, seleção, e desenvolvimento organizacional.',
         duracao: 3,
