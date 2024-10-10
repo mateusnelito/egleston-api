@@ -1,12 +1,19 @@
 import { prisma } from '../../src/lib/prisma';
 import { anoLectivoSeeder } from './anoLectivoSeeder';
+import { turnoSeeder } from './turnoSeeder';
 
 export function transformToDate(date: string) {
   return new Date(date);
 }
 
 async function seed() {
-  await anoLectivoSeeder();
+  anoLectivoSeeder()
+    .then(() => console.log('\nSeed Ano Lectivo done!\n'))
+    .catch((err) => console.log(`Error seeding Ano Lectivo: \n${err}`));
+
+  turnoSeeder()
+    .then(() => console.log('\nSeed Turno done!\n'))
+    .catch((err) => console.log(`\nError seeding Turno: \n${err}`));
 }
 
 seed()
