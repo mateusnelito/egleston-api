@@ -6,6 +6,7 @@ import { seedCurso } from './cursoSeeder';
 import { seedDisciplina } from './disciplinaSeeder';
 import { seedParentesco } from './parentescoSeeder';
 import { seedSala } from './salaSeeder';
+import { seedTurma } from './turmaSeeder';
 import { seedTurno } from './turnoSeeder';
 
 // Generates a random number between min and max
@@ -24,6 +25,8 @@ async function seed() {
   ]);
 
   await Promise.all([seedCursoDisciplina(), seedClasse()]);
+
+  await seedTurma();
 }
 
 seed()
