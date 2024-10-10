@@ -8,7 +8,7 @@ export async function seedCurso() {
           nome: 'Medicina',
           descricao:
             'Curso destinado à formação de médicos, abrangendo conhecimentos em saúde, diagnóstico e tratamento de doenças.',
-          duracao: 6,
+          duracao: 4,
         },
         {
           nome: 'Enfermagem',
