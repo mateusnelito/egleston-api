@@ -1,6 +1,7 @@
 import { prisma } from '../../src/lib/prisma';
 import { seedAnoLectivo } from './anoLectivoSeeder';
 import { seedCurso } from './cursoSeeder';
+import { seedDisciplina } from './disciplinaSeeder';
 import { seedParentesco } from './parentescoSeeder';
 import { seedSala } from './salaSeeder';
 import { seedTurno } from './turnoSeeder';
@@ -25,6 +26,10 @@ async function seed() {
   seedCurso()
     .then(() => console.log('\nSeed Curso done!\n'))
     .catch((err) => console.log(`\nError seeding Curso: \n${err}`));
+
+  seedDisciplina()
+    .then(() => console.log('\nSeed Disciplina done!\n'))
+    .catch((err) => console.log(`\nError seeding Disciplina: \n${err}`));
 }
 
 seed()
