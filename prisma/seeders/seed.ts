@@ -1,10 +1,13 @@
 import { prisma } from '../../src/lib/prisma';
+import { anoLectivoSeeder } from './anoLectivoSeeder';
 
 export function transformToDate(date: string) {
   return new Date(date);
 }
 
-async function seed() {}
+async function seed() {
+  await anoLectivoSeeder();
+}
 
 seed()
   .then(() => console.log('\n🌱 Database seeded successfully\n'))
