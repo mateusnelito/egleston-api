@@ -1,16 +1,13 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { getAlunosWithoutNotaQueryStringDataType } from '../schemas/alunoNotaSchema';
+import { getAlunosWithoutNotaQueryStringDataType } from '../schemas/notaSchema';
+import { getAlunosWithoutNotas } from '../services/alunoServices';
 
-export async function getAlunosWithoutNota(
+export async function getAlunosWithoutNotaController(
   request: FastifyRequest<{
     Querystring: getAlunosWithoutNotaQueryStringDataType;
   }>,
   reply: FastifyReply
 ) {
-  const { classeId, disciplinaId, trimestreId } = request.query;
-
-  return reply.send({
-    message: 'working...',
-    result: { classeId, disciplinaId, trimestreId },
-  });
+  const { query } = request;
+  return reply.send(await getAlunosWithoutNotas(query));
 }
