@@ -1,19 +1,19 @@
 import { prisma } from '../../src/lib/prisma';
-import { anoLectivoSeeder } from './anoLectivoSeeder';
+import { seedAnoLectivo } from './anoLectivoSeeder';
 import { seedParentesco } from './parentescoSeeder';
-import { salaSeeder } from './salaSeeder';
-import { turnoSeeder } from './turnoSeeder';
+import { seedSala } from './salaSeeder';
+import { seedTurno } from './turnoSeeder';
 
 async function seed() {
-  anoLectivoSeeder()
+  seedAnoLectivo()
     .then(() => console.log('\nSeed Ano Lectivo done!\n'))
     .catch((err) => console.log(`Error seeding Ano Lectivo: \n${err}`));
 
-  turnoSeeder()
+  seedTurno()
     .then(() => console.log('\nSeed Turno done!\n'))
     .catch((err) => console.log(`\nError seeding Turno: \n${err}`));
 
-  salaSeeder()
+  seedSala()
     .then(() => console.log('\nSeed Sala done!\n'))
     .catch((err) => console.log(`\nError seeding Sala: \n${err}`));
 

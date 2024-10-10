@@ -4,7 +4,7 @@ function transformToDate(date: string) {
   return new Date(date);
 }
 
-export async function anoLectivoSeeder() {
+export async function seedAnoLectivo() {
   // Create default AnoLectivo
   await prisma.anoLectivo.createMany({
     data: [

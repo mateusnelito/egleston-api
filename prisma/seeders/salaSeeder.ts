@@ -5,7 +5,7 @@ function generateRandomNumber(min: number, max: number) {
   return Math.round(Math.random() * (max - min) + min);
 }
 
-export async function salaSeeder() {
+export async function seedSala() {
   await prisma.sala.createMany({
     data: Array.from({ length: 20 }).map((_, i) => ({
       nome: `Sala - ${++i}`,
