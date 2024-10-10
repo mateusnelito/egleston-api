@@ -1,5 +1,6 @@
 import { prisma } from '../../src/lib/prisma';
 import { seedAnoLectivo } from './anoLectivoSeeder';
+import { seedClasse } from './classeSeeder';
 import { seedCursoDisciplina } from './cursoDisciplinaSeeder';
 import { seedCurso } from './cursoSeeder';
 import { seedDisciplina } from './disciplinaSeeder';
@@ -22,7 +23,7 @@ async function seed() {
     seedDisciplina(),
   ]);
 
-  await seedCursoDisciplina();
+  await Promise.all([seedCursoDisciplina(), seedClasse()]);
 }
 
 seed()
