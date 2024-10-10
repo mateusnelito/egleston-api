@@ -6,6 +6,11 @@ import { seedParentesco } from './parentescoSeeder';
 import { seedSala } from './salaSeeder';
 import { seedTurno } from './turnoSeeder';
 
+// Generates a random number between min and max
+export function generateRandomNumber(min: number, max: number) {
+  return Math.round(Math.random() * (max - min) + min);
+}
+
 async function seed() {
   seedAnoLectivo()
     .then(() => console.log('\nSeed Ano Lectivo done!\n'))

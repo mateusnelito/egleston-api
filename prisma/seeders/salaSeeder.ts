@@ -1,9 +1,5 @@
 import { prisma } from '../../src/lib/prisma';
-
-// Generates a random number between min and max
-function generateRandomNumber(min: number, max: number) {
-  return Math.round(Math.random() * (max - min) + min);
-}
+import { generateRandomNumber } from './seed';
 
 export async function seedSala() {
   await prisma.sala.createMany({
