@@ -1,7 +1,16 @@
 import { prisma } from '../../src/lib/prisma';
 
 export async function seedParentesco() {
-  await prisma.parentesco.createMany({
-    data: [{ nome: 'Pai' }, { nome: 'Mãe' }, { nome: 'Tio' }, { nome: 'Tia' }],
-  });
+  try {
+    await prisma.parentesco.createMany({
+      data: [
+        { nome: 'Pai' },
+        { nome: 'Mãe' },
+        { nome: 'Tio' },
+        { nome: 'Tia' },
+      ],
+    });
+  } catch (err) {
+    throw new Error(`\nError seeding Parentesco \n${err}`);
+  }
 }
