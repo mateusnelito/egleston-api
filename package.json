@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "tsx watch --env-file .env src/server.ts",
     "start": "tsx --env-file .env src/server.ts",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "tsx prisma/seeders/seed.ts",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset -f"
   },
   "repository": {
     "type": "git",
