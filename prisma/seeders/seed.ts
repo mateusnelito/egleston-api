@@ -2,10 +2,6 @@ import { prisma } from '../../src/lib/prisma';
 import { anoLectivoSeeder } from './anoLectivoSeeder';
 import { turnoSeeder } from './turnoSeeder';
 
-export function transformToDate(date: string) {
-  return new Date(date);
-}
-
 async function seed() {
   anoLectivoSeeder()
     .then(() => console.log('\nSeed Ano Lectivo done!\n'))
