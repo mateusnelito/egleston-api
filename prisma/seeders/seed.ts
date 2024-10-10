@@ -1,5 +1,6 @@
 import { prisma } from '../../src/lib/prisma';
 import { anoLectivoSeeder } from './anoLectivoSeeder';
+import { salaSeeder } from './salaSeeder';
 import { turnoSeeder } from './turnoSeeder';
 
 async function seed() {
@@ -10,6 +11,10 @@ async function seed() {
   turnoSeeder()
     .then(() => console.log('\nSeed Turno done!\n'))
     .catch((err) => console.log(`\nError seeding Turno: \n${err}`));
+
+  salaSeeder()
+    .then(() => console.log('\nSeed Sala done!\n'))
+    .catch((err) => console.log(`\nError seeding Sala: \n${err}`));
 }
 
 seed()
