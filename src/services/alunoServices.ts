@@ -1,6 +1,7 @@
 import { prisma } from '../lib/prisma';
 import { updateAlunoBodyType } from '../schemas/alunoSchemas';
 import { createAlunoMatriculaBodyType } from '../schemas/matriculaSchemas';
+import { getAlunosWithoutNotaQueryStringDataType } from '../schemas/notaSchema';
 import { formatDate } from '../utils/utilsFunctions';
 
 export async function getAlunoNumeroBi(numeroBi: string) {
@@ -305,4 +306,28 @@ export async function createAlunoMatricula(
       funcionario: 'Usuário Teste Dinâmico',
     };
   });
+}
+
+export async function getAlunosWithoutNotas(
+  data: getAlunosWithoutNotaQueryStringDataType
+) {
+  const { classeId, disciplinaId, trimestreId } = data;
+
+  const alunosWithoutNota = await prisma.aluno.findMany({
+    where: {
+      AlunoNota: {
+        none: {
+          classeId,
+          disciplinaId,
+          trimestreId,
+        },
+      },
+    },
+    select: {
+      id: true,
+      nomeCompleto: true,
+    },
+  });
+
+  return alunosWithoutNota;
 }
