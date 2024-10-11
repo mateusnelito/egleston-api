@@ -1,19 +1,20 @@
 import { prisma } from '../../src/lib/prisma';
+import { seedAluno } from './alunoSeeder';
 import { seedAnoLectivo } from './anoLectivoSeeder';
 import { seedClasse } from './classeSeeder';
 import { seedCursoDisciplina } from './cursoDisciplinaSeeder';
 import { seedCurso } from './cursoSeeder';
-import { seedDisciplina } from './disciplinaSeeder';
-import { seedParentesco } from './parentescoSeeder';
 import { seedProfessorDisciplina } from './disciplinaProfessorSeeder';
+import { seedDisciplina } from './disciplinaSeeder';
+import { seedMatricula } from './matriculaSeeder';
+import { seedMetodoPagamento } from './metodoPagamento';
+import { seedParentesco } from './parentescoSeeder';
+import { seedProfessorDisciplinaClasseTurma } from './professorDIsciplinaClasseSeeder';
 import { seedProfessor } from './professorSeeder';
+import { seedResponsavel } from './responsavelSeeder';
 import { seedSala } from './salaSeeder';
 import { seedTurma } from './turmaSeeder';
 import { seedTurno } from './turnoSeeder';
-import { seedProfessorDisciplinaClasseTurma } from './professorDIsciplinaClasseSeeder';
-import { seedAluno } from './alunoSeeder';
-import { seedResponsavel } from './responsavelSeeder';
-import { seedMatricula } from './matriculaSeeder';
 
 // Generates a random number between min and max
 export function generateRandomNumber(min: number, max: number) {
@@ -32,10 +33,12 @@ async function seed() {
     seedParentesco(),
     seedCurso(),
     seedDisciplina(),
+    seedMetodoPagamento(),
   ]);
 
   await Promise.all([seedCursoDisciplina(), seedClasse()]);
   await Promise.all([seedTurma(), seedProfessor()]);
+
   await Promise.all([
     seedProfessorDisciplina(),
     seedProfessorDisciplinaClasseTurma(),
