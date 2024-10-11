@@ -109,6 +109,7 @@ export const getProfessorSchema = {
   params: professorParamsSchema,
   response: {
     200: professorBodySchema.extend({
+      nomeCompleto: z.string(),
       dataNascimento: z.string().date(),
       contacto: contactoSchema,
     }),
@@ -124,6 +125,7 @@ export const getProfessoresSchema = {
     200: z.object({
       data: z.array(
         professorBodySchema.extend({
+          nomeCompleto: z.string(),
           dataNascimento: z.string().date(),
         })
       ),
