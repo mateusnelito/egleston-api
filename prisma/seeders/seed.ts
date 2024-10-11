@@ -5,6 +5,7 @@ import { seedCursoDisciplina } from './cursoDisciplinaSeeder';
 import { seedCurso } from './cursoSeeder';
 import { seedDisciplina } from './disciplinaSeeder';
 import { seedParentesco } from './parentescoSeeder';
+import { seedProfessorDisciplina } from './disciplinaProfessorSeeder';
 import { seedProfessor } from './professorSeeder';
 import { seedSala } from './salaSeeder';
 import { seedTurma } from './turmaSeeder';
@@ -31,6 +32,7 @@ async function seed() {
 
   await Promise.all([seedCursoDisciplina(), seedClasse()]);
   await Promise.all([seedTurma(), seedProfessor()]);
+  await seedProfessorDisciplina();
 }
 
 seed()
