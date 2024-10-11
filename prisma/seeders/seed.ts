@@ -10,6 +10,7 @@ import { seedProfessor } from './professorSeeder';
 import { seedSala } from './salaSeeder';
 import { seedTurma } from './turmaSeeder';
 import { seedTurno } from './turnoSeeder';
+import { seedProfessorDisciplinaClasseTurma } from './professorDIsciplinaClasseSeeder';
 
 // Generates a random number between min and max
 export function generateRandomNumber(min: number, max: number) {
@@ -32,7 +33,10 @@ async function seed() {
 
   await Promise.all([seedCursoDisciplina(), seedClasse()]);
   await Promise.all([seedTurma(), seedProfessor()]);
-  await seedProfessorDisciplina();
+  await Promise.all([
+    seedProfessorDisciplina(),
+    seedProfessorDisciplinaClasseTurma(),
+  ]);
 }
 
 seed()
