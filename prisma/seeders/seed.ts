@@ -13,6 +13,7 @@ import { seedTurno } from './turnoSeeder';
 import { seedProfessorDisciplinaClasseTurma } from './professorDIsciplinaClasseSeeder';
 import { seedAluno } from './alunoSeeder';
 import { seedResponsavel } from './responsavelSeeder';
+import { seedMatricula } from './matriculaSeeder';
 
 // Generates a random number between min and max
 export function generateRandomNumber(min: number, max: number) {
@@ -41,7 +42,7 @@ async function seed() {
   ]);
 
   await seedAluno();
-  await seedResponsavel();
+  await Promise.all([seedResponsavel(), seedMatricula()]);
 }
 
 seed()
