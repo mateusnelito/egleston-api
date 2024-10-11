@@ -1,8 +1,5 @@
 import { prisma } from '../../src/lib/prisma';
-
-function transformToDate(date: string) {
-  return new Date(date);
-}
+import { transformToDate } from './seed';
 
 export async function seedAnoLectivo() {
   try {
