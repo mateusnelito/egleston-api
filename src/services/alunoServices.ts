@@ -350,3 +350,25 @@ export async function getAlunosWithoutNotas(
 
   return alunos;
 }
+
+export async function getAlunoClasses(id: number) {
+  const alunoClasses = await prisma.matricula.findMany({
+    where: { alunoId: id },
+    select: {
+      Classe: {
+        select: {
+          id: true,
+          nome: true,
+        },
+      },
+    },
+    orderBy: { id: 'desc' },
+  });
+
+  return {
+    data: alunoClasses.map((classe) => ({
+      id: classe.Classe.id,
+      nome: classe.Classe.nome,
+    })),
+  };
+}
