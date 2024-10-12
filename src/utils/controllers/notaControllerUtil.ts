@@ -7,3 +7,10 @@ export function throwDuplicatedNotaError() {
     message: 'Nota já existe.',
   });
 }
+
+export function throwNotFoundNotaIdError() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.NOT_FOUND,
+    message: 'Nota não existe.',
+  });
+}
