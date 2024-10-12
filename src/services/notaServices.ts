@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma';
+import { getAlunoNotasQueryStringType } from '../schemas/alunoSchemas';
 import { notaDataType } from '../schemas/notaSchema';
 import { throwInvalidAlunoIdFieldError } from '../utils/controllers/alunoControllerUtils';
 import { throwNotFoundClasseIdFieldError } from '../utils/controllers/classeControllerUtils';
@@ -76,5 +77,32 @@ export async function updateNota(data: notaDataType) {
     disciplinaId: nota.disciplinaId,
     trimestreId: nota.trimestreId,
     nota: Number(nota.nota),
+  };
+}
+
+export async function getAlunoNotas(
+  alunoId: number,
+  params: getAlunoNotasQueryStringType
+) {
+  const { classeId, trimestreId } = params;
+  const notas = await prisma.nota.findMany({
+    where: { alunoId, trimestreId, classeId },
+    select: {
+      nota: true,
+      Trimestre: {
+        select: { numero: true },
+      },
+      Disciplina: {
+        select: { nome: true },
+      },
+    },
+  });
+
+  return {
+    data: notas.map((nota) => ({
+      trimestre: nota.Trimestre.numero,
+      disciplina: nota.Disciplina.nome,
+      nota: Number(nota.nota),
+    })),
   };
 }
