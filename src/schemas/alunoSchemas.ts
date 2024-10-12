@@ -285,7 +285,15 @@ export const getAlunoNotasSchemas = {
       .positive({ message: 'O id da classe deve ser positivo.' }),
   }),
   response: {
-    // 200: notaSchema.extend({ nota: z.number() }),
+    200: z.object({
+      data: z.array(
+        z.object({
+          trimestre: z.number(),
+          disciplina: z.string(),
+          nota: z.number(),
+        })
+      ),
+    }),
     400: simpleBadRequestSchema,
     404: simpleBadRequestSchema,
   },
