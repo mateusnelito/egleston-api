@@ -2,10 +2,11 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import PdfPrinter from 'pdfmake';
 import {
   alunoParamsType,
-  updateAlunoNotaBodyType,
   createMatriculaToAlunoBodyType,
+  getAlunoNotasQueryStringType,
   getAlunosQueryStringType,
   updateAlunoBodyType,
+  updateAlunoNotaBodyType,
 } from '../schemas/alunoSchemas';
 import { createResponsavelBodyType } from '../schemas/responsavelSchema';
 import {
@@ -28,7 +29,7 @@ import {
 } from '../services/matriculaServices';
 import { validateMatriculaData } from '../services/matriculaValidationService';
 import {
-  createNota,
+  getAlunoNotas,
   getNotaById,
   updateNota,
   validateNotaData,
@@ -50,10 +51,7 @@ import {
 } from '../utils/controllers/alunoControllerUtils';
 import { throwActiveAnoLectivoNotFoundError } from '../utils/controllers/anoLectivoControllerUtils';
 import { throwDuplicatedMatriculaError } from '../utils/controllers/matriculaControllerUtils';
-import {
-  throwDuplicatedNotaError,
-  throwNotFoundNotaIdError,
-} from '../utils/controllers/notaControllerUtil';
+import { throwNotFoundNotaIdError } from '../utils/controllers/notaControllerUtil';
 import { throwNotFoundParentescoIdFieldError } from '../utils/controllers/parentescoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
@@ -300,4 +298,21 @@ export async function updateAlunoNotaController(
   });
 
   return reply.send(newNota);
+}
+
+export async function getAlunoNotasController(
+  request: FastifyRequest<{
+    Params: alunoParamsType;
+    Querystring: getAlunoNotasQueryStringType;
+  }>,
+  reply: FastifyReply
+) {
+  const { alunoId } = request.params;
+  const { query } = request;
+
+  const aluno = await getAlunoId(alunoId);
+
+  if (!aluno) throwNotFoundAlunoIdError();
+
+  return reply.send(await getAlunoNotas(alunoId, query));
 }
