@@ -309,11 +309,21 @@ export async function createAlunoMatricula(
 }
 
 export async function getAlunosWithoutNotas(
-  data: getAlunosWithoutNotaQueryStringDataType
+  data: getAlunosWithoutNotaQueryStringDataType,
+  limit: number,
+  cursor: number | null | undefined
 ) {
   const { classeId, disciplinaId, trimestreId, turmaId } = data;
 
-  const alunosWithoutNota = await prisma.aluno.findMany({
+  const whereCursorClause = cursor
+    ? {
+        id: {
+          lt: cursor,
+        },
+      }
+    : {};
+
+  const alunos = await prisma.aluno.findMany({
     where: {
       AlunoNota: {
         none: {
@@ -328,12 +338,15 @@ export async function getAlunosWithoutNotas(
           turmaId,
         },
       },
+      ...whereCursorClause,
     },
     select: {
       id: true,
       nomeCompleto: true,
     },
+    take: limit,
+    orderBy: { id: 'desc' },
   });
 
-  return alunosWithoutNota;
+  return alunos;
 }

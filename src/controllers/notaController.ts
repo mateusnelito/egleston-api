@@ -40,5 +40,15 @@ export async function getAlunosWithoutNotaController(
   reply: FastifyReply
 ) {
   const { query } = request;
-  return reply.send(await getAlunosWithoutNotas(query));
+  const { pageSize, cursor } = query;
+
+  const alunos = await getAlunosWithoutNotas(query, pageSize, cursor);
+
+  let next_cursor =
+    alunos.length === pageSize ? alunos[alunos.length - 1].id : undefined;
+
+  return reply.send({
+    data: alunos,
+    next_cursor,
+  });
 }

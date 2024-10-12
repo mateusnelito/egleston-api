@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { simpleBadRequestSchema } from './globalSchema';
+import {
+  getResourcesDefaultQueriesSchema,
+  simpleBadRequestSchema,
+} from './globalSchema';
 
 export const notaSchema = z.object({
   alunoId: z
@@ -54,38 +57,48 @@ export const createNotaSchema = {
 export const getAlunosWithoutNotaSchema = {
   summary: 'Retorna a lista de alunos sem notas',
   tags: ['notas'],
-  querystring: z.object({
-    classeId: z.coerce
-      .number({
-        required_error: 'O id da classe é obrigatório.',
-        invalid_type_error: 'O id da classe deve ser número.',
-      })
-      .int({ message: 'O id da classe deve ser inteiro.' })
-      .positive({ message: 'O id da classe deve ser positivo.' }),
-    turmaId: z.coerce
-      .number({
-        required_error: 'O id da turma é obrigatório.',
-        invalid_type_error: 'O id da turma deve ser número.',
-      })
-      .int({ message: 'O id da turma deve ser inteiro.' })
-      .positive({ message: 'O id da turma deve ser positivo.' }),
-    trimestreId: z.coerce
-      .number({
-        required_error: 'O id do trimestre é obrigatório.',
-        invalid_type_error: 'O id do trimestre deve ser número.',
-      })
-      .int({ message: 'O id do trimestre deve ser inteiro.' })
-      .positive({ message: 'O id do trimestre deve ser positivo.' }),
-    disciplinaId: z.coerce
-      .number({
-        required_error: 'O id de disciplina é obrigatório.',
-        invalid_type_error: 'O id de disciplina deve ser número.',
-      })
-      .int({ message: 'O id de disciplina deve ser inteiro.' })
-      .positive({ message: 'O id de disciplina deve ser positivo.' }),
-  }),
+  querystring: z
+    .object({
+      classeId: z.coerce
+        .number({
+          required_error: 'O id da classe é obrigatório.',
+          invalid_type_error: 'O id da classe deve ser número.',
+        })
+        .int({ message: 'O id da classe deve ser inteiro.' })
+        .positive({ message: 'O id da classe deve ser positivo.' }),
+      turmaId: z.coerce
+        .number({
+          required_error: 'O id da turma é obrigatório.',
+          invalid_type_error: 'O id da turma deve ser número.',
+        })
+        .int({ message: 'O id da turma deve ser inteiro.' })
+        .positive({ message: 'O id da turma deve ser positivo.' }),
+      trimestreId: z.coerce
+        .number({
+          required_error: 'O id do trimestre é obrigatório.',
+          invalid_type_error: 'O id do trimestre deve ser número.',
+        })
+        .int({ message: 'O id do trimestre deve ser inteiro.' })
+        .positive({ message: 'O id do trimestre deve ser positivo.' }),
+      disciplinaId: z.coerce
+        .number({
+          required_error: 'O id de disciplina é obrigatório.',
+          invalid_type_error: 'O id de disciplina deve ser número.',
+        })
+        .int({ message: 'O id de disciplina deve ser inteiro.' })
+        .positive({ message: 'O id de disciplina deve ser positivo.' }),
+    })
+    .merge(getResourcesDefaultQueriesSchema),
   response: {
-    // 200: {},
+    200: z.object({
+      data: z.array(
+        z.object({
+          id: z.number(),
+          nomeCompleto: z.string(),
+        })
+      ),
+      next_cursor: z.number().optional(),
+    }),
     400: simpleBadRequestSchema,
     404: simpleBadRequestSchema,
   },
