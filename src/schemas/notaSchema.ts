@@ -45,7 +45,7 @@ export const createNotaSchema = {
   tags: ['notas'],
   body: notaSchema,
   response: {
-    // TODO: SEND A BETTER RESPONSE
+    201: notaSchema.extend({ nota: z.number() }),
     400: simpleBadRequestSchema,
     404: simpleBadRequestSchema,
   },
