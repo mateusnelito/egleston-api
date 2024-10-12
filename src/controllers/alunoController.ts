@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import PdfPrinter from 'pdfmake';
 import {
   alunoParamsType,
-  createAlunoNotaBodyType,
+  updateAlunoNotaBodyType,
   createMatriculaToAlunoBodyType,
   getAlunosQueryStringType,
   updateAlunoBodyType,
@@ -30,6 +30,7 @@ import { validateMatriculaData } from '../services/matriculaValidationService';
 import {
   createNota,
   getNotaById,
+  updateNota,
   validateNotaData,
 } from '../services/notaServices';
 import { getParentescoId } from '../services/parentescoServices';
@@ -49,7 +50,10 @@ import {
 } from '../utils/controllers/alunoControllerUtils';
 import { throwActiveAnoLectivoNotFoundError } from '../utils/controllers/anoLectivoControllerUtils';
 import { throwDuplicatedMatriculaError } from '../utils/controllers/matriculaControllerUtils';
-import { throwDuplicatedNotaError } from '../utils/controllers/notaControllerUtil';
+import {
+  throwDuplicatedNotaError,
+  throwNotFoundNotaIdError,
+} from '../utils/controllers/notaControllerUtil';
 import { throwNotFoundParentescoIdFieldError } from '../utils/controllers/parentescoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
@@ -263,10 +267,10 @@ export async function createMatriculaToAlunoController(
   return reply;
 }
 
-export async function createAlunoNotaController(
+export async function updateAlunoNotaController(
   request: FastifyRequest<{
     Params: alunoParamsType;
-    Body: createAlunoNotaBodyType;
+    Body: updateAlunoNotaBodyType;
   }>,
   reply: FastifyReply
 ) {
@@ -285,9 +289,9 @@ export async function createAlunoNotaController(
     trimestreId,
   });
 
-  if (storedNota) throwDuplicatedNotaError();
+  if (!storedNota) throwNotFoundNotaIdError();
 
-  const newNota = await createNota({
+  const newNota = await updateNota({
     alunoId,
     classeId,
     disciplinaId,
@@ -295,5 +299,5 @@ export async function createAlunoNotaController(
     nota,
   });
 
-  return reply.status(HttpStatusCodes.CREATED).send(newNota);
+  return reply.send(newNota);
 }
