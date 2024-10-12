@@ -37,5 +37,13 @@ export async function getNotaById(data: notaIdDataType) {
 }
 
 export async function createNota(data: notaDataType) {
-  return await prisma.nota.create({ data });
+  const nota = await prisma.nota.create({ data });
+
+  return {
+    alunoId: nota.alunoId,
+    classeId: nota.classeId,
+    disciplinaId: nota.disciplinaId,
+    trimestreId: nota.trimestreId,
+    nota: Number(nota.nota),
+  };
 }
