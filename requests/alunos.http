@@ -49,3 +49,6 @@ Content-Type: application/json
 
 ### GET all matriculas
 GET http://localhost:8000/api/alunos/1/matriculas
+
+### GET all notas
+GET http://localhost:8000/api/alunos/1/notas?trimestreId=1&classeId=1
