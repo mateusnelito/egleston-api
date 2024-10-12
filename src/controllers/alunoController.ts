@@ -13,11 +13,6 @@ import {
   getAlunoTelefone,
 } from '../services/alunoContactoServices';
 import {
-  createAlunoNota,
-  getAlunoNotaByUniqueId,
-  validateAlunoNotaData,
-} from '../services/notaServices';
-import {
   getAluno,
   getAlunoId,
   getAlunoResponsaveis,
@@ -32,6 +27,11 @@ import {
   getMatriculasByAlunoId,
 } from '../services/matriculaServices';
 import { validateMatriculaData } from '../services/matriculaValidationService';
+import {
+  createNota,
+  getNotaById,
+  validateNotaData,
+} from '../services/notaServices';
 import { getParentescoId } from '../services/parentescoServices';
 import {
   getResponsavelEmail,
@@ -45,11 +45,11 @@ import BadRequest from '../utils/BadRequest';
 import {
   MINIMUM_ALUNO_AGE,
   MINIMUM_ALUNO_RESPONSAVEIS,
-  throwDuplicatedAlunoNotaError,
   throwNotFoundAlunoIdError,
 } from '../utils/controllers/alunoControllerUtils';
 import { throwActiveAnoLectivoNotFoundError } from '../utils/controllers/anoLectivoControllerUtils';
 import { throwDuplicatedMatriculaError } from '../utils/controllers/matriculaControllerUtils';
+import { throwDuplicatedNotaError } from '../utils/controllers/notaControllerUtil';
 import { throwNotFoundParentescoIdFieldError } from '../utils/controllers/parentescoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
@@ -276,18 +276,18 @@ export async function createAlunoNotaController(
 
   if (!isAlunoId) throwNotFoundAlunoIdError();
 
-  await validateAlunoNotaData({ classeId, disciplinaId, trimestreId });
+  await validateNotaData({ classeId, disciplinaId, trimestreId });
 
-  const storedNota = await getAlunoNotaByUniqueId({
+  const storedNota = await getNotaById({
     alunoId,
     classeId,
     disciplinaId,
     trimestreId,
   });
 
-  if (storedNota) throwDuplicatedAlunoNotaError();
+  if (storedNota) throwDuplicatedNotaError();
 
-  const newNota = await createAlunoNota({
+  const newNota = await createNota({
     alunoId,
     classeId,
     disciplinaId,

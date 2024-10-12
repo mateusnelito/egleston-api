@@ -32,13 +32,14 @@ export interface matriculaCreateDataInterface {
   metodoPagamentoId: number;
 }
 
-export interface validateAlunoNotaDataType {
+export interface validateNotaDataType {
+  alunoId?: number;
   classeId: number;
   disciplinaId: number;
   trimestreId: number;
 }
 
-export interface alunoNotaUniqueKeyDataType {
+export interface notaIdDataType {
   alunoId: number;
   classeId: number;
   disciplinaId: number;
