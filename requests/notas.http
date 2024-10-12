@@ -1,0 +1,11 @@
+### Create a Nota
+POST http://localhost:8000/api/notas
+Content-Type: application/json
+
+{
+  "alunoId": 1,
+  "classeId": 1,
+  "disciplinaId": 1,
+  "trimestreId": 1,
+  "nota": 20
+}
