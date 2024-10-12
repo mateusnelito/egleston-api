@@ -83,11 +83,11 @@ export async function getDisciplinasController(
   }>,
   reply: FastifyReply
 ) {
-  const { cursor, page_size } = request.query;
-  const cursos = await getDisciplinas(page_size, cursor);
+  const { cursor, pageSize: pageSize } = request.query;
+  const cursos = await getDisciplinas(pageSize, cursor);
 
   let next_cursor =
-    cursos.length === page_size ? cursos[cursos.length - 1].id : undefined;
+    cursos.length === pageSize ? cursos[cursos.length - 1].id : undefined;
 
   return reply.send({
     data: cursos,

@@ -107,12 +107,12 @@ export async function getAlunosController(
   request: FastifyRequest<{ Querystring: getAlunosQueryStringType }>,
   reply: FastifyReply
 ) {
-  const { cursor, page_size } = request.query;
-  const alunos = await getAlunos(page_size, cursor);
+  const { cursor, pageSize } = request.query;
+  const alunos = await getAlunos(pageSize, cursor);
 
   // Determine the next cursor
   let next_cursor =
-    alunos.length === page_size ? alunos[alunos.length - 1].id : undefined;
+    alunos.length === pageSize ? alunos[alunos.length - 1].id : undefined;
 
   return reply.send({
     data: alunos,

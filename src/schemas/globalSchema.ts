@@ -19,7 +19,7 @@ export const complexBadRequestSchema = defaultBadRequestSchema
   .or(simpleBadRequestSchema);
 
 export const getResourcesDefaultQueriesSchema = z.object({
-  page_size: z.coerce
+  pageSize: z.coerce
     .number({
       invalid_type_error: 'O tamanho da página deve ser número.',
     })

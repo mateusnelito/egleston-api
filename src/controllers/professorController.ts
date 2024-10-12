@@ -173,11 +173,11 @@ export async function getProfessoresController(
   request: FastifyRequest<{ Querystring: getProfessoresQueryStringType }>,
   reply: FastifyReply
 ) {
-  const { cursor, page_size } = request.query;
-  const professores = await getProfessores(page_size, cursor);
+  const { cursor, pageSize } = request.query;
+  const professores = await getProfessores(pageSize, cursor);
 
   let next_cursor =
-    professores.length === page_size
+    professores.length === pageSize
       ? professores[professores.length - 1].id
       : undefined;
 
