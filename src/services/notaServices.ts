@@ -47,3 +47,34 @@ export async function createNota(data: notaDataType) {
     nota: Number(nota.nota),
   };
 }
+
+export async function updateNota(data: notaDataType) {
+  const {
+    alunoId,
+    classeId,
+    disciplinaId,
+    trimestreId,
+    nota: notaValue,
+  } = data;
+
+  const nota = await prisma.nota.update({
+    where: {
+      alunoId_classeId_disciplinaId_trimestreId: {
+        alunoId,
+        classeId,
+        disciplinaId,
+        trimestreId,
+      },
+    },
+    data: { nota: notaValue },
+  });
+
+  // TODO: ADD FUN TO DO THIS DYNAMICALLY
+  return {
+    alunoId: nota.alunoId,
+    classeId: nota.classeId,
+    disciplinaId: nota.disciplinaId,
+    trimestreId: nota.trimestreId,
+    nota: Number(nota.nota),
+  };
+}
