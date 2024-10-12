@@ -264,6 +264,33 @@ export const updateAlunoNotaSchema = {
   },
 };
 
+export const getAlunoNotasSchemas = {
+  summary: 'Retorna todas as notas do aluno',
+  tags: ['alunos'],
+  params: alunoParamsSchema,
+  querystring: z.object({
+    trimestreId: z.coerce
+      .number({
+        required_error: 'O id do trimestre é obrigatório.',
+        invalid_type_error: 'O id do trimestre deve ser número.',
+      })
+      .int({ message: 'O id do trimestre deve ser inteiro.' })
+      .positive({ message: 'O id do trimestre deve ser positivo.' }),
+    classeId: z.coerce
+      .number({
+        required_error: 'O id da classe é obrigatório.',
+        invalid_type_error: 'O id da classe deve ser número.',
+      })
+      .int({ message: 'O id da classe deve ser inteiro.' })
+      .positive({ message: 'O id da classe deve ser positivo.' }),
+  }),
+  response: {
+    // 200: notaSchema.extend({ nota: z.number() }),
+    400: simpleBadRequestSchema,
+    404: simpleBadRequestSchema,
+  },
+};
+
 export type createAlunoBodyType = z.infer<typeof createAlunoBodySchema>;
 export type updateAlunoBodyType = z.infer<typeof updateAlunoSchema.body>;
 export type alunoParamsType = z.infer<typeof alunoParamsSchema>;
@@ -276,4 +303,7 @@ export type createMatriculaToAlunoBodyType = z.infer<
 
 export type updateAlunoNotaBodyType = z.infer<
   typeof updateAlunoNotaSchema.body
+>;
+export type getAlunoNotasQueryStringType = z.infer<
+  typeof getAlunoNotasSchemas.querystring
 >;
