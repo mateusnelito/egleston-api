@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { simpleBadRequestSchema } from './globalSchema';
 
-export const alunoNotaSchema = z.object({
+export const notaSchema = z.object({
   alunoId: z
     .number({
       required_error: 'O id do aluno é obrigatório.',
@@ -40,6 +40,17 @@ export const alunoNotaSchema = z.object({
     .transform((value) => value.toFixed(1)),
 });
 
+export const createNotaSchema = {
+  summary: 'Cria uma nota',
+  tags: ['notas'],
+  body: notaSchema,
+  response: {
+    // TODO: SEND A BETTER RESPONSE
+    400: simpleBadRequestSchema,
+    404: simpleBadRequestSchema,
+  },
+};
+
 export const getAlunosWithoutNotaSchema = {
   summary: 'Retorna a lista de alunos sem notas',
   tags: ['notas'],
@@ -67,14 +78,13 @@ export const getAlunosWithoutNotaSchema = {
       .positive({ message: 'O id de disciplina deve ser positivo.' }),
   }),
   response: {
-    // TODO: ADD 200 RESPONSE SCHEMA
     // 200: {},
     400: simpleBadRequestSchema,
     404: simpleBadRequestSchema,
   },
 };
 
-export type alunoNotaDataType = z.infer<typeof alunoNotaSchema>;
+export type notaDataType = z.infer<typeof notaSchema>;
 export type getAlunosWithoutNotaQueryStringDataType = z.infer<
   typeof getAlunosWithoutNotaSchema.querystring
 >;
