@@ -62,6 +62,13 @@ export const getAlunosWithoutNotaSchema = {
       })
       .int({ message: 'O id da classe deve ser inteiro.' })
       .positive({ message: 'O id da classe deve ser positivo.' }),
+    turmaId: z.coerce
+      .number({
+        required_error: 'O id da turma é obrigatório.',
+        invalid_type_error: 'O id da turma deve ser número.',
+      })
+      .int({ message: 'O id da turma deve ser inteiro.' })
+      .positive({ message: 'O id da turma deve ser positivo.' }),
     trimestreId: z.coerce
       .number({
         required_error: 'O id do trimestre é obrigatório.',

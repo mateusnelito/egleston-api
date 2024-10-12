@@ -311,7 +311,7 @@ export async function createAlunoMatricula(
 export async function getAlunosWithoutNotas(
   data: getAlunosWithoutNotaQueryStringDataType
 ) {
-  const { classeId, disciplinaId, trimestreId } = data;
+  const { classeId, disciplinaId, trimestreId, turmaId } = data;
 
   const alunosWithoutNota = await prisma.aluno.findMany({
     where: {
@@ -320,6 +320,12 @@ export async function getAlunosWithoutNotas(
           classeId,
           disciplinaId,
           trimestreId,
+        },
+      },
+      Matricula: {
+        some: {
+          classeId,
+          turmaId,
         },
       },
     },
