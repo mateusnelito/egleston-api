@@ -11,9 +11,12 @@ export function throwNotFoundAlunoIdError() {
   });
 }
 
-export function throwDuplicatedAlunoNotaError() {
+export function throwInvalidAlunoIdFieldError() {
   throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Nota já existe.',
+    statusCode: HttpStatusCodes.NOT_FOUND,
+    message: 'Aluno inválido.',
+    errors: {
+      alunoId: ['id de aluno não existe.'],
+    },
   });
 }
