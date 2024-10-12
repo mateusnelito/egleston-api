@@ -15,6 +15,7 @@ import {
 } from '../services/alunoContactoServices';
 import {
   getAluno,
+  getAlunoClasses,
   getAlunoId,
   getAlunoResponsaveis,
   getAlunos,
@@ -315,4 +316,20 @@ export async function getAlunoNotasController(
   if (!aluno) throwNotFoundAlunoIdError();
 
   return reply.send(await getAlunoNotas(alunoId, query));
+}
+
+export async function getAlunoClassesController(
+  request: FastifyRequest<{
+    Params: alunoParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { alunoId } = request.params;
+
+  const aluno = await getAlunoId(alunoId);
+
+  if (!aluno) throwNotFoundAlunoIdError();
+
+  const classes = await getAlunoClasses(alunoId);
+  return reply.send(classes);
 }
