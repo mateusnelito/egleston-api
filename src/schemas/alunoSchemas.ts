@@ -299,6 +299,24 @@ export const getAlunoNotasSchemas = {
   },
 };
 
+export const getAlunoClassesSchema = {
+  summary: 'Retorna todas as classes do aluno',
+  tags: ['alunos'],
+  params: alunoParamsSchema,
+  response: {
+    200: z.object({
+      data: z.array(
+        z.object({
+          id: z.number(),
+          nome: z.string(),
+        })
+      ),
+    }),
+    400: simpleBadRequestSchema,
+    404: simpleBadRequestSchema,
+  },
+};
+
 export type createAlunoBodyType = z.infer<typeof createAlunoBodySchema>;
 export type updateAlunoBodyType = z.infer<typeof updateAlunoSchema.body>;
 export type alunoParamsType = z.infer<typeof alunoParamsSchema>;
