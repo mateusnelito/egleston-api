@@ -54,7 +54,7 @@ export const createNotaSchema = {
   },
 };
 
-export const getAlunosWithoutNotaSchema = {
+export const getAlunosAbsentNotaSchema = {
   summary: 'Retorna a lista de alunos sem notas',
   tags: ['notas'],
   querystring: z
@@ -106,5 +106,5 @@ export const getAlunosWithoutNotaSchema = {
 
 export type notaDataType = z.infer<typeof notaSchema>;
 export type getAlunosWithoutNotaQueryStringDataType = z.infer<
-  typeof getAlunosWithoutNotaSchema.querystring
+  typeof getAlunosAbsentNotaSchema.querystring
 >;

@@ -3,7 +3,7 @@ import {
   getAlunosWithoutNotaQueryStringDataType,
   notaDataType,
 } from '../schemas/notaSchema';
-import { getAlunosWithoutNotas } from '../services/alunoServices';
+import { getAlunosAbsentNotas } from '../services/alunoServices';
 import {
   createNota,
   getNotaById,
@@ -33,7 +33,7 @@ export async function createNotaController(
     .send(await createNota(request.body));
 }
 
-export async function getAlunosWithoutNotaController(
+export async function getAlunosAbsentNotaController(
   request: FastifyRequest<{
     Querystring: getAlunosWithoutNotaQueryStringDataType;
   }>,
@@ -42,7 +42,7 @@ export async function getAlunosWithoutNotaController(
   const { query } = request;
   const { pageSize, cursor } = query;
 
-  const alunos = await getAlunosWithoutNotas(query, pageSize, cursor);
+  const alunos = await getAlunosAbsentNotas(query, pageSize, cursor);
 
   let next_cursor =
     alunos.length === pageSize ? alunos[alunos.length - 1].id : undefined;

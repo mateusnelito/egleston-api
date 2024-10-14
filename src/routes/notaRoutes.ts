@@ -2,11 +2,11 @@ import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
   createNotaController,
-  getAlunosWithoutNotaController,
+  getAlunosAbsentNotaController,
 } from '../controllers/notaController';
 import {
   createNotaSchema,
-  getAlunosWithoutNotaSchema,
+  getAlunosAbsentNotaSchema,
 } from '../schemas/notaSchema';
 
 const notaRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
@@ -17,9 +17,9 @@ const notaRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
   });
 
   // Get all Alunos Without Notas
-  server.withTypeProvider<ZodTypeProvider>().get('/alunos/sem-notas', {
-    schema: getAlunosWithoutNotaSchema,
-    handler: getAlunosWithoutNotaController,
+  server.withTypeProvider<ZodTypeProvider>().get('/alunos/absent-nota', {
+    schema: getAlunosAbsentNotaSchema,
+    handler: getAlunosAbsentNotaController,
   });
 };
 export default notaRoutes;

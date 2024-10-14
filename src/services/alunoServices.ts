@@ -308,7 +308,7 @@ export async function createAlunoMatricula(
   });
 }
 
-export async function getAlunosWithoutNotas(
+export async function getAlunosAbsentNotas(
   data: getAlunosWithoutNotaQueryStringDataType,
   limit: number,
   cursor: number | null | undefined
