@@ -39,6 +39,9 @@ export async function getTurma(id: number) {
       Sala: {
         select: { nome: true },
       },
+      Turno: {
+        select: { nome: true },
+      },
     },
   });
 
@@ -48,6 +51,7 @@ export async function getTurma(id: number) {
       nome: turma?.nome,
       classe: turma?.Classe.nome,
       sala: turma?.Sala.nome,
+      turno: turma?.Turno.nome,
     };
   }
 }

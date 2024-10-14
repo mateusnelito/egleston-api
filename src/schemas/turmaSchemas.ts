@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { simpleBadRequestSchema } from './globalSchema';
+
 export const turmaBodySchema = z.object({
   id: z
     .number({
@@ -84,7 +85,7 @@ export const getTurmaSchema = {
   response: {
     200: turmaBodySchema
       .omit({ classeId: true, salaId: true, turnoId: true })
-      .extend({ classe: z.string(), sala: z.string() }),
+      .extend({ classe: z.string(), sala: z.string(), turno: z.string() }),
     404: simpleBadRequestSchema,
   },
 };
