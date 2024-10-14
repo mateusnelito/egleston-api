@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { createDisciplinaBodyType } from '../schemas/disciplinaSchema';
+import { isTurmaInClasse } from './turmaServices';
 
 export async function getDisciplinaNome(nome: string) {
   return await prisma.disciplina.findFirst({
@@ -46,4 +47,37 @@ export async function getDisciplinas(
       id: 'desc',
     },
   });
+}
+
+export async function getAbsentProfessorDisciplinas(
+  classeId: number,
+  turmaId: number
+) {
+  // Execute both queries concurrently for better performance
+  const [turmaClasse, classeCurso] = await Promise.all([
+    isTurmaInClasse(turmaId, classeId), // Check if turma belongs to the classe
+    prisma.classe.findUnique({
+      where: { id: classeId },
+      select: { cursoId: true }, // Fetch the cursoId associated with the classe
+    }),
+  ]);
+
+  // If turma is not linked to the classe or the classe doesn't exist, return an empty array
+  if (!(turmaClasse && classeCurso)) return { data: [] };
+
+  // Fetch all disciplinas that are not associated with the specified turma and classe
+  const disciplinas = await prisma.disciplina.findMany({
+    where: {
+      ProfessorDisciplinaClasse: {
+        none: { classeId, turmaId }, // Exclude disciplinas linked to this turma and classe
+      },
+      CursosDisciplinas: {
+        some: { cursoId: classeCurso.cursoId }, // Include only disciplinas from the same curso
+      },
+    },
+    select: { id: true, nome: true }, // Return only the id and name of the disciplinas
+  });
+
+  // Return the list of disciplinas without assigned professors for the turma and classe
+  return { data: disciplinas };
 }
