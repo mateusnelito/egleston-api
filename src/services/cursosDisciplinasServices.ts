@@ -95,3 +95,24 @@ export async function deleteMultiplesCursoDisciplinasByCursoId(
     ),
   };
 }
+
+export async function getDisciplinasByCurso(cursoId: number) {
+  const disciplinas = await prisma.cursosDisciplinas.findMany({
+    where: { cursoId },
+    select: {
+      Disciplina: {
+        select: {
+          id: true,
+          nome: true,
+        },
+      },
+    },
+  });
+
+  return {
+    data: disciplinas.map((disciplina) => ({
+      id: disciplina.Disciplina.id,
+      nome: disciplina.Disciplina.nome,
+    })),
+  };
+}
