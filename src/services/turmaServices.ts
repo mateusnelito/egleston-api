@@ -76,3 +76,10 @@ export async function getTurmaByIdAndClasse(id: number, classeId: number) {
     select: { id: true },
   });
 }
+
+export async function isTurmaInClasse(id: number, classeId: number) {
+  return prisma.turma.findUnique({
+    where: { id, classeId },
+    select: { id: true },
+  });
+}
