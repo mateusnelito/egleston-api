@@ -140,6 +140,28 @@ export const getClasseDisciplinasSchema = {
   },
 };
 
+export const getClasseDisciplinasAbsentProfessorSchema = {
+  summary: 'Retorna todas as disciplinas sem professor',
+  tags: ['classes'],
+  params: classeParamsSchema.merge(
+    z.object({
+      turmaId: z.coerce
+        .number({
+          required_error: 'O id da turma é obrigatório.',
+          invalid_type_error: 'O id da turma deve ser número.',
+        })
+        .int({ message: 'O id da turma deve ser inteiro.' })
+        .positive({ message: 'O id da turma deve ser positivo.' }),
+    })
+  ),
+  response: {
+    200: z.object({
+      data: z.array(z.object({ id: z.number(), nome: z.string() })),
+    }),
+    404: simpleBadRequestSchema,
+  },
+};
+
 export type createClasseBodyType = z.infer<typeof createClasseSchema.body>;
 export type updateClasseBodyType = z.infer<typeof updateClasseSchema.body>;
 export type classeParamsType = z.infer<typeof classeParamsSchema>;
@@ -149,4 +171,8 @@ export type createTurmaToClasseBodyType = z.infer<
 
 export type getClasseAlunosQueryStringType = z.infer<
   typeof getClasseAlunosSchema.querystring
+>;
+
+export type getClasseAbsentDisciplinasParamsType = z.infer<
+  typeof getClasseDisciplinasAbsentProfessorSchema.params
 >;
