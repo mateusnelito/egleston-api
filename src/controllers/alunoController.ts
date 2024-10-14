@@ -230,7 +230,7 @@ export async function createMatriculaToAlunoController(
     metodoPagamentoId,
   });
 
-  const activeAnoLectivo = await getAnoLectivoActivo(true);
+  const activeAnoLectivo = await getAnoLectivoActivo();
 
   if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
 

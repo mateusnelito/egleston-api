@@ -42,7 +42,7 @@ export async function createTrimestreController(
   if (trimestreMonths > MINIMUM_TRIMESTRE_MONTH_DURATION)
     throwInvalidTrimestreDurationError();
 
-  const activeAnoLectivo = await getAnoLectivoActivo(true);
+  const activeAnoLectivo = await getAnoLectivoActivo();
 
   if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
 
@@ -100,7 +100,7 @@ export async function getTrimestresController(
   _: FastifyRequest,
   reply: FastifyReply
 ) {
-  const activeAnoLectivo = await getAnoLectivoActivo(true);
+  const activeAnoLectivo = await getAnoLectivoActivo();
 
   if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
 

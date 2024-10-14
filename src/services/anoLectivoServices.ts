@@ -44,9 +44,9 @@ export async function getAnoLectivo(id: number) {
   return await prisma.anoLectivo.findUnique({ where: { id } });
 }
 
-export async function getAnoLectivoActivo(activo: boolean) {
+export async function getAnoLectivoActivo() {
   return await prisma.anoLectivo.findFirst({
-    where: { activo },
+    where: { activo: true },
     select: { id: true, inicio: true, termino: true },
   });
 }

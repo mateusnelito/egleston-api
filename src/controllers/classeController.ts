@@ -44,7 +44,7 @@ export async function createClasseController(
   const { nome, cursoId, valorMatricula } = request.body;
 
   const [activeAnoLectivo, isCursoId] = await Promise.all([
-    getAnoLectivoActivo(true),
+    getAnoLectivoActivo(),
     getCursoId(cursoId),
   ]);
 
@@ -83,7 +83,7 @@ export async function updateClasseController(
 
   const [isClasseId, activeAnoLectivo, isCursoId] = await Promise.all([
     getClasseId(classeId),
-    getAnoLectivoActivo(true),
+    getAnoLectivoActivo(),
     getCursoId(cursoId),
   ]);
 
