@@ -129,7 +129,7 @@ export const getClasseAlunosSchema = {
 };
 
 export const getClasseDisciplinasSchema = {
-  summary: 'Retorna todas as disciplinas lecionadas na classe',
+  summary: 'Retorna todas as disciplinas da classe',
   tags: ['classes'],
   params: classeParamsSchema,
   response: {
