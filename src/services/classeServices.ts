@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { getDisciplinasByCurso } from './cursosDisciplinasServices';
+import { getAnoLectivoActivo, getAnoLectivoId } from './anoLectivoServices';
 
 export async function getClasseByUniqueKey(
   nome: string,
@@ -104,10 +105,19 @@ export async function getClassesByAnoLectivo(anoLectivoId: number) {
   };
 }
 
-export async function getClassesByCurso(cursoId: number, anoLectivoId: number) {
+export async function getClassesByCurso(
+  cursoId: number,
+  anoLectivoId: number | null | undefined
+) {
+  const anoLectivo = !anoLectivoId
+    ? await getAnoLectivoActivo()
+    : await getAnoLectivoId(anoLectivoId);
+
+  if (!anoLectivo) return { data: [] };
+
   return {
     data: await prisma.classe.findMany({
-      where: { cursoId, anoLectivoId },
+      where: { cursoId, anoLectivoId: anoLectivo.id },
       select: {
         id: true,
         nome: true,
