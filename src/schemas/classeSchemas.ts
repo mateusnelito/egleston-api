@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   complexBadRequestSchema,
+  getResourcesDefaultQueriesSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
 import { turmaBodySchema } from './turmaSchemas';
@@ -110,7 +111,7 @@ export const getClasseAlunosSchema = {
   summary: 'Retorna todas os alunos de uma classe',
   tags: ['classes'],
   params: classeParamsSchema,
-  querystring: z.object({
+  querystring: getResourcesDefaultQueriesSchema.extend({
     turmaId: z.coerce
       .number({
         required_error: 'O id da turma é obrigatório.',
@@ -122,7 +123,13 @@ export const getClasseAlunosSchema = {
   }),
   response: {
     200: z.object({
-      data: z.array(z.object({ id: z.number(), nomeCompleto: z.string() })),
+      data: z.array(
+        z.object({
+          id: z.number(),
+          nomeCompleto: z.string(),
+        })
+      ),
+      next_cursor: z.number().optional(),
     }),
     404: simpleBadRequestSchema,
   },

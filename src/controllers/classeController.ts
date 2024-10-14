@@ -141,13 +141,18 @@ export async function getClasseAlunosController(
   reply: FastifyReply
 ) {
   const { classeId } = request.params;
-  const { turmaId } = request.query;
+  const { turmaId, pageSize, cursor } = request.query;
 
   const isClasseId = await getClasseId(classeId);
 
   if (!isClasseId) throwNotFoundClasseIdError();
 
-  return reply.send(await getAlunosMatriculaByClasse(classeId, turmaId));
+  const alunos = await getAlunosMatriculaByClasse(classeId, request.query);
+
+  let next_cursor =
+    alunos.length === pageSize ? alunos[alunos.length - 1].id : undefined;
+
+  return reply.send({ data: alunos, next_cursor });
 }
 
 export async function getClasseDisciplinasController(

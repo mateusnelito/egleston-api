@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { createMatriculaToAlunoBodyType } from '../schemas/alunoSchemas';
+import { getClasseAlunosQueryStringType } from '../schemas/classeSchemas';
 import { formatDate } from '../utils/utilsFunctions';
 
 export async function getMatriculasByAlunoId(alunoId: number) {
@@ -175,12 +176,23 @@ export async function getMatriculaIdById(id: number) {
   });
 }
 
-// TODO: ADD CURSOR-BASED PAGINATION
 export async function getAlunosMatriculaByClasse(
   classeId: number,
-  turmaId?: number
+  data: getClasseAlunosQueryStringType
 ) {
-  const whereClause = turmaId ? { classeId, turmaId } : { classeId };
+  const { pageSize, cursor, turmaId } = data;
+
+  const whereCursorClause = cursor
+    ? {
+        id: {
+          lt: cursor,
+        },
+      }
+    : {};
+
+  const whereClause = turmaId
+    ? { ...whereCursorClause, classeId, turmaId }
+    : { ...whereCursorClause, classeId };
 
   const alunoMatriculas = await prisma.matricula.findMany({
     where: whereClause,
@@ -189,16 +201,16 @@ export async function getAlunosMatriculaByClasse(
         select: { id: true, nomeCompleto: true },
       },
     },
+    take: pageSize,
+    orderBy: { Aluno: { id: 'desc' } },
   });
 
-  return {
-    data: alunoMatriculas.map(({ Aluno: aluno }) => {
-      return {
-        id: aluno.id,
-        nomeCompleto: aluno.nomeCompleto,
-      };
-    }),
-  };
+  return alunoMatriculas.map(({ Aluno: aluno }) => {
+    return {
+      id: aluno.id,
+      nomeCompleto: aluno.nomeCompleto,
+    };
+  });
 }
 
 export async function getLastAlunoMatriculaCurso(alunoId: number) {
