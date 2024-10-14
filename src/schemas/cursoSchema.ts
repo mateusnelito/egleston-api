@@ -232,6 +232,23 @@ export const createClasseToCursoSchema = {
   },
 };
 
+export const getCursoDisciplinasSchema = {
+  summary: 'Retorna todas as disciplinas do curso',
+  tags: ['cursos'],
+  params: cursoParamsSchema,
+  response: {
+    200: z.object({
+      data: z.array(
+        z.object({
+          id: z.number().int().positive(),
+          nome: z.string(),
+        })
+      ),
+    }),
+    404: simpleBadRequestSchema,
+  },
+};
+
 export type createCursoBodyType = z.infer<typeof createCursoSchema.body>;
 export type updateCursoBodyType = z.infer<typeof updateCursoSchema.body>;
 
