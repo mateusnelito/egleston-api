@@ -3,6 +3,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
   createClasseController,
   createTurmaInClasseController,
+  getClasseDisciplinasAbsentProfessorController,
   getClasseAlunosController,
   getClasseController,
   getClasseDisciplinasController,
@@ -12,6 +13,7 @@ import {
 import {
   createClasseSchema,
   createTurmaToClasseSchema,
+  getClasseDisciplinasAbsentProfessorSchema,
   getClasseAlunosSchema,
   getClasseDisciplinasSchema,
   getClasseSchema,
@@ -63,4 +65,12 @@ export const classeRoutes: FastifyPluginAsync = async (
     schema: createTurmaToClasseSchema,
     handler: createTurmaInClasseController,
   });
+
+  // GET Classe Disciplinas Without Professor
+  server
+    .withTypeProvider<ZodTypeProvider>()
+    .get('/:classeId/turmas/:turmaId/disciplinas/absent-professor', {
+      schema: getClasseDisciplinasAbsentProfessorSchema,
+      handler: getClasseDisciplinasAbsentProfessorController,
+    });
 };

@@ -3,6 +3,7 @@ import {
   classeParamsType,
   createClasseBodyType,
   createTurmaToClasseBodyType,
+  getClasseAbsentDisciplinasParamsType,
   getClasseAlunosQueryStringType,
   updateClasseBodyType,
 } from '../schemas/classeSchemas';
@@ -15,6 +16,9 @@ import {
   updateClasse,
 } from '../services/classeServices';
 import { getCursoId } from '../services/cursoServices';
+import { getAbsentProfessorDisciplinas } from '../services/disciplinaServices';
+import { getAlunosMatriculaByClasse } from '../services/matriculaServices';
+import { getClasseDisciplinas } from '../services/professorDisciplinaClasseServices';
 import { getSalaId } from '../services/salaServices';
 import {
   createTurma,
@@ -32,8 +36,6 @@ import { throwNotFoundSalaIdFieldError } from '../utils/controllers/salaControll
 import { throwDuplicatedTurmaError } from '../utils/controllers/turmaControllerUtils';
 import { throwNotFoundTurnoIdFieldError } from '../utils/controllers/turnoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import { getAlunosMatriculaByClasse } from '../services/matriculaServices';
-import { getClasseDisciplinas } from '../services/professorDisciplinaClasseServices';
 
 export async function createClasseController(
   request: FastifyRequest<{ Body: createClasseBodyType }>,
@@ -187,4 +189,20 @@ export async function createTurmaInClasseController(
 
   const turma = await createTurma({ nome, classeId, salaId, turnoId });
   return reply.status(HttpStatusCodes.CREATED).send(turma);
+}
+
+export async function getClasseDisciplinasAbsentProfessorController(
+  request: FastifyRequest<{
+    Params: getClasseAbsentDisciplinasParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { classeId, turmaId } = request.params;
+
+  const isClasseId = await getClasseId(classeId);
+
+  if (!isClasseId) throwNotFoundClasseIdError();
+
+  const disciplinas = await getAbsentProfessorDisciplinas(classeId, turmaId);
+  return reply.send(disciplinas);
 }
