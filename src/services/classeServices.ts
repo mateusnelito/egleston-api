@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
+import { getDisciplinasByCurso } from './cursosDisciplinasServices';
 
 export async function getClasseByUniqueKey(
   nome: string,
@@ -127,4 +128,13 @@ export async function getClasseAnoLectivoAndCursoById(id: number) {
       Curso: { select: { id: true } },
     },
   });
+}
+
+export async function getClasseDisciplinas(classeId: number) {
+  const classe = await prisma.classe.findUnique({
+    where: { id: classeId },
+    select: { cursoId: true },
+  });
+
+  return getDisciplinasByCurso(classe!.cursoId);
 }
