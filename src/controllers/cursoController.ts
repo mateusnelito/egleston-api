@@ -231,15 +231,11 @@ export async function getCursoClassesController(
   const { cursoId } = request.params;
   const { anoLectivoId } = request.query;
 
-  const [isCursoId, anoLectivo] = await Promise.all([
-    getCursoId(cursoId),
-    anoLectivoId ? getAnoLectivoId(anoLectivoId) : getAnoLectivoActivo(true),
-  ]);
+  const isCursoId = await getCursoId(cursoId);
 
   if (!isCursoId) throwNotFoundCursoIdError();
-  if (!anoLectivo) throwNotFoundAnoLectivoIdError();
 
-  const classes = await getClassesByCurso(cursoId, anoLectivo!.id);
+  const classes = await getClassesByCurso(cursoId, anoLectivoId);
   return reply.send(classes);
 }
 
@@ -255,7 +251,7 @@ export async function createClasseToCursoController(
 
   const [isCursoId, activeAnoLectivo] = await Promise.all([
     getCursoId(cursoId),
-    getAnoLectivoActivo(true),
+    getAnoLectivoActivo(),
   ]);
 
   if (!isCursoId) throwNotFoundCursoIdError();
