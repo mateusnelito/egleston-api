@@ -30,6 +30,7 @@ import {
   deleteCursoDisciplina,
   deleteMultiplesCursoDisciplinasByCursoId,
   getCursoDisciplina,
+  getDisciplinasByCurso,
 } from '../services/cursosDisciplinasServices';
 import { getDisciplinaId } from '../services/disciplinaServices';
 import BadRequest from '../utils/BadRequest';
@@ -278,4 +279,20 @@ export async function createClasseToCursoController(
 
   // TODO: Send a appropriate response
   return reply.status(HttpStatusCodes.CREATED).send(classe);
+}
+
+export async function getCursoDisciplinasController(
+  request: FastifyRequest<{
+    Params: cursoParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { cursoId } = request.params;
+
+  const isCursoId = await getCursoId(cursoId);
+
+  if (!isCursoId) throwNotFoundCursoIdError();
+
+  const disciplinas = await getDisciplinasByCurso(cursoId);
+  return reply.send(disciplinas);
 }

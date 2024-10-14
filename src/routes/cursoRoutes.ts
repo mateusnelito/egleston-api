@@ -10,6 +10,7 @@ import {
   getCursoClassesController,
   getCursosController,
   updateCursoController,
+  getCursoDisciplinasController,
 } from '../controllers/cursoController';
 import {
   createMultiplesCursoDisciplinaSchema,
@@ -21,6 +22,7 @@ import {
   getCursosSchema,
   updateCursoSchema,
   createClasseToCursoSchema,
+  getCursoDisciplinasSchema,
 } from '../schemas/cursoSchema';
 
 const cursosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
@@ -78,6 +80,12 @@ const cursosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
   server.withTypeProvider<ZodTypeProvider>().post('/:cursoId/classes', {
     schema: createClasseToCursoSchema,
     handler: createClasseToCursoController,
+  });
+
+  // GET All Disciplinas
+  server.withTypeProvider<ZodTypeProvider>().get('/:cursoId/disciplinas', {
+    schema: getCursoDisciplinasSchema,
+    handler: getCursoDisciplinasController,
   });
 };
 
