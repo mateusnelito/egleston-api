@@ -45,9 +45,9 @@ export async function getAnoLectivo(id: number) {
 }
 
 export async function getAnoLectivoActivo() {
-  return await prisma.anoLectivo.findFirst({
+  return prisma.anoLectivo.findFirst({
     where: { activo: true },
-    select: { id: true, inicio: true, termino: true },
+    select: { id: true, inicio: true, termino: true, matriculaAberta: true },
   });
 }
 
