@@ -35,7 +35,6 @@ export async function getTotalProfessorDisciplina(
   });
 }
 
-// TO-REMEMBER: THIS IS THE PURE *GAMBIARRA WHE DB-DESIGN FAILS
 export async function getProfessorClasses(professorId: number) {
   const professorClasses = await prisma.professorDisciplinaClasse.findMany({
     where: { professorId },
@@ -58,22 +57,33 @@ export async function getProfessorClasses(professorId: number) {
           },
         },
       },
+      Turma: {
+        select: { _count: { select: { ProfessorDisciplinaClasse: {} } } },
+      },
     },
     orderBy: { Classe: { Curso: { nome: 'asc' } } },
   });
 
   const classes = professorClasses
     .filter(({ Classe: classe }) => classe.AnoLectivo.activo)
-    .map(({ Classe: classe }) => {
-      return {
-        id: classe.id,
-        nome: classe.nome,
-        curso: {
-          id: classe.Curso.id,
-          nome: classe.Curso.nome,
+    .map(
+      ({
+        Classe: classe,
+        Turma: {
+          _count: { ProfessorDisciplinaClasse: totalTurmas },
         },
-      };
-    });
+      }) => {
+        return {
+          id: classe.id,
+          nome: classe.nome,
+          curso: {
+            id: classe.Curso.id,
+            nome: classe.Curso.nome,
+          },
+          totalTurmas,
+        };
+      }
+    );
 
   return { data: classes };
 }
