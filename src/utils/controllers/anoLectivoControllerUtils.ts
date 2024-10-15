@@ -47,3 +47,10 @@ export function throwActiveAnoLectivoNotFoundError() {
     message: 'Nenhum ano lectivo activo definido.',
   });
 }
+
+export function throwMatriculaClosedForAnoLectivo() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.FORBIDDEN,
+    message: 'As inscrições para o ano académico atual estão fechadas.',
+  });
+}
