@@ -239,6 +239,7 @@ export const getProfessorDisciplinaClassesAssociationSchema = {
             id: z.number(),
             nome: z.string(),
           }),
+          totalTurmas: z.number().int().nonnegative(),
         })
       ),
     }),
