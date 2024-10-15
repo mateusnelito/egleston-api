@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
+import { getAnoLectivoActivo } from './anoLectivoServices';
 
 export async function getProfessorDisciplinaClasseById(
   professorId: number,
@@ -35,9 +36,16 @@ export async function getTotalProfessorDisciplina(
   });
 }
 
-export async function getProfessorClasses(professorId: number) {
+export async function getProfessorClasses(
+  professorId: number,
+  anoLectivoId?: number
+) {
+  const anoLectivo = anoLectivoId
+    ? { id: anoLectivoId }
+    : await getAnoLectivoActivo();
+
   const professorClasses = await prisma.professorDisciplinaClasse.findMany({
-    where: { professorId },
+    where: { professorId, Classe: { anoLectivoId: anoLectivo?.id } },
     distinct: ['classeId'],
     select: {
       Classe: {
@@ -50,40 +58,31 @@ export async function getProfessorClasses(professorId: number) {
               nome: true,
             },
           },
-          AnoLectivo: {
-            select: {
-              activo: true,
-            },
-          },
         },
       },
       Turma: {
         select: { _count: { select: { ProfessorDisciplinaClasse: {} } } },
       },
     },
-    orderBy: { Classe: { Curso: { nome: 'asc' } } },
+    orderBy: { Classe: { id: 'desc' } },
   });
 
-  const classes = professorClasses
-    .filter(({ Classe: classe }) => classe.AnoLectivo.activo)
-    .map(
-      ({
-        Classe: classe,
-        Turma: {
-          _count: { ProfessorDisciplinaClasse: totalTurmas },
-        },
-      }) => {
-        return {
-          id: classe.id,
-          nome: classe.nome,
-          curso: {
-            id: classe.Curso.id,
-            nome: classe.Curso.nome,
-          },
-          totalTurmas,
-        };
-      }
-    );
+  const classes = professorClasses.map(
+    ({
+      Classe: classe,
+      Turma: {
+        _count: { ProfessorDisciplinaClasse: totalTurmas },
+      },
+    }) => ({
+      id: classe.id,
+      nome: classe.nome,
+      curso: {
+        id: classe.Curso.id,
+        nome: classe.Curso.nome,
+      },
+      totalTurmas,
+    })
+  );
 
   return { data: classes };
 }
