@@ -78,10 +78,9 @@ export const updateAnoLectivoSchema = {
   },
 };
 
-export const patchAnoLectivoSchema = {
-  summary: 'Altera o status de um ano lectivo existente',
+export const changeAnoLectivoStatusSchema = {
+  summary: 'Altera o status do ano lectivo actual',
   tags: ['ano-lectivo'],
-  params: anoLectivoParamsSchema,
   body: anoLectivoBodySchema.omit({
     id: true,
     nome: true,
@@ -182,6 +181,23 @@ export const getAnoLectivoTrimestresSchema = {
   },
 };
 
+export const changeAnoLectivoMatriculaAbertaSchema = {
+  summary: 'Altera o status da matricula do ano lectivo actual',
+  tags: ['ano-lectivo'],
+  params: anoLectivoParamsSchema,
+  body: z.object({
+    matriculaAberta: z.boolean({
+      required_error: 'O status de matricula aberta é obrigatório.',
+      invalid_type_error: 'O status de matricula aberta deve ser boolean.',
+    }),
+  }),
+  response: {
+    // 200: anoLectivoBodySchema,
+    404: simpleBadRequestSchema,
+    400: simpleBadRequestSchema,
+  },
+};
+
 export type createAnoLectivoBodyType = z.infer<
   typeof createAnoLectivoSchema.body
 >;
@@ -190,5 +206,9 @@ export type createClasseToAnoLectivoBodyType = z.infer<
   typeof createClasseToAnoLectivoSchema.body
 >;
 export type patchAnoLectivoBodyType = z.infer<
-  typeof patchAnoLectivoSchema.body
+  typeof changeAnoLectivoStatusSchema.body
+>;
+
+export type changeAnoLectivoMatriculaAbertaBodyType = z.infer<
+  typeof changeAnoLectivoMatriculaAbertaSchema.body
 >;

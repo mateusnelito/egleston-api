@@ -47,10 +47,26 @@ export async function getAnoLectivo(id: number) {
 export async function getAnoLectivoActivo() {
   return prisma.anoLectivo.findFirst({
     where: { activo: true },
-    select: { id: true, inicio: true, termino: true, matriculaAberta: true },
+    select: {
+      id: true,
+      inicio: true,
+      termino: true,
+      activo: true,
+      matriculaAberta: true,
+    },
   });
 }
 
 export async function changeAnoLectivoActiveState(id: number, activo: boolean) {
   return await prisma.anoLectivo.update({ where: { id }, data: { activo } });
+}
+
+export async function changeAnoLectivoMatriculaAbertaState(
+  id: number,
+  matriculaAberta: boolean
+) {
+  return await prisma.anoLectivo.update({
+    where: { id },
+    data: { matriculaAberta },
+  });
 }
