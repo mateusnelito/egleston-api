@@ -116,3 +116,43 @@ export async function getClasseDisciplinas(classeId: number) {
     }),
   };
 }
+
+export async function getProfessorClasseTurmas(
+  professorId: number,
+  classeId: number
+) {
+  // Fetch all classes, their corresponding disciplines, and groups by professor and class
+  const professorClasses = await prisma.professorDisciplinaClasse.findMany({
+    where: { professorId, classeId },
+    select: {
+      Turma: {
+        select: { id: true, nome: true },
+      },
+      Disciplina: { select: { id: true, nome: true } },
+    },
+    orderBy: [{ Turma: { id: 'desc' } }, { Disciplina: { id: 'desc' } }],
+  });
+
+  // Object to group 'turmas' (classes) by their ID and aggregate their disciplines
+  const turmaMap: Record<number, any> = {};
+
+  // Loop through each result to group disciplines by 'turma'
+  professorClasses.forEach(({ Turma: turma, Disciplina: disciplina }) => {
+    // If the turma is not yet in the map, initialize it with an empty disciplines array
+    if (!turmaMap[turma.id]) {
+      turmaMap[turma.id] = {
+        id: turma.id,
+        nome: turma.nome,
+        disciplinas: [],
+      };
+    }
+    // Add the discipline to the corresponding turma's disciplines array
+    turmaMap[turma.id].disciplinas.push(disciplina);
+  });
+
+  // Convert the 'turmaMap' object back into an array of turmas
+  const turmas = Object.values(turmaMap);
+
+  // Return the result in the expected format
+  return { data: turmas };
+}
