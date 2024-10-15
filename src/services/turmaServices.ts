@@ -57,11 +57,20 @@ export async function getTurma(id: number) {
 }
 
 export async function getTurmasByClasse(classeId: number) {
+  const turmas = await prisma.turma.findMany({
+    where: { classeId },
+    select: {
+      id: true,
+      nome: true,
+      Turno: { select: { id: true, nome: true } },
+    },
+  });
   return {
-    data: await prisma.turma.findMany({
-      where: { classeId },
-      select: { id: true, nome: true },
-    }),
+    data: turmas.map(({ id, nome, Turno }) => ({
+      id,
+      nome,
+      turno: Turno,
+    })),
   };
 }
 
