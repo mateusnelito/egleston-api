@@ -248,6 +248,38 @@ export const getProfessorDisciplinaClassesAssociationSchema = {
   },
 };
 
+export const getProfessorDisciplinaClasseTurmasSchema = {
+  summary: 'Retorna as turmas em que o professor leciona em uma classe',
+  tags: ['professores'],
+  params: professorParamsSchema.extend({
+    classeId: z.coerce
+      .number({
+        required_error: 'O id da classe é obrigatório.',
+        invalid_type_error: 'O id da classe deve ser número.',
+      })
+      .int({ message: 'O id da classe deve ser inteiro.' })
+      .positive({ message: 'O id da classe deve ser positivo.' }),
+  }),
+  response: {
+    200: z.object({
+      data: z.array(
+        z.object({
+          id: z.number(),
+          nome: z.string(),
+          disciplinas: z.array(
+            z.object({
+              id: z.number(),
+              nome: z.string(),
+            })
+          ),
+        })
+      ),
+    }),
+    400: simpleBadRequestSchema,
+    404: simpleBadRequestSchema,
+  },
+};
+
 export type professorParamsType = z.infer<typeof professorParamsSchema>;
 export type createProfessorBodyType = z.infer<
   typeof createProfessorSchema.body
@@ -270,4 +302,7 @@ export type deleteProfessorDisciplinaParamsType = z.infer<
 >;
 export type createProfessorDisciplinaClasseAssociationBodyType = z.infer<
   typeof createProfessorDisciplinaClasseAssociationSchema.body
+>;
+export type getProfessorDisciplinaClasseTurmasParamsType = z.infer<
+  typeof getProfessorDisciplinaClasseTurmasSchema.params
 >;
