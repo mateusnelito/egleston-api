@@ -3,12 +3,16 @@ import {
   createProfessorBodyType,
   createProfessorDisciplinaClasseAssociationBodyType,
   deleteProfessorDisciplinaParamsType,
+  getProfessorDisciplinaClasseTurmasParamsType,
   getProfessoresQueryStringType,
   professorDisciplinaBodyType,
   professorParamsType,
   updateProfessorBodyType,
 } from '../schemas/professorSchemas';
-import { getClasseAnoLectivoAndCursoById } from '../services/classeServices';
+import {
+  getClasseAnoLectivoAndCursoById,
+  getClasseId,
+} from '../services/classeServices';
 import { getCursoDisciplina } from '../services/cursosDisciplinasServices';
 import { getDisciplinaId } from '../services/disciplinaServices';
 import {
@@ -23,6 +27,7 @@ import {
   createProfessorDisciplinaClasse,
   getDisciplinaClasse,
   getProfessorClasses,
+  getProfessorClasseTurmas,
   getProfessorDisciplinaClasseById,
   getTotalProfessorDisciplina,
 } from '../services/professorDisciplinaClasseServices';
@@ -35,7 +40,10 @@ import {
 } from '../services/professorServices';
 import { getTurmaByIdAndClasse } from '../services/turmaServices';
 import BadRequest from '../utils/BadRequest';
-import { throwNotFoundClasseIdFieldError } from '../utils/controllers/classeControllerUtils';
+import {
+  throwNotFoundClasseIdError,
+  throwNotFoundClasseIdFieldError,
+} from '../utils/controllers/classeControllerUtils';
 import {
   throwInvalidDisciplinaIdFieldError,
   throwInvalidDisciplinasArrayError,
@@ -425,4 +433,28 @@ export async function getProfessorDisciplinaClassesAssociationController(
   const professorClasses = await getProfessorClasses(professorId);
 
   return reply.send(professorClasses);
+}
+
+export async function getProfessorDisciplinaClasseTurmasController(
+  request: FastifyRequest<{
+    Params: getProfessorDisciplinaClasseTurmasParamsType;
+  }>,
+  reply: FastifyReply
+) {
+  const { professorId, classeId } = request.params;
+
+  const [professor, classe] = await Promise.all([
+    getProfessorId(professorId),
+    getClasseId(classeId),
+  ]);
+
+  if (!professor) throw throwNotFoundProfessorIdError();
+  if (!classe) throwNotFoundClasseIdError();
+
+  const professorClasseTurmas = await getProfessorClasseTurmas(
+    professorId,
+    classeId
+  );
+
+  return reply.send(professorClasseTurmas);
 }
