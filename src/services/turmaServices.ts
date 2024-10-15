@@ -34,26 +34,26 @@ export async function getTurma(id: number) {
       id: true,
       nome: true,
       Classe: {
-        select: { nome: true },
+        select: { id: true, nome: true },
       },
       Sala: {
-        select: { nome: true },
+        select: { id: true, nome: true },
       },
       Turno: {
-        select: { nome: true },
+        select: { id: true, nome: true },
       },
     },
   });
 
-  if (turma) {
-    return {
-      id: turma?.id,
-      nome: turma?.nome,
-      classe: turma?.Classe.nome,
-      sala: turma?.Sala.nome,
-      turno: turma?.Turno.nome,
-    };
-  }
+  return turma
+    ? {
+        id: turma.id,
+        nome: turma.nome,
+        classe: turma.Classe,
+        sala: turma.Sala,
+        turno: turma.Turno,
+      }
+    : turma;
 }
 
 export async function getTurmasByClasse(classeId: number) {

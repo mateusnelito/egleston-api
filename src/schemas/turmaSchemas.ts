@@ -85,7 +85,20 @@ export const getTurmaSchema = {
   response: {
     200: turmaBodySchema
       .omit({ classeId: true, salaId: true, turnoId: true })
-      .extend({ classe: z.string(), sala: z.string(), turno: z.string() }),
+      .extend({
+        classe: z.object({
+          id: z.number(),
+          nome: z.string(),
+        }),
+        sala: z.object({
+          id: z.number(),
+          nome: z.string(),
+        }),
+        turno: z.object({
+          id: z.number(),
+          nome: z.string(),
+        }),
+      }),
     404: simpleBadRequestSchema,
   },
 };
