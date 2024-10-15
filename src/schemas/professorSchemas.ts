@@ -225,10 +225,20 @@ export const createProfessorDisciplinaClasseAssociationSchema = {
   },
 };
 
-export const getProfessorDisciplinaClassesAssociationSchema = {
+export const getProfessorDisciplinaClassesSchema = {
   summary: 'Retorna as classes em que o professor leciona no ano letivo atual',
   tags: ['professores'],
   params: professorParamsSchema,
+  querystring: z.object({
+    anoLectivoId: z.coerce
+      .number({
+        required_error: 'O id do ano lectivo é obrigatório.',
+        invalid_type_error: 'O id do ano lectivo deve ser número.',
+      })
+      .int({ message: 'O id do ano lectivo deve ser inteiro.' })
+      .positive({ message: 'O id do ano lectivo deve ser positivo.' })
+      .optional(),
+  }),
   response: {
     200: z.object({
       data: z.array(
@@ -305,4 +315,7 @@ export type createProfessorDisciplinaClasseAssociationBodyType = z.infer<
 >;
 export type getProfessorDisciplinaClasseTurmasParamsType = z.infer<
   typeof getProfessorDisciplinaClasseTurmasSchema.params
+>;
+export type getProfessorDisciplinaClassesParamsType = z.infer<
+  typeof getProfessorDisciplinaClassesSchema.querystring
 >;

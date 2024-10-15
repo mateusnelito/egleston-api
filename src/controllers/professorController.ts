@@ -3,6 +3,7 @@ import {
   createProfessorBodyType,
   createProfessorDisciplinaClasseAssociationBodyType,
   deleteProfessorDisciplinaParamsType,
+  getProfessorDisciplinaClassesParamsType,
   getProfessorDisciplinaClasseTurmasParamsType,
   getProfessoresQueryStringType,
   professorDisciplinaBodyType,
@@ -419,18 +420,20 @@ export async function createProfessorDisciplinaClasseAssociationController(
     .send(newProfessorDisciplinaClasse);
 }
 
-export async function getProfessorDisciplinaClassesAssociationController(
+export async function getProfessorDisciplinaClassesController(
   request: FastifyRequest<{
     Params: professorParamsType;
+    Querystring: getProfessorDisciplinaClassesParamsType;
   }>,
   reply: FastifyReply
 ) {
   const { professorId } = request.params;
+  const { anoLectivoId } = request.query;
   const professor = await getProfessorId(professorId);
 
   if (!professor) throw throwNotFoundProfessorIdError();
 
-  const professorClasses = await getProfessorClasses(professorId);
+  const professorClasses = await getProfessorClasses(professorId, anoLectivoId);
 
   return reply.send(professorClasses);
 }

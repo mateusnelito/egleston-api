@@ -9,7 +9,7 @@ import {
   getProfessorController,
   getProfessorDisciplinaAssociationsController,
   getProfessorDisciplinaClasseTurmasController,
-  getProfessorDisciplinaClassesAssociationController,
+  getProfessorDisciplinaClassesController,
   getProfessoresController,
   updateProfessorController,
 } from '../controllers/professorController';
@@ -21,7 +21,7 @@ import {
   deleteProfessorDisciplinaSchema,
   getProfessorDisciplinaAssociationsSchema,
   getProfessorDisciplinaClasseTurmasSchema,
-  getProfessorDisciplinaClassesAssociationSchema,
+  getProfessorDisciplinaClassesSchema,
   getProfessorSchema,
   getProfessoresSchema,
   updateProfessorSchema,
@@ -90,8 +90,8 @@ const professoresRoutes: FastifyPluginAsync = async (
 
   // GET
   server.withTypeProvider<ZodTypeProvider>().get('/:professorId/classes', {
-    schema: getProfessorDisciplinaClassesAssociationSchema,
-    handler: getProfessorDisciplinaClassesAssociationController,
+    schema: getProfessorDisciplinaClassesSchema,
+    handler: getProfessorDisciplinaClassesController,
   });
 
   // GET
