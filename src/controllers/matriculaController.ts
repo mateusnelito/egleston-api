@@ -7,7 +7,10 @@ import { getAnoLectivoActivo } from '../services/anoLectivoServices';
 import { validateMatriculaData } from '../services/matriculaValidationService';
 import { validateResponsavelData } from '../services/responsaveisValidationServices';
 import BadRequest from '../utils/BadRequest';
-import { throwActiveAnoLectivoNotFoundError } from '../utils/controllers/anoLectivoControllerUtils';
+import {
+  throwActiveAnoLectivoNotFoundError,
+  throwMatriculaClosedForAnoLectivo,
+} from '../utils/controllers/anoLectivoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
 import { arrayHasDuplicatedItems } from '../utils/utilsFunctions';
@@ -46,6 +49,11 @@ export async function createAlunoMatriculaController(
     });
   }
 
+  const activeAnoLectivo = await getAnoLectivoActivo();
+
+  if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
+  if (!activeAnoLectivo?.matriculaAberta) throwMatriculaClosedForAnoLectivo();
+
   await validateAlunoData(alunoData);
 
   for (let index = 0; index < alunoResponsaveis.length; index++) {
@@ -60,10 +68,6 @@ export async function createAlunoMatriculaController(
     turnoId,
     metodoPagamentoId,
   });
-
-  const activeAnoLectivo = await getAnoLectivoActivo();
-
-  if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
 
   const matricula = await createAlunoMatricula(activeAnoLectivo!.id, data);
 

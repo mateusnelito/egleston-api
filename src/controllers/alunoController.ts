@@ -50,7 +50,10 @@ import {
   MINIMUM_ALUNO_RESPONSAVEIS,
   throwNotFoundAlunoIdError,
 } from '../utils/controllers/alunoControllerUtils';
-import { throwActiveAnoLectivoNotFoundError } from '../utils/controllers/anoLectivoControllerUtils';
+import {
+  throwActiveAnoLectivoNotFoundError,
+  throwMatriculaClosedForAnoLectivo,
+} from '../utils/controllers/anoLectivoControllerUtils';
 import { throwDuplicatedMatriculaError } from '../utils/controllers/matriculaControllerUtils';
 import { throwNotFoundNotaIdError } from '../utils/controllers/notaControllerUtil';
 import { throwNotFoundParentescoIdFieldError } from '../utils/controllers/parentescoControllerUtils';
@@ -219,9 +222,16 @@ export async function createMatriculaToAlunoController(
 ) {
   const { alunoId } = request.params;
   const { classeId, turmaId, turnoId, metodoPagamentoId } = request.body;
-  const isAlunoId = await getAlunoId(alunoId);
 
-  if (!isAlunoId) throwNotFoundAlunoIdError();
+  const [aluno, anoLectivo] = await Promise.all([
+    getAlunoId(alunoId),
+    getAnoLectivoActivo(),
+  ]);
+
+  if (!aluno) throwNotFoundAlunoIdError();
+
+  if (!anoLectivo) throwActiveAnoLectivoNotFoundError();
+  if (!anoLectivo?.matriculaAberta) throwMatriculaClosedForAnoLectivo();
 
   await validateMatriculaData({
     classeId,
@@ -230,14 +240,10 @@ export async function createMatriculaToAlunoController(
     metodoPagamentoId,
   });
 
-  const activeAnoLectivo = await getAnoLectivoActivo();
-
-  if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
-
   const isMatriculaId = await getMatriculaByUniqueKey(
     alunoId,
     classeId,
-    activeAnoLectivo!.id
+    anoLectivo!.id
   );
 
   if (isMatriculaId) throwDuplicatedMatriculaError();
@@ -245,7 +251,7 @@ export async function createMatriculaToAlunoController(
   const alunoMatriculaLastCurso = await getLastAlunoMatriculaCurso(alunoId);
 
   const matricula = await createMatriculaByAluno(
-    activeAnoLectivo!.id,
+    anoLectivo!.id,
     alunoId,
     alunoMatriculaLastCurso!.cursoId,
     request.body
