@@ -15,6 +15,17 @@ export function throwDuplicatedClasseError() {
   });
 }
 
+export function throwDuplicatedClasseCursoOrdemError() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Ordem inválida.',
+    errors: {
+      // TODO: melhorar a mensagem de erro
+      ordem: ['Já existe uma classe com a mesma ordem.'],
+    },
+  });
+}
+
 export function throwNotFoundClasseIdFieldError(
   errorMessage = 'Classe não existe.',
   statusCode = HttpStatusCodes.NOT_FOUND

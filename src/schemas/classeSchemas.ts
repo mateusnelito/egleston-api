@@ -17,6 +17,15 @@ export const classeBodySchema = z.object({
   nome: z.enum(['10ª', '11ª', '12ª', '13ª'], {
     message: 'São permitidas apenas classes do ensino médio (10ª-13ª).',
   }),
+  ordem: z
+    .number({
+      required_error: 'A ordem é obrigatória.',
+      invalid_type_error: 'A ordem deve ser número.',
+    })
+    .int({ message: 'A ordem deve ser inteiro.' })
+    .positive({ message: 'A ordem deve ser positivo.' })
+    .min(1, { message: 'A ordem no minimo deve ser 1' })
+    .max(4, { message: 'A ordem no máximo deve ser 4' }),
   cursoId: z
     .number({
       required_error: 'O id de curso é obrigatório.',
@@ -29,7 +38,8 @@ export const classeBodySchema = z.object({
       required_error: 'O valor da matrícula é obrigatório.',
       invalid_type_error: 'O valor da matrícula deve ser número.',
     })
-    .positive({ message: 'O valor da matrícula deve ser positivo.' }),
+    .positive({ message: 'O valor da matrícula deve ser positivo.' })
+    .transform((value) => Number(value.toFixed(2))),
 });
 
 const classeParamsSchema = z.object({
@@ -47,8 +57,12 @@ export const createClasseSchema = {
   tags: ['classes'],
   body: classeBodySchema.omit({ id: true }),
   response: {
-    201: classeBodySchema.extend({
-      valorMatricula: z.coerce.number(),
+    201: classeBodySchema.omit({ cursoId: true }).extend({
+      valorMatricula: z.number(),
+      curso: z.object({
+        id: z.number().int(),
+        nome: z.string(),
+      }),
     }),
     400: complexBadRequestSchema,
     404: complexBadRequestSchema,
@@ -61,8 +75,12 @@ export const updateClasseSchema = {
   params: classeParamsSchema,
   body: classeBodySchema.omit({ id: true }),
   response: {
-    200: classeBodySchema.omit({ id: true }).extend({
-      valorMatricula: z.coerce.number(),
+    200: classeBodySchema.omit({ cursoId: true }).extend({
+      valorMatricula: z.number(),
+      curso: z.object({
+        id: z.number().int(),
+        nome: z.string(),
+      }),
     }),
     400: simpleBadRequestSchema,
     404: simpleBadRequestSchema,
@@ -74,9 +92,17 @@ export const getClasseSchema = {
   tags: ['classes'],
   params: classeParamsSchema,
   response: {
-    200: classeBodySchema
-      .omit({ cursoId: true, valorMatricula: true })
-      .extend({ anoLectivo: z.string(), curso: z.string() }),
+    200: classeBodySchema.omit({ cursoId: true }).extend({
+      valorMatricula: z.number(),
+      curso: z.object({
+        id: z.number().int(),
+        nome: z.string(),
+      }),
+      anoLectivo: z.object({
+        id: z.number().int(),
+        nome: z.string(),
+      }),
+    }),
     404: simpleBadRequestSchema,
   },
 };

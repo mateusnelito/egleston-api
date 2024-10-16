@@ -1,21 +1,47 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
-import { getDisciplinasByCurso } from './cursosDisciplinasServices';
 import { getAnoLectivoActivo, getAnoLectivoId } from './anoLectivoServices';
+import { getDisciplinasByCurso } from './cursosDisciplinasServices';
 
 export async function getClasseByUniqueKey(
   nome: string,
   anoLectivoId: number,
   cursoId: number
 ) {
-  return await prisma.classe.findUnique({
-    where: { nome_anoLectivoId_cursoId: { nome, anoLectivoId, cursoId } },
+  return prisma.classe.findUnique({
+    where: {
+      nome_anoLectivoId_cursoId: { nome, anoLectivoId, cursoId },
+    },
+    select: { id: true },
+  });
+}
+
+export async function getClasseCursoOrdem(cursoId: number, ordem: number) {
+  return prisma.classe.findUnique({
+    where: { cursoId_ordem: { cursoId, ordem } },
     select: { id: true },
   });
 }
 
 export async function createClasse(data: Prisma.ClasseUncheckedCreateInput) {
-  return await prisma.classe.create({ data });
+  const classe = await prisma.classe.create({
+    data,
+    select: {
+      id: true,
+      nome: true,
+      ordem: true,
+      valorMatricula: true,
+      Curso: { select: { id: true, nome: true } },
+    },
+  });
+
+  return {
+    id: classe.id,
+    nome: classe.nome,
+    ordem: classe.ordem,
+    valorMatricula: Number(classe.valorMatricula.toFixed(2)),
+    curso: classe.Curso,
+  };
 }
 
 export async function getClasseId(id: number) {
@@ -29,7 +55,26 @@ export async function updateClasse(
   id: number,
   data: Prisma.ClasseUncheckedUpdateInput
 ) {
-  return await prisma.classe.update({ where: { id }, data });
+  const classe = await prisma.classe.update({
+    where: { id },
+    data,
+    select: {
+      id: true,
+      nome: true,
+      ordem: true,
+      valorMatricula: true,
+      Curso: { select: { id: true, nome: true } },
+    },
+  });
+
+  // TODO: REFACTOR, USE A FUN TO FORMAT THE RETURN OBJECT
+  return {
+    id: classe.id,
+    nome: classe.nome,
+    ordem: classe.ordem,
+    valorMatricula: Number(classe.valorMatricula.toFixed(2)),
+    curso: classe.Curso,
+  };
 }
 
 export async function getClasse(id: number) {
@@ -38,27 +83,23 @@ export async function getClasse(id: number) {
     select: {
       id: true,
       nome: true,
-      AnoLectivo: {
-        select: {
-          nome: true,
-        },
-      },
-      Curso: {
-        select: { nome: true },
-      },
+      ordem: true,
+      valorMatricula: true,
+      AnoLectivo: { select: { id: true, nome: true } },
+      Curso: { select: { id: true, nome: true } },
     },
   });
 
-  if (classe) {
-    return {
-      id: classe?.id,
-      nome: classe?.nome,
-      anoLectivo: classe?.AnoLectivo?.nome,
-      curso: classe?.Curso?.nome,
-    };
-  }
-
-  return classe;
+  return classe
+    ? {
+        id: classe.id,
+        nome: classe.nome,
+        ordem: classe.ordem,
+        valorMatricula: Number(classe.valorMatricula.toFixed(2)),
+        curso: classe.Curso,
+        anoLectivo: classe.AnoLectivo,
+      }
+    : classe;
 }
 
 export async function getClassesByAnoLectivo(anoLectivoId: number) {

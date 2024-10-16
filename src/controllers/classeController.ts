@@ -12,6 +12,7 @@ import {
   createClasse,
   getClasse,
   getClasseByUniqueKey,
+  getClasseCursoOrdem,
   getClasseId,
   updateClasse,
 } from '../services/classeServices';
@@ -28,6 +29,7 @@ import {
 import { getTurnoId } from '../services/turnoServices';
 import { throwActiveAnoLectivoNotFoundError } from '../utils/controllers/anoLectivoControllerUtils';
 import {
+  throwDuplicatedClasseCursoOrdemError,
   throwDuplicatedClasseError,
   throwNotFoundClasseIdError,
 } from '../utils/controllers/classeControllerUtils';
@@ -41,34 +43,32 @@ export async function createClasseController(
   request: FastifyRequest<{ Body: createClasseBodyType }>,
   reply: FastifyReply
 ) {
-  const { nome, cursoId, valorMatricula } = request.body;
+  const { nome, ordem, cursoId } = request.body;
 
-  const [activeAnoLectivo, isCursoId] = await Promise.all([
+  const [anoLectivo, curso] = await Promise.all([
     getAnoLectivoActivo(),
     getCursoId(cursoId),
   ]);
 
-  if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
-  if (!isCursoId) throwNotFoundCursoIdFieldError();
+  if (!anoLectivo) throwActiveAnoLectivoNotFoundError();
+  if (!curso) throwNotFoundCursoIdFieldError();
 
-  const isClasseId = await getClasseByUniqueKey(
-    nome,
-    activeAnoLectivo!.id,
-    cursoId
-  );
+  const { id: anoLectivoId } = anoLectivo!;
 
-  if (isClasseId) throwDuplicatedClasseError();
+  const [uniqueSavedClasse, uniqueSaveClasseCursoOrdem] = await Promise.all([
+    getClasseByUniqueKey(nome, anoLectivoId, cursoId),
+    getClasseCursoOrdem(cursoId, ordem),
+  ]);
 
-  // TODO: REFACTOR THIS
-  const classe = await createClasse({
-    nome,
-    anoLectivoId: activeAnoLectivo!.id,
-    cursoId,
-    valorMatricula: Number(valorMatricula.toFixed(2)),
+  if (uniqueSavedClasse) throwDuplicatedClasseError();
+  if (uniqueSaveClasseCursoOrdem) throwDuplicatedClasseCursoOrdemError();
+
+  const newClasse = await createClasse({
+    ...request.body,
+    anoLectivoId,
   });
 
-  // TODO: SEND A BETTER RESPONSE
-  return reply.status(HttpStatusCodes.CREATED).send(classe);
+  return reply.status(HttpStatusCodes.CREATED).send(newClasse);
 }
 
 export async function updateClasseController(
@@ -79,32 +79,38 @@ export async function updateClasseController(
   reply: FastifyReply
 ) {
   const { classeId } = request.params;
-  const { nome, cursoId, valorMatricula } = request.body;
+  const { nome, ordem, cursoId, valorMatricula } = request.body;
 
-  const [isClasseId, activeAnoLectivo, isCursoId] = await Promise.all([
+  const [classe, anoLectivo, curso] = await Promise.all([
     getClasseId(classeId),
     getAnoLectivoActivo(),
     getCursoId(cursoId),
   ]);
 
-  if (!isClasseId) throwNotFoundClasseIdError();
-  if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
-  if (!isCursoId) throwNotFoundCursoIdFieldError();
+  if (!classe) throwNotFoundClasseIdError();
+  if (!anoLectivo) throwActiveAnoLectivoNotFoundError();
+  if (!curso) throwNotFoundCursoIdFieldError();
 
-  const classe = await getClasseByUniqueKey(
-    nome,
-    activeAnoLectivo!.id,
-    cursoId
-  );
+  const { id: anoLectivoId } = anoLectivo!;
 
-  if (classe && classe.id !== classeId) throwDuplicatedClasseError();
+  const [uniqueSavedClasse, uniqueSaveClasseCursoOrdem] = await Promise.all([
+    getClasseByUniqueKey(nome, anoLectivoId, cursoId),
+    getClasseCursoOrdem(cursoId, ordem),
+  ]);
+
+  if (uniqueSavedClasse && uniqueSavedClasse.id !== classeId)
+    throwDuplicatedClasseError();
+
+  if (uniqueSaveClasseCursoOrdem && uniqueSaveClasseCursoOrdem.id !== classeId)
+    throwDuplicatedClasseCursoOrdemError();
 
   const updatedClasse = await updateClasse(classeId, {
     nome,
-    anoLectivoId: activeAnoLectivo!.id,
+    anoLectivoId,
     cursoId,
-    valorMatricula: Number(valorMatricula.toFixed(2)),
+    valorMatricula,
   });
+
   return reply.send(updatedClasse);
 }
 
@@ -141,7 +147,7 @@ export async function getClasseAlunosController(
   reply: FastifyReply
 ) {
   const { classeId } = request.params;
-  const { turmaId, pageSize, cursor } = request.query;
+  const { pageSize } = request.query;
 
   const isClasseId = await getClasseId(classeId);
 
