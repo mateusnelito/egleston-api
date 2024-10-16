@@ -3,21 +3,23 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
   createClasseController,
   createTurmaInClasseController,
-  getClasseDisciplinasAbsentProfessorController,
   getClasseAlunosController,
   getClasseController,
+  getClasseDisciplinasAbsentProfessorController,
   getClasseDisciplinasController,
   getClasseTurmasController,
+  getNextClasseController,
   updateClasseController,
 } from '../controllers/classeController';
 import {
   createClasseSchema,
   createTurmaToClasseSchema,
-  getClasseDisciplinasAbsentProfessorSchema,
   getClasseAlunosSchema,
+  getClasseDisciplinasAbsentProfessorSchema,
   getClasseDisciplinasSchema,
   getClasseSchema,
   getClasseTurmasSchema,
+  getNextClasseSchema,
   updateClasseSchema,
 } from '../schemas/classeSchemas';
 
@@ -40,6 +42,12 @@ export const classeRoutes: FastifyPluginAsync = async (
   server.withTypeProvider<ZodTypeProvider>().get('/:classeId', {
     schema: getClasseSchema,
     handler: getClasseController,
+  });
+
+  // Show Next Classe Based on selected on params
+  server.withTypeProvider<ZodTypeProvider>().get('/:classeId/next-classe', {
+    schema: getNextClasseSchema,
+    handler: getNextClasseController,
   });
 
   // GET Turmas

@@ -102,6 +102,41 @@ export async function getClasse(id: number) {
     : classe;
 }
 
+export async function getClasseCursoWithOrdem(id: number) {
+  return prisma.classe.findUnique({
+    where: { id },
+    select: {
+      ordem: true,
+      Curso: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+}
+
+export async function getNextClasseByOrdem(ordem: number, cursoId: number) {
+  const classe = await prisma.classe.findFirst({
+    where: { cursoId, ordem: { gt: ordem } },
+    select: {
+      id: true,
+      nome: true,
+      ordem: true,
+      valorMatricula: true,
+    },
+  });
+
+  return classe
+    ? {
+        id: classe.id,
+        nome: classe.nome,
+        ordem: classe.ordem,
+        valorMatricula: Number(classe.valorMatricula.toFixed(2)),
+      }
+    : classe;
+}
+
 export async function getClassesByAnoLectivo(anoLectivoId: number) {
   const classes = await prisma.classe.findMany({
     where: { anoLectivoId },

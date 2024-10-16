@@ -13,7 +13,9 @@ import {
   getClasse,
   getClasseByUniqueKey,
   getClasseCursoOrdem,
+  getClasseCursoWithOrdem,
   getClasseId,
+  getNextClasseByOrdem,
   updateClasse,
 } from '../services/classeServices';
 import { getCursoId } from '../services/cursoServices';
@@ -124,6 +126,27 @@ export async function getClasseController(
   if (!classe) throwNotFoundClasseIdError();
 
   return reply.send(classe);
+}
+
+export async function getNextClasseController(
+  request: FastifyRequest<{ Params: classeParamsType }>,
+  reply: FastifyReply
+) {
+  const { classeId } = request.params;
+  const classe = await getClasseCursoWithOrdem(classeId);
+
+  if (!classe) throwNotFoundClasseIdError();
+
+  const {
+    ordem,
+    Curso: { id: cursoId },
+  } = classe!;
+
+  const nextClasse = await getNextClasseByOrdem(ordem, cursoId);
+
+  if (!nextClasse) return reply.status(HttpStatusCodes.NO_CONTENT).send();
+
+  return reply.send(nextClasse);
 }
 
 export async function getClasseTurmasController(

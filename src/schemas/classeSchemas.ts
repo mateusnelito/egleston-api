@@ -107,6 +107,19 @@ export const getClasseSchema = {
   },
 };
 
+export const getNextClasseSchema = {
+  summary: 'Retorna a próxima classe após a selecionada',
+  tags: ['classes'],
+  params: classeParamsSchema,
+  response: {
+    200: classeBodySchema.omit({ cursoId: true }).extend({
+      valorMatricula: z.number(),
+    }),
+    204: z.object({}),
+    404: simpleBadRequestSchema,
+  },
+};
+
 export const getClasseTurmasSchema = {
   summary: 'Retorna todas as turmas de uma classe',
   tags: ['classes'],
