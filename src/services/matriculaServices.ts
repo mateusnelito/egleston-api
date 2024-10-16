@@ -55,7 +55,6 @@ export async function createMatriculaByAluno(
         classeId: data.classeId,
         cursoId,
         turmaId: data.turmaId,
-        turnoId: data.turnoId,
         anoLectivoId,
       },
       select: {
@@ -90,11 +89,11 @@ export async function createMatriculaByAluno(
         Turma: {
           select: {
             nome: true,
-          },
-        },
-        Turno: {
-          select: {
-            nome: true,
+            Turno: {
+              select: {
+                nome: true,
+              },
+            },
           },
         },
         AnoLectivo: {
@@ -143,7 +142,7 @@ export async function createMatriculaByAluno(
       classe: matricula.Classe.nome,
       curso: matricula.Curso.nome,
       turma: matricula.Turma.nome,
-      turno: matricula.Turno.nome,
+      turno: matricula.Turma.Turno.nome,
       anoLectivo: matricula.AnoLectivo.nome,
       data: formatDate(matricula.createdAt),
       pagamento: {
@@ -219,4 +218,12 @@ export async function getLastAlunoMatriculaCurso(alunoId: number) {
     select: { cursoId: true },
     orderBy: { id: 'desc' },
   });
+}
+
+export async function getTotalMatriculas(
+  classeId: number,
+  cursoId: number,
+  turmaId: number
+) {
+  return prisma.matricula.count({ where: { classeId, cursoId, turmaId } });
 }

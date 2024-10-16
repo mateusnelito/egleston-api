@@ -28,7 +28,6 @@ export interface matriculaCreateDataInterface {
   classeId: number;
   cursoId?: number;
   turmaId: number;
-  turnoId: number;
   metodoPagamentoId: number;
 }
 

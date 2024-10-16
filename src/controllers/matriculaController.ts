@@ -22,8 +22,7 @@ export async function createAlunoMatriculaController(
   const { body: data } = request;
   const { aluno: alunoData } = data;
   const { responsaveis: alunoResponsaveis } = alunoData;
-  const { classeId, cursoId, turmaId, turnoId, metodoPagamentoId } =
-    request.body;
+  const { classeId, cursoId, turmaId, metodoPagamentoId } = request.body;
 
   const responsaveisTelefone = alunoResponsaveis.map(
     (responsavel) => responsavel.contacto.telefone
@@ -65,7 +64,6 @@ export async function createAlunoMatriculaController(
     classeId,
     cursoId,
     turmaId,
-    turnoId,
     metodoPagamentoId,
   });
 

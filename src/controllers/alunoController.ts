@@ -221,7 +221,7 @@ export async function createMatriculaToAlunoController(
   reply: FastifyReply
 ) {
   const { alunoId } = request.params;
-  const { classeId, turmaId, turnoId, metodoPagamentoId } = request.body;
+  const { classeId, turmaId, metodoPagamentoId } = request.body;
 
   const [aluno, anoLectivo] = await Promise.all([
     getAlunoId(alunoId),
@@ -236,7 +236,6 @@ export async function createMatriculaToAlunoController(
   await validateMatriculaData({
     classeId,
     turmaId,
-    turnoId,
     metodoPagamentoId,
   });
 
