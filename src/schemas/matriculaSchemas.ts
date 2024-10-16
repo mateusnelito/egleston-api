@@ -41,13 +41,6 @@ const matriculaBodySchema = z.object({
     })
     .int({ message: 'O id da turma deve ser inteiro.' })
     .positive({ message: 'O id da turma deve ser positivo.' }),
-  turnoId: z
-    .number({
-      required_error: 'O id do turno é obrigatório.',
-      invalid_type_error: 'O id do turno deve ser número.',
-    })
-    .int({ message: 'O id do turno deve ser inteiro.' })
-    .positive({ message: 'O id do turno deve ser positivo.' }),
   metodoPagamentoId: z
     .number({
       required_error: 'O id do metodo de pagamento é obrigatório.',
@@ -78,8 +71,8 @@ export const createAlunoMatriculaSchema = {
     .omit({ id: true, alunoId: true, createdAt: true }),
   response: {
     // 201: matriculaBodySchema,
-    // 400: complexBadRequestSchema,
-    // 404: complexBadRequestSchema,
+    400: complexBadRequestSchema,
+    404: complexBadRequestSchema,
   },
 };
 
