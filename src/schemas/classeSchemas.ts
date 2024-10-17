@@ -114,6 +114,10 @@ export const getNextClasseSchema = {
   response: {
     200: classeBodySchema.omit({ cursoId: true }).extend({
       valorMatricula: z.number(),
+      anoLectivo: z.object({
+        id: z.number().int(),
+        nome: z.string(),
+      }),
     }),
     204: z.object({}),
     404: simpleBadRequestSchema,

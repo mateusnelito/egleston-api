@@ -124,6 +124,7 @@ export async function getNextClasseByOrdem(ordem: number, cursoId: number) {
       nome: true,
       ordem: true,
       valorMatricula: true,
+      AnoLectivo: { select: { id: true, nome: true } },
     },
   });
 
@@ -133,6 +134,7 @@ export async function getNextClasseByOrdem(ordem: number, cursoId: number) {
         nome: classe.nome,
         ordem: classe.ordem,
         valorMatricula: Number(classe.valorMatricula.toFixed(2)),
+        anoLectivo: classe.AnoLectivo,
       }
     : classe;
 }

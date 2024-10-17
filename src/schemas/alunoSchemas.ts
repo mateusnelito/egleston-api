@@ -9,6 +9,7 @@ import {
 } from './globalSchema';
 import { notaSchema } from './notaSchema';
 import { createResponsavelBodySchema } from './responsavelSchema';
+import { classeBodySchema } from './classeSchemas';
 
 const alunoBodySchema = z.object({
   id: z
@@ -304,6 +305,23 @@ export const getAlunoClassesSchema = {
           nome: z.string(),
         })
       ),
+    }),
+    400: simpleBadRequestSchema,
+    404: simpleBadRequestSchema,
+  },
+};
+
+export const getActualAlunoClasseSchema = {
+  summary: 'Retorna a classe actual do aluno',
+  tags: ['alunos'],
+  params: alunoParamsSchema,
+  response: {
+    200: classeBodySchema.omit({ cursoId: true }).extend({
+      valorMatricula: z.number(),
+      curso: z.object({
+        id: z.number().int(),
+        nome: z.string(),
+      }),
     }),
     400: simpleBadRequestSchema,
     404: simpleBadRequestSchema,

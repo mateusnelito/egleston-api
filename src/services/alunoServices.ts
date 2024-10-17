@@ -371,3 +371,31 @@ export async function getAlunoClasses(id: number) {
     })),
   };
 }
+
+export async function getActualAlunoClasse(alunoId: number) {
+  const matricula = await prisma.matricula.findFirst({
+    where: { alunoId },
+    select: {
+      Classe: {
+        select: {
+          id: true,
+          nome: true,
+          ordem: true,
+          valorMatricula: true,
+          Curso: { select: { id: true, nome: true } },
+        },
+      },
+    },
+    orderBy: { id: 'desc' },
+  });
+
+  return matricula
+    ? {
+        id: matricula.Classe.id,
+        nome: matricula.Classe.nome,
+        ordem: matricula.Classe.ordem,
+        valorMatricula: Number(matricula.Classe.valorMatricula.toFixed(2)),
+        curso: matricula.Classe.Curso,
+      }
+    : matricula;
+}
