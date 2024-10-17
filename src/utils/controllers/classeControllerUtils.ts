@@ -38,3 +38,21 @@ export function throwNotFoundClasseIdFieldError(
     },
   });
 }
+
+export function throwNotFoundPreviousClasseError() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Classe anterior não encontrada.',
+  });
+}
+
+export function throwInvalidNextClasseError() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: 'Classe inválida',
+    errors: {
+      // TODO: Melhorar a mensagem de erro
+      classeId: ['Esta não é uma sequência da classe anterior'],
+    },
+  });
+}

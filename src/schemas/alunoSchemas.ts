@@ -210,8 +210,8 @@ export const getAlunoMatriculasSchema = {
   },
 };
 
-export const createMatriculaToAlunoSchema = {
-  summary: 'Cria uma matrícula para o aluno',
+export const confirmAlunoMatriculaSchema = {
+  summary: 'Cria uma confirmação de matricula para o aluno',
   tags: ['alunos'],
   params: alunoParamsSchema,
   // TODO: REFACTOR THIS DUPLICATED CODE
@@ -317,7 +317,7 @@ export type getAlunosQueryStringType = z.infer<
   typeof getAlunosSchema.querystring
 >;
 export type createMatriculaToAlunoBodyType = z.infer<
-  typeof createMatriculaToAlunoSchema.body
+  typeof confirmAlunoMatriculaSchema.body
 >;
 
 export type updateAlunoNotaBodyType = z.infer<

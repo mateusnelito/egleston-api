@@ -42,7 +42,7 @@ export async function getMatriculasByAlunoId(alunoId: number) {
   };
 }
 
-export async function createMatriculaByAluno(
+export async function confirmAlunoMatricula(
   anoLectivoId: number,
   alunoId: number,
   cursoId: number,
@@ -212,10 +212,10 @@ export async function getAlunosMatriculaByClasse(
   });
 }
 
-export async function getLastAlunoMatriculaCurso(alunoId: number) {
+export async function getLastAlunoMatriculaClasse(alunoId: number) {
   return await prisma.matricula.findFirst({
     where: { alunoId },
-    select: { cursoId: true },
+    select: { Classe: { select: { id: true, ordem: true } } },
     orderBy: { id: 'desc' },
   });
 }

@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { updateAlunoBodyType } from '../schemas/alunoSchemas';
-import { createAlunoMatriculaBodyType } from '../schemas/matriculaSchemas';
+import { createMatriculaBodyType } from '../schemas/matriculaSchemas';
 import { getAlunosWithoutNotaQueryStringDataType } from '../schemas/notaSchema';
 import { formatDate } from '../utils/utilsFunctions';
 
@@ -165,7 +165,7 @@ export async function getAlunoResponsaveis(alunoId: number) {
 
 export async function createAlunoMatricula(
   anoLectivoId: number,
-  matriculaData: createAlunoMatriculaBodyType
+  matriculaData: createMatriculaBodyType
 ) {
   const { aluno: alunoData, classeId, metodoPagamentoId } = matriculaData;
 

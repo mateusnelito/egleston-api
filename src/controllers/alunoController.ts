@@ -23,12 +23,17 @@ import {
 } from '../services/alunoServices';
 import { getAnoLectivoActivo } from '../services/anoLectivoServices';
 import {
-  createMatriculaByAluno,
-  getLastAlunoMatriculaCurso,
+  getClasseCursoWithOrdem,
+  getPreviousClasseByOrdem,
+} from '../services/classeServices';
+import {
+  confirmAlunoMatricula,
+  getLastAlunoMatriculaClasse,
   getMatriculaByUniqueKey,
   getMatriculasByAlunoId,
 } from '../services/matriculaServices';
 import { validateMatriculaData } from '../services/matriculaValidationService';
+import { getMetodoPagamentoById } from '../services/metodoPagamentoServices';
 import {
   getAlunoNotas,
   getNotaById,
@@ -44,6 +49,7 @@ import {
   createResponsavel,
   getTotalAlunoResponsaveis,
 } from '../services/responsavelServices';
+import { getTurmaId } from '../services/turmaServices';
 import BadRequest from '../utils/BadRequest';
 import {
   MINIMUM_ALUNO_AGE,
@@ -54,9 +60,16 @@ import {
   throwActiveAnoLectivoNotFoundError,
   throwMatriculaClosedForAnoLectivo,
 } from '../utils/controllers/anoLectivoControllerUtils';
+import {
+  throwInvalidNextClasseError,
+  throwNotFoundClasseIdFieldError,
+  throwNotFoundPreviousClasseError,
+} from '../utils/controllers/classeControllerUtils';
 import { throwDuplicatedMatriculaError } from '../utils/controllers/matriculaControllerUtils';
+import { throwNotFoundMetodoPagamentoIdFieldError } from '../utils/controllers/metodoPagamentoControllerUtils';
 import { throwNotFoundNotaIdError } from '../utils/controllers/notaControllerUtil';
 import { throwNotFoundParentescoIdFieldError } from '../utils/controllers/parentescoControllerUtils';
+import { throwNotFoundTurmaIdFieldError } from '../utils/controllers/turmaControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
 import {
@@ -213,7 +226,8 @@ export async function getAlunoMatriculasController(
   return reply.send(alunoMatriculas);
 }
 
-export async function createMatriculaToAlunoController(
+// TODO: REFATORAR E COMENTAR ESSE CONTROLLER
+export async function confirmAlunoMatriculaController(
   request: FastifyRequest<{
     Params: alunoParamsType;
     Body: createMatriculaToAlunoBodyType;
@@ -229,30 +243,43 @@ export async function createMatriculaToAlunoController(
   ]);
 
   if (!aluno) throwNotFoundAlunoIdError();
-
   if (!anoLectivo) throwActiveAnoLectivoNotFoundError();
-  if (!anoLectivo?.matriculaAberta) throwMatriculaClosedForAnoLectivo();
+  if (!anoLectivo!.matriculaAberta) throwMatriculaClosedForAnoLectivo();
 
-  await validateMatriculaData({
-    classeId,
-    turmaId,
-    metodoPagamentoId,
-  });
+  const [nextClasse, turma, metodoPagamento] = await Promise.all([
+    getClasseCursoWithOrdem(classeId),
+    getTurmaId(turmaId),
+    getMetodoPagamentoById(metodoPagamentoId),
+  ]);
 
-  const isMatriculaId = await getMatriculaByUniqueKey(
+  if (!nextClasse) throwNotFoundClasseIdFieldError();
+  if (!turma) throwNotFoundTurmaIdFieldError();
+  if (!metodoPagamento) throwNotFoundMetodoPagamentoIdFieldError();
+
+  const uniqueSavedMatricula = await getMatriculaByUniqueKey(
     alunoId,
     classeId,
     anoLectivo!.id
   );
 
-  if (isMatriculaId) throwDuplicatedMatriculaError();
+  if (uniqueSavedMatricula) throwDuplicatedMatriculaError();
 
-  const alunoMatriculaLastCurso = await getLastAlunoMatriculaCurso(alunoId);
+  const {
+    ordem,
+    Curso: { id: cursoId },
+  } = nextClasse!;
 
-  const matricula = await createMatriculaByAluno(
+  const previousClasse = await getPreviousClasseByOrdem(ordem, cursoId);
+
+  if (!previousClasse) throwNotFoundPreviousClasseError();
+
+  if (nextClasse!.ordem - previousClasse!.ordem !== previousClasse!.ordem)
+    throwInvalidNextClasseError();
+
+  const matricula = await confirmAlunoMatricula(
     anoLectivo!.id,
     alunoId,
-    alunoMatriculaLastCurso!.cursoId,
+    cursoId,
     request.body
   );
 

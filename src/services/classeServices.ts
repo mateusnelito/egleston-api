@@ -137,6 +137,16 @@ export async function getNextClasseByOrdem(ordem: number, cursoId: number) {
     : classe;
 }
 
+export async function getPreviousClasseByOrdem(ordem: number, cursoId: number) {
+  return prisma.classe.findFirst({
+    where: { cursoId, ordem: { lt: ordem } },
+    select: {
+      id: true,
+      ordem: true,
+    },
+  });
+}
+
 export async function getClassesByAnoLectivo(anoLectivoId: number) {
   const classes = await prisma.classe.findMany({
     where: { anoLectivoId },

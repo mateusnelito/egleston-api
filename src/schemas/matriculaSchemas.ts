@@ -61,7 +61,7 @@ const matriculaParamsSchema = z.object({
     .positive({ message: 'O id da matricula deve ser positivo.' }),
 });
 
-export const createAlunoMatriculaSchema = {
+export const createMatriculaSchema = {
   summary: 'Cria uma nova matricula',
   tags: ['matriculas'],
   body: matriculaBodySchema
@@ -93,8 +93,8 @@ export const updateMatriculaSchema = {
 };
 
 export type matriculaBodyType = z.infer<typeof matriculaBodySchema>;
-export type createAlunoMatriculaBodyType = z.infer<
-  typeof createAlunoMatriculaSchema.body
+export type createMatriculaBodyType = z.infer<
+  typeof createMatriculaSchema.body
 >;
 export type matriculaParamsType = z.infer<typeof matriculaParamsSchema>;
 export type updateMatriculaBodyType = z.infer<

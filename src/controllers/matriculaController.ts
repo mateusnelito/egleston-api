@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import PdfPrinter from 'pdfmake';
-import { createAlunoMatriculaBodyType } from '../schemas/matriculaSchemas';
+import { createMatriculaBodyType } from '../schemas/matriculaSchemas';
 import { createAlunoMatricula } from '../services/alunoServices';
 import { validateAlunoData } from '../services/alunoValidationService';
 import { getAnoLectivoActivo } from '../services/anoLectivoServices';
@@ -15,8 +15,8 @@ import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
 import { arrayHasDuplicatedItems } from '../utils/utilsFunctions';
 
-export async function createAlunoMatriculaController(
-  request: FastifyRequest<{ Body: createAlunoMatriculaBodyType }>,
+export async function createMatriculaController(
+  request: FastifyRequest<{ Body: createMatriculaBodyType }>,
   reply: FastifyReply
 ) {
   const { body: data } = request;
