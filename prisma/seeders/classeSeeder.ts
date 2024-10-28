@@ -26,6 +26,7 @@ export async function seedClasse() {
           cursoId,
           anoLectivoId: anoLectivo.id,
           valorMatricula: generateRandomNumber(3000, 10000),
+          ordem: j + 1,
         });
       }
     }
