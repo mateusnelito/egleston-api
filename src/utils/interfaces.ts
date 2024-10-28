@@ -26,7 +26,6 @@ export interface matriculaPdfPrintDataInterface {
 
 export interface matriculaCreateDataInterface {
   classeId: number;
-  cursoId?: number;
   turmaId: number;
   metodoPagamentoId: number;
 }

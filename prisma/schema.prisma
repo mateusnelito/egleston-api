@@ -141,7 +141,6 @@ model Curso {
   duracao           Int                 @db.SmallInt
   CursosDisciplinas CursosDisciplinas[]
   Classe            Classe[]
-  Matricula         Matricula[]
 
   @@map("cursos")
   @@schema("cadastro")
@@ -294,7 +293,6 @@ model Matricula {
   id           Int      @id @default(autoincrement())
   alunoId      Int      @map("aluno_id")
   classeId     Int      @map("classe_id")
-  cursoId      Int      @map("curso_id")
   turmaId      Int      @map("turma_id")
   anoLectivoId Int      @map("ano_lectivo_id") @db.SmallInt
   createdAt    DateTime @default(now()) @map("created_at")
@@ -302,7 +300,6 @@ model Matricula {
 
   Aluno      Aluno      @relation(fields: [alunoId], references: [id], onDelete: Cascade)
   Classe     Classe     @relation(fields: [classeId], references: [id], onDelete: Cascade)
-  Curso      Curso      @relation(fields: [cursoId], references: [id], onDelete: Cascade)
   Turma      Turma      @relation(fields: [turmaId], references: [id], onDelete: Cascade)
   AnoLectivo AnoLectivo @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade)
 

@@ -187,7 +187,6 @@ export async function createAlunoMatricula(
         Matricula: {
           create: {
             classeId: matriculaData.classeId,
-            cursoId: matriculaData.cursoId,
             turmaId: matriculaData.turmaId,
             anoLectivoId,
           },
@@ -208,11 +207,11 @@ export async function createAlunoMatricula(
             Classe: {
               select: {
                 nome: true,
-              },
-            },
-            Curso: {
-              select: {
-                nome: true,
+                Curso: {
+                  select: {
+                    nome: true,
+                  },
+                },
               },
             },
             Turma: {
@@ -292,7 +291,7 @@ export async function createAlunoMatricula(
         },
       },
       classe: matricula.Classe.nome,
-      curso: matricula.Curso.nome,
+      curso: matricula.Classe.Curso.nome,
       turma: matricula.Turma.nome,
       turno: matricula.Turma.Turno.nome,
       anoLectivo: matricula.AnoLectivo.nome,
@@ -302,7 +301,7 @@ export async function createAlunoMatricula(
         metodoPagamento: pagamento.MetodoPagamento.nome,
       },
       // TODO: MAKE THIS DYNAMIC
-      funcionario: 'Usuário Teste Dinâmico',
+      funcionario: 'Usuário 1019',
     };
   });
 }

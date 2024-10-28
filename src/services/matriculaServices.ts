@@ -11,14 +11,14 @@ export async function getMatriculasByAlunoId(alunoId: number) {
     select: {
       id: true,
       createdAt: true,
-      Curso: {
-        select: {
-          nome: true,
-        },
-      },
       Classe: {
         select: {
           nome: true,
+          Curso: {
+            select: {
+              nome: true,
+            },
+          },
         },
       },
       Turma: {
@@ -34,7 +34,7 @@ export async function getMatriculasByAlunoId(alunoId: number) {
       return {
         id: matricula.id,
         classe: matricula.Classe.nome,
-        curso: matricula.Curso.nome,
+        curso: matricula.Classe.Curso.nome,
         turma: matricula.Turma.nome,
         createdAt: matricula.createdAt,
       };
@@ -53,7 +53,6 @@ export async function confirmAlunoMatricula(
       data: {
         alunoId,
         classeId: data.classeId,
-        cursoId,
         turmaId: data.turmaId,
         anoLectivoId,
       },
@@ -79,11 +78,11 @@ export async function confirmAlunoMatricula(
         Classe: {
           select: {
             nome: true,
-          },
-        },
-        Curso: {
-          select: {
-            nome: true,
+            Curso: {
+              select: {
+                nome: true,
+              },
+            },
           },
         },
         Turma: {
@@ -140,7 +139,7 @@ export async function confirmAlunoMatricula(
         },
       },
       classe: matricula.Classe.nome,
-      curso: matricula.Curso.nome,
+      curso: matricula.Classe.Curso.nome,
       turma: matricula.Turma.nome,
       turno: matricula.Turma.Turno.nome,
       anoLectivo: matricula.AnoLectivo.nome,
@@ -150,7 +149,7 @@ export async function confirmAlunoMatricula(
         metodoPagamento: pagamento.MetodoPagamento.nome,
       },
       // TODO: MAKE THIS DYNAMIC
-      funcionario: 'Usuário Teste Dinâmico',
+      funcionario: 'Usuário 1019',
     };
   });
 }

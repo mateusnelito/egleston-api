@@ -52,3 +52,13 @@ GET http://localhost:8000/api/alunos/1/matriculas
 
 ### GET all notas
 GET http://localhost:8000/api/alunos/1/notas?trimestreId=1&classeId=1
+
+### Create new Aluno confirmation Matricula
+POST http://localhost:8000/api/alunos/1/matriculas/confirm
+Content-Type: application/json
+
+{
+  "classeId": 1,
+  "turmaId": 1,
+  "metodoPagamentoId": 1
+}
