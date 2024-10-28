@@ -6,8 +6,9 @@ import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { matriculaCreateDataInterface } from '../utils/interfaces';
 import { getClasseId } from './classeServices';
 import { getCursoId } from './cursoServices';
+import { getTotalMatriculas } from './matriculaServices';
 import { getMetodoPagamentoById } from './metodoPagamentoServices';
-import { isTurmaInClasse } from './turmaServices';
+import { getTurmaSala, isTurmaInClasse } from './turmaServices';
 
 export async function validateMatriculaData(
   matriculaData: matriculaCreateDataInterface
@@ -30,5 +31,30 @@ export async function validateMatriculaData(
     throwNotFoundTurmaIdFieldError(
       'Turma não associada a classe',
       HttpStatusCodes.BAD_REQUEST
+    );
+
+  await validateTurmaAlunosLimit(classeId, turmaId);
+}
+
+export async function validateTurmaAlunosLimit(
+  classeId: number,
+  turmaId: number
+) {
+  const [turmaSala, totalMatriculas] = await Promise.all([
+    getTurmaSala(turmaId),
+    getTotalMatriculas(classeId, turmaId),
+  ]);
+
+  // TODO: PENSAR EM UMA MANEIRA MELHOR DE RESOLVER ISSO
+  if (!turmaSala)
+    throw new Error('Sala não encontrada!', {
+      cause:
+        'Sala correspondente a turma não encontrada no banco de dados, ao validar matricula.',
+    });
+
+  if (totalMatriculas >= turmaSala.sala!.capacidade)
+    throwNotFoundTurmaIdFieldError(
+      'Limite máximo de alunos atingido.',
+      HttpStatusCodes.FORBIDDEN
     );
 }

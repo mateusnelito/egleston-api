@@ -212,18 +212,6 @@ export async function getAlunosMatriculaByClasse(
   });
 }
 
-export async function getLastAlunoMatriculaClasse(alunoId: number) {
-  return await prisma.matricula.findFirst({
-    where: { alunoId },
-    select: { Classe: { select: { id: true, ordem: true } } },
-    orderBy: { id: 'desc' },
-  });
-}
-
-export async function getTotalMatriculas(
-  classeId: number,
-  cursoId: number,
-  turmaId: number
-) {
-  return prisma.matricula.count({ where: { classeId, cursoId, turmaId } });
+export async function getTotalMatriculas(classeId: number, turmaId: number) {
+  return prisma.matricula.count({ where: { classeId, turmaId } });
 }

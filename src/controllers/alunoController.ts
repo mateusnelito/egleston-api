@@ -75,6 +75,7 @@ import {
   throwDuplicatedTelefoneError,
   throwInvalidDataNascimentoError,
 } from '../utils/utilsFunctions';
+import { validateTurmaAlunosLimit } from '../services/matriculaValidationService';
 
 export async function updateAlunoController(
   request: FastifyRequest<{
@@ -256,11 +257,15 @@ export async function confirmAlunoMatriculaController(
   ]);
 
   if (uniqueSavedMatricula) throwDuplicatedMatriculaError();
+
   if (!turma)
     throwNotFoundTurmaIdFieldError(
       'Turma não associada a classe',
       HttpStatusCodes.BAD_REQUEST
     );
+
+  // Check sala capacity limit
+  await validateTurmaAlunosLimit(classeId, turmaId);
 
   const {
     Curso: { id: nextClasseCursoId },

@@ -96,3 +96,12 @@ export async function isTurmaInClasse(id: number, classeId: number) {
     select: { id: true },
   });
 }
+
+export async function getTurmaSala(id: number) {
+  const turmaSala = await prisma.turma.findUnique({
+    where: { id },
+    select: { Sala: { select: { id: true, nome: true, capacidade: true } } },
+  });
+
+  return { sala: turmaSala?.Sala };
+}
