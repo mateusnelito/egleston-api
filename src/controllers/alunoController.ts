@@ -23,17 +23,12 @@ import {
   updateAluno,
 } from '../services/alunoServices';
 import { getAnoLectivoActivo } from '../services/anoLectivoServices';
-import {
-  getClasseCursoWithOrdem,
-  getPreviousClasseByOrdem,
-} from '../services/classeServices';
+import { getClasseCursoWithOrdem } from '../services/classeServices';
 import {
   confirmAlunoMatricula,
-  getLastAlunoMatriculaClasse,
   getMatriculaByUniqueKey,
   getMatriculasByAlunoId,
 } from '../services/matriculaServices';
-import { validateMatriculaData } from '../services/matriculaValidationService';
 import { getMetodoPagamentoById } from '../services/metodoPagamentoServices';
 import {
   getAlunoNotas,
@@ -249,6 +244,7 @@ export async function confirmAlunoMatriculaController(
 
   const [nextClasse, turma, metodoPagamento] = await Promise.all([
     getClasseCursoWithOrdem(classeId),
+    // TODO: Verificar se a turma pertence a classe informada
     getTurmaId(turmaId),
     getMetodoPagamentoById(metodoPagamentoId),
   ]);
@@ -266,21 +262,24 @@ export async function confirmAlunoMatriculaController(
   if (uniqueSavedMatricula) throwDuplicatedMatriculaError();
 
   const {
-    ordem,
-    Curso: { id: cursoId },
+    Curso: { id: nextClasseCursoId },
   } = nextClasse!;
 
-  const previousClasse = await getPreviousClasseByOrdem(ordem, cursoId);
+  const previousClasse = await getActualAlunoClasse(alunoId);
 
   if (!previousClasse) throwNotFoundPreviousClasseError();
 
-  if (nextClasse!.ordem - previousClasse!.ordem !== previousClasse!.ordem)
+  // Check if next classe are in the same curso and if is a sequency of previous classe
+  if (
+    nextClasseCursoId !== previousClasse!.curso.id ||
+    ++previousClasse!.ordem !== nextClasse!.ordem
+  )
     throwInvalidNextClasseError();
 
   const matricula = await confirmAlunoMatricula(
     anoLectivo!.id,
     alunoId,
-    cursoId,
+    nextClasseCursoId,
     request.body
   );
 
