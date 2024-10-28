@@ -45,7 +45,7 @@ import {
   createResponsavel,
   getTotalAlunoResponsaveis,
 } from '../services/responsavelServices';
-import { getTurmaId } from '../services/turmaServices';
+import { getTurmaId, isTurmaInClasse } from '../services/turmaServices';
 import BadRequest from '../utils/BadRequest';
 import {
   MINIMUM_ALUNO_AGE,
@@ -242,24 +242,25 @@ export async function confirmAlunoMatriculaController(
   if (!anoLectivo) throwActiveAnoLectivoNotFoundError();
   if (!anoLectivo!.matriculaAberta) throwMatriculaClosedForAnoLectivo();
 
-  const [nextClasse, turma, metodoPagamento] = await Promise.all([
+  const [nextClasse, metodoPagamento] = await Promise.all([
     getClasseCursoWithOrdem(classeId),
-    // TODO: Verificar se a turma pertence a classe informada
-    getTurmaId(turmaId),
     getMetodoPagamentoById(metodoPagamentoId),
   ]);
 
   if (!nextClasse) throwNotFoundClasseIdFieldError();
-  if (!turma) throwNotFoundTurmaIdFieldError();
   if (!metodoPagamento) throwNotFoundMetodoPagamentoIdFieldError();
 
-  const uniqueSavedMatricula = await getMatriculaByUniqueKey(
-    alunoId,
-    classeId,
-    anoLectivo!.id
-  );
+  const [turma, uniqueSavedMatricula] = await Promise.all([
+    isTurmaInClasse(turmaId, classeId),
+    getMatriculaByUniqueKey(alunoId, classeId, anoLectivo!.id),
+  ]);
 
   if (uniqueSavedMatricula) throwDuplicatedMatriculaError();
+  if (!turma)
+    throwNotFoundTurmaIdFieldError(
+      'Turma não associada a classe',
+      HttpStatusCodes.BAD_REQUEST
+    );
 
   const {
     Curso: { id: nextClasseCursoId },
