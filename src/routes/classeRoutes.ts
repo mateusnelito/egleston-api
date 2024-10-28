@@ -45,7 +45,7 @@ export const classeRoutes: FastifyPluginAsync = async (
   });
 
   // Show Next Classe Based on selected on params
-  server.withTypeProvider<ZodTypeProvider>().get('/:classeId/next-classe', {
+  server.withTypeProvider<ZodTypeProvider>().get('/:classeId/next', {
     schema: getNextClasseSchema,
     handler: getNextClasseController,
   });
