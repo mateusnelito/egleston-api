@@ -51,6 +51,39 @@ export async function getClasseId(id: number) {
   });
 }
 
+export async function getClasses(
+  cursoId: number,
+  anoLectivoId: number | undefined
+) {
+  const anoLectivo = anoLectivoId ?? (await getAnoLectivoActivo())?.id;
+
+  if (!anoLectivo)
+    throw new Error('Nenhum ano lectivo activo encontrado', {
+      cause:
+        'Nenhum ano lectivo com status activo encontrado no banco de dados, buscando classe por ano lectivo',
+    });
+
+  const classes = await prisma.classe.findMany({
+    where: { anoLectivoId: anoLectivo, cursoId },
+    select: {
+      id: true,
+      nome: true,
+      ordem: true,
+      valorMatricula: true,
+    },
+    orderBy: { ordem: 'asc' },
+  });
+
+  return {
+    data: classes.map(({ id, nome, ordem, valorMatricula }) => ({
+      id,
+      nome,
+      ordem,
+      valorMatricula: Number(valorMatricula),
+    })),
+  };
+}
+
 export async function updateClasse(
   id: number,
   data: Prisma.ClasseUncheckedUpdateInput

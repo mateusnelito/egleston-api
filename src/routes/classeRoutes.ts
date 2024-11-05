@@ -7,6 +7,7 @@ import {
   getClasseController,
   getClasseDisciplinasAbsentProfessorController,
   getClasseDisciplinasController,
+  getClassesController,
   getClasseTurmasController,
   getNextClasseController,
   updateClasseController,
@@ -18,6 +19,7 @@ import {
   getClasseDisciplinasAbsentProfessorSchema,
   getClasseDisciplinasSchema,
   getClasseSchema,
+  getClassesSchema,
   getClasseTurmasSchema,
   getNextClasseSchema,
   updateClasseSchema,
@@ -42,6 +44,12 @@ export const classeRoutes: FastifyPluginAsync = async (
   server.withTypeProvider<ZodTypeProvider>().get('/:classeId', {
     schema: getClasseSchema,
     handler: getClasseController,
+  });
+
+  // GET Classes
+  server.withTypeProvider<ZodTypeProvider>().get('/', {
+    schema: getClassesSchema,
+    handler: getClassesController,
   });
 
   // Show Next Classe Based on selected on params

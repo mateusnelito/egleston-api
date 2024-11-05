@@ -87,6 +87,31 @@ export const updateClasseSchema = {
   },
 };
 
+export const getClassesSchema = {
+  summary: 'Retorna todas as classes',
+  tags: ['classes'],
+  querystring: z.object({
+    cursoId: z.coerce
+      .number({
+        required_error: 'O id do curso é obrigatório.',
+        invalid_type_error: 'O id do curso deve ser número.',
+      })
+      .int({ message: 'O id do curso deve ser inteiro.' })
+      .positive({ message: 'O id do curso deve ser positivo.' }),
+    anoLectivoId: z.coerce
+      .number({
+        required_error: 'O id do ano-lectivo é obrigatório.',
+        invalid_type_error: 'O id do ano-lectivo deve ser número.',
+      })
+      .int({ message: 'O id do ano-lectivo deve ser inteiro.' })
+      .positive({ message: 'O id do ano-lectivo deve ser positivo.' })
+      .optional(),
+  }),
+  response: {
+    404: simpleBadRequestSchema,
+  },
+};
+
 export const getClasseSchema = {
   summary: 'Retorna uma classe',
   tags: ['classes'],
@@ -222,6 +247,9 @@ export const getClasseDisciplinasAbsentProfessorSchema = {
 export type createClasseBodyType = z.infer<typeof createClasseSchema.body>;
 export type updateClasseBodyType = z.infer<typeof updateClasseSchema.body>;
 export type classeParamsType = z.infer<typeof classeParamsSchema>;
+export type getClassesQueryStringType = z.infer<
+  typeof getClassesSchema.querystring
+>;
 export type createTurmaToClasseBodyType = z.infer<
   typeof createTurmaToClasseSchema.body
 >;

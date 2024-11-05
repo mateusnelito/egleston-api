@@ -5,6 +5,7 @@ import {
   createTurmaToClasseBodyType,
   getClasseAbsentDisciplinasParamsType,
   getClasseAlunosQueryStringType,
+  getClassesQueryStringType,
   updateClasseBodyType,
 } from '../schemas/classeSchemas';
 import { getAnoLectivoActivo } from '../services/anoLectivoServices';
@@ -15,6 +16,7 @@ import {
   getClasseCursoOrdem,
   getClasseCursoWithOrdem,
   getClasseId,
+  getClasses,
   getNextClasseByOrdem,
   updateClasse,
 } from '../services/classeServices';
@@ -114,6 +116,14 @@ export async function updateClasseController(
   });
 
   return reply.send(updatedClasse);
+}
+
+export async function getClassesController(
+  request: FastifyRequest<{ Querystring: getClassesQueryStringType }>,
+  reply: FastifyReply
+) {
+  const { cursoId, anoLectivoId } = request.query;
+  return reply.send(await getClasses(cursoId, anoLectivoId));
 }
 
 export async function getClasseController(
