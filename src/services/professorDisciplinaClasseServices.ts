@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
+import { groupBy } from '../utils/utilsFunctions';
 import { getAnoLectivoActivo } from './anoLectivoServices';
 
 export async function getProfessorDisciplinaClasseById(
@@ -120,7 +121,6 @@ export async function getProfessorClasseTurmas(
   professorId: number,
   classeId: number
 ) {
-  // Fetch all classes, their corresponding disciplines, and groups by professor and class
   const professorClasses = await prisma.professorDisciplinaClasse.findMany({
     where: { professorId, classeId },
     select: {
@@ -132,26 +132,39 @@ export async function getProfessorClasseTurmas(
     orderBy: [{ Turma: { id: 'desc' } }, { Disciplina: { id: 'desc' } }],
   });
 
-  // Object to group 'turmas' (classes) by their ID and aggregate their disciplines
-  const turmaMap: Record<number, any> = {};
+  const turmas = groupBy(
+    professorClasses,
+    ({ Turma: { id } }) => id,
+    ({ Turma }) => Turma,
+    ({ Disciplina }) => Disciplina,
+    'disciplinas'
+  );
 
-  // Loop through each result to group disciplines by 'turma'
-  professorClasses.forEach(({ Turma: turma, Disciplina: disciplina }) => {
-    // If the turma is not yet in the map, initialize it with an empty disciplines array
-    if (!turmaMap[turma.id]) {
-      turmaMap[turma.id] = {
-        id: turma.id,
-        nome: turma.nome,
-        disciplinas: [],
-      };
-    }
-    // Add the discipline to the corresponding turma's disciplines array
-    turmaMap[turma.id].disciplinas.push(disciplina);
+  return { data: turmas };
+}
+
+export async function getTurmaProfessores(turmaId: number) {
+  const professores = await prisma.professorDisciplinaClasse.findMany({
+    where: { turmaId },
+    select: {
+      Professor: {
+        select: {
+          id: true,
+          nomeCompleto: true,
+        },
+      },
+      Disciplina: { select: { id: true, nome: true } },
+    },
+    orderBy: { turmaId: 'desc' },
   });
 
-  // Convert the 'turmaMap' object back into an array of turmas
-  const turmas = Object.values(turmaMap);
+  const professoresData = groupBy(
+    professores,
+    ({ Professor: { id } }) => id,
+    ({ Professor }) => Professor,
+    ({ Disciplina: disciplina }) => disciplina,
+    'disciplinas'
+  );
 
-  // Return the result in the expected format
-  return { data: turmas };
+  return { data: professoresData };
 }

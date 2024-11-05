@@ -22,3 +22,6 @@ Content-Type: application/json
 
 ### Get Turma
 GET http://localhost:8000/api/turmas/1
+
+### Get Turma Professores
+GET http://localhost:8000/api/turmas/4/professores

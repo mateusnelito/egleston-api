@@ -18,6 +18,7 @@ import {
 } from '../utils/controllers/turmaControllerUtils';
 import { throwNotFoundTurnoIdFieldError } from '../utils/controllers/turnoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
+import { getTurmaProfessores } from '../services/professorDisciplinaClasseServices';
 
 export async function createTurmaController(
   request: FastifyRequest<{ Body: turmaBodyType }>,
@@ -86,4 +87,17 @@ export async function getTurmaController(
 
   // TODO: SEND A BETTER RESPONSE
   return reply.send(turma);
+}
+
+export async function getTurmaProfessoresController(
+  request: FastifyRequest<{ Params: turmaParamsType }>,
+  reply: FastifyReply
+) {
+  const { turmaId } = request.params;
+  const turma = await getTurmaId(turmaId);
+
+  if (!turma) throwNotFoundTurmaIdError();
+
+  const professores = await getTurmaProfessores(turmaId);
+  return reply.send(professores);
 }

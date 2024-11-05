@@ -103,5 +103,28 @@ export const getTurmaSchema = {
   },
 };
 
+export const getTurmaProfessoresSchema = {
+  summary: 'Retorna todos os professores de uma turma',
+  tags: ['turmas'],
+  params: turmaParamsSchema,
+  response: {
+    200: z.object({
+      data: z.array(
+        z.object({
+          id: z.number().positive(),
+          nomeCompleto: z.string(),
+          disciplinas: z.array(
+            z.object({
+              id: z.number().positive(),
+              nome: z.string(),
+            })
+          ),
+        })
+      ),
+    }),
+    404: simpleBadRequestSchema,
+  },
+};
+
 export type turmaBodyType = z.infer<typeof createTurmaSchema.body>;
 export type turmaParamsType = z.infer<typeof turmaParamsSchema>;
