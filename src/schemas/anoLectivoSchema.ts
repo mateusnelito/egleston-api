@@ -44,6 +44,13 @@ const anoLectivoBodySchema = z.object({
     required_error: 'O status do ano lectivo é obrigatório.',
     invalid_type_error: 'O status do ano lectivo deve ser boolean.',
   }),
+  matriculaAberta: z
+    .boolean({
+      required_error: 'O status da matricula é obrigatório.',
+      invalid_type_error: 'O status da matricula deve ser boolean.',
+    })
+    .default(false)
+    .optional(),
 });
 
 const anoLectivoParamsSchema = z.object({
@@ -78,15 +85,30 @@ export const updateAnoLectivoSchema = {
   },
 };
 
-export const changeAnoLectivoStatusSchema = {
-  summary: 'Altera o status do ano lectivo actual',
+export const changeAnoLectivoStatusesSchema = {
+  summary: 'Altera os statuses do ano lectivo actual',
   tags: ['ano-lectivo'],
-  body: anoLectivoBodySchema.omit({
-    id: true,
-    nome: true,
-    inicio: true,
-    termino: true,
-  }),
+  params: anoLectivoParamsSchema,
+  body: z
+    .object({
+      activo: z
+        .boolean({
+          required_error: 'O status do ano lectivo é obrigatório.',
+          invalid_type_error: 'O status do ano lectivo deve ser boolean.',
+        })
+        .optional(),
+      matriculaAberta: z
+        .boolean({
+          required_error: 'O status da matricula é obrigatório.',
+          invalid_type_error: 'O status da matricula deve ser boolean.',
+        })
+        .optional(),
+    })
+    // FIXME: Adicionar o campo de erro ou melhorar a mensagem de erro
+    .refine(
+      (data) => data.activo !== undefined || data.matriculaAberta !== undefined,
+      { message: 'Ao menos um dos atributos deve ser fornecido' }
+    ),
   response: {
     // 200: anoLectivoBodySchema,
     404: simpleBadRequestSchema,
@@ -181,23 +203,6 @@ export const getAnoLectivoTrimestresSchema = {
   },
 };
 
-export const changeAnoLectivoMatriculaAbertaSchema = {
-  summary: 'Altera o status da matricula do ano lectivo actual',
-  tags: ['ano-lectivo'],
-  params: anoLectivoParamsSchema,
-  body: z.object({
-    matriculaAberta: z.boolean({
-      required_error: 'O status de matricula aberta é obrigatório.',
-      invalid_type_error: 'O status de matricula aberta deve ser boolean.',
-    }),
-  }),
-  response: {
-    // 200: anoLectivoBodySchema,
-    404: simpleBadRequestSchema,
-    400: simpleBadRequestSchema,
-  },
-};
-
 export type createAnoLectivoBodyType = z.infer<
   typeof createAnoLectivoSchema.body
 >;
@@ -205,10 +210,7 @@ export type anoLectivoParamsType = z.infer<typeof anoLectivoParamsSchema>;
 export type createClasseToAnoLectivoBodyType = z.infer<
   typeof createClasseToAnoLectivoSchema.body
 >;
-export type patchAnoLectivoBodyType = z.infer<
-  typeof changeAnoLectivoStatusSchema.body
->;
 
-export type changeAnoLectivoMatriculaAbertaBodyType = z.infer<
-  typeof changeAnoLectivoMatriculaAbertaSchema.body
+export type changeAnoLectivoStatusesBodyType = z.infer<
+  typeof changeAnoLectivoStatusesSchema.body
 >;

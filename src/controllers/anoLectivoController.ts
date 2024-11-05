@@ -1,14 +1,12 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   anoLectivoParamsType,
-  changeAnoLectivoMatriculaAbertaBodyType,
+  changeAnoLectivoStatusesBodyType,
   createAnoLectivoBodyType,
   createClasseToAnoLectivoBodyType,
-  patchAnoLectivoBodyType,
 } from '../schemas/anoLectivoSchema';
 import {
-  changeAnoLectivoActiveState,
-  changeAnoLectivoMatriculaAbertaState,
+  changeAnoLectivoStatus,
   createAnoLectivo,
   getAnoLectivo,
   getAnoLectivoActivo,
@@ -23,14 +21,15 @@ import {
   getClassesByAnoLectivo,
 } from '../services/classeServices';
 import { getCursoId } from '../services/cursoServices';
-import BadRequest from '../utils/BadRequest';
+import { getTrimestreByAnoLectivo } from '../services/trimestreServices';
 import {
   ANO_LECTIVO_MONTH_LENGTH,
-  throwActiveAnoLectivoNotFoundError,
   throwDuplicatedAnoLectivoError,
+  throwEnableMatriculaOnInactiveAnoLectivoError,
   throwInvalidAnoLectivoInicioError,
   throwInvalidAnoLectivoYearLengthError,
   throwNotFoundAnoLectivoIdError,
+  throwUniqueActiveAnoLectivoClauseError,
 } from '../utils/controllers/anoLectivoControllerUtils';
 import { throwDuplicatedClasseError } from '../utils/controllers/classeControllerUtils';
 import { throwNotFoundCursoIdFieldError } from '../utils/controllers/cursoControllerUtils';
@@ -40,7 +39,7 @@ import {
   formatDate,
   isBeginDateAfterEndDate,
 } from '../utils/utilsFunctions';
-import { getTrimestreByAnoLectivo } from '../services/trimestreServices';
+import BadRequest from '../utils/BadRequest';
 
 export async function createAnoLectivoController(
   request: FastifyRequest<{ Body: createAnoLectivoBodyType }>,
@@ -165,7 +164,7 @@ export async function createClasseToAnoLectivoController(
   reply: FastifyReply
 ) {
   const { anoLectivoId } = request.params;
-  const { nome, cursoId, valorMatricula } = request.body;
+  const { nome, ordem, cursoId, valorMatricula } = request.body;
 
   const [isAnoLectivo, isCursoId] = await Promise.all([
     getAnoLectivoId(anoLectivoId),
@@ -182,6 +181,7 @@ export async function createClasseToAnoLectivoController(
   // TODO: REFACTOR THIS
   const classe = await createClasse({
     nome,
+    ordem,
     anoLectivoId,
     cursoId,
     valorMatricula: Number(valorMatricula.toFixed(2)),
@@ -193,55 +193,28 @@ export async function createClasseToAnoLectivoController(
 
 export async function changeAnoLectivoStatusController(
   request: FastifyRequest<{
-    Body: patchAnoLectivoBodyType;
-  }>,
-  reply: FastifyReply
-) {
-  const { activo } = request.body;
-
-  const activeAnoLectivo = await getAnoLectivoActivo();
-
-  if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
-
-  const anoLectivo = await changeAnoLectivoActiveState(
-    activeAnoLectivo!.id,
-    activo
-  );
-  return reply.send(anoLectivo);
-}
-
-export async function changeAnoLectivoMatriculaAbertaController(
-  request: FastifyRequest<{
     Params: anoLectivoParamsType;
-    Body: changeAnoLectivoMatriculaAbertaBodyType;
+    Body: changeAnoLectivoStatusesBodyType;
   }>,
   reply: FastifyReply
 ) {
   const { anoLectivoId } = request.params;
-  const { matriculaAberta } = request.body;
+  const { activo, matriculaAberta } = request.body;
 
-  const [anoLectivo, activeAnoLectivo] = await Promise.all([
-    getAnoLectivoId(anoLectivoId),
-    getAnoLectivoActivo(),
-  ]);
+  const anoLectivo = await getAnoLectivoId(anoLectivoId);
 
   if (!anoLectivo) throwNotFoundAnoLectivoIdError();
-  if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
 
-  if (activeAnoLectivo!.id !== anoLectivoId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Ano lectivo inválido',
-      errors: {
-        activo: [
-          'Apenas o ano lectivo ativo pode ter o status de matricula alterado.',
-        ],
-      },
-    });
-  }
+  const anoLectivoActivo = await getAnoLectivoActivo();
+
+  if (activo && anoLectivoId !== anoLectivoActivo.id)
+    throwUniqueActiveAnoLectivoClauseError();
+
+  if (matriculaAberta && anoLectivoId !== anoLectivoActivo.id)
+    throwEnableMatriculaOnInactiveAnoLectivoError();
 
   return reply.send(
-    await changeAnoLectivoMatriculaAbertaState(anoLectivoId, matriculaAberta)
+    await changeAnoLectivoStatus(anoLectivoId, activo, matriculaAberta)
   );
 }
 

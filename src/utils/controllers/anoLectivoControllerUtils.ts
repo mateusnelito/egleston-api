@@ -54,3 +54,25 @@ export function throwMatriculaClosedForAnoLectivo() {
     message: 'As inscrições para o ano académico atual estão fechadas.',
   });
 }
+
+export function throwUniqueActiveAnoLectivoClauseError() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.NOT_FOUND,
+    message: 'Status activo inválido.',
+    errors: {
+      activo: ['Já existe um ano ano lectivo com status activo.'],
+    },
+  });
+}
+
+export function throwEnableMatriculaOnInactiveAnoLectivoError() {
+  throw new BadRequest({
+    statusCode: HttpStatusCodes.NOT_FOUND,
+    message: 'Matricula aberta inválido.',
+    errors: {
+      matriculaAberta: [
+        'Apenas o ano lectivo activo pode ter matriculas abertas.',
+      ],
+    },
+  });
+}

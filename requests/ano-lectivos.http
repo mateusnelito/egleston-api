@@ -16,6 +16,15 @@ Content-Type: application/json
   "termino": "2024-08-01"
 }
 
+### Update
+PATCH http://localhost:8000/api/ano-lectivos/1
+Content-Type: application/json
+
+{
+  "activo": false,
+  "matriculaAberta": false
+}
+
 ### Get all
 GET http://localhost:8000/api/ano-lectivos
 
