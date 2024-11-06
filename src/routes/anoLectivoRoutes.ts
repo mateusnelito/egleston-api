@@ -55,10 +55,10 @@ export const anoLectivoRoutes: FastifyPluginAsync = async (
   });
 
   // GET Classes
-  server.withTypeProvider<ZodTypeProvider>().get('/:anoLectivoId/classes', {
-    schema: getAnoLectivoClassesSchema,
-    handler: getAnoLectivoClassesController,
-  });
+  // server.withTypeProvider<ZodTypeProvider>().get('/:anoLectivoId/classes', {
+  //   schema: getAnoLectivoClassesSchema,
+  //   handler: getAnoLectivoClassesController,
+  // });
 
   // POST classe in ano lectivo
   server.withTypeProvider<ZodTypeProvider>().post('/:anoLectivoId/classes', {
