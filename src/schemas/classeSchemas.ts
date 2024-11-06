@@ -201,8 +201,11 @@ export const getClasseAlunosSchema = {
     200: z.object({
       data: z.array(
         z.object({
-          id: z.number(),
+          id: z.number().positive(),
           nomeCompleto: z.string(),
+          numeroBi: z.string(),
+          dataNascimento: z.string().date(),
+          genero: z.enum(['M', 'F']),
         })
       ),
       next_cursor: z.number().optional(),

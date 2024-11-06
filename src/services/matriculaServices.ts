@@ -197,19 +197,28 @@ export async function getAlunosMatriculaByClasse(
     where: whereClause,
     select: {
       Aluno: {
-        select: { id: true, nomeCompleto: true },
+        select: {
+          id: true,
+          nomeCompleto: true,
+          numeroBi: true,
+          dataNascimento: true,
+          genero: true,
+        },
       },
     },
     take: pageSize,
     orderBy: { Aluno: { id: 'desc' } },
   });
 
-  return alunoMatriculas.map(({ Aluno: aluno }) => {
-    return {
-      id: aluno.id,
-      nomeCompleto: aluno.nomeCompleto,
-    };
-  });
+  return alunoMatriculas.map(
+    ({ Aluno: { id, nomeCompleto, numeroBi, dataNascimento, genero } }) => ({
+      id,
+      nomeCompleto,
+      numeroBi,
+      dataNascimento: formatDate(dataNascimento),
+      genero,
+    })
+  );
 }
 
 export async function getAlunosByTurma(
