@@ -127,6 +127,7 @@ export const getClasseSchema = {
         id: z.number().int(),
         nome: z.string(),
       }),
+      totalTurmas: z.number(),
     }),
     404: simpleBadRequestSchema,
   },

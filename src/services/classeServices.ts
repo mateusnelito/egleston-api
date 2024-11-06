@@ -120,6 +120,11 @@ export async function getClasse(id: number) {
       valorMatricula: true,
       AnoLectivo: { select: { id: true, nome: true } },
       Curso: { select: { id: true, nome: true } },
+      _count: {
+        select: {
+          Turma: {},
+        },
+      },
     },
   });
 
@@ -131,6 +136,7 @@ export async function getClasse(id: number) {
         valorMatricula: Number(classe.valorMatricula.toFixed(2)),
         curso: classe.Curso,
         anoLectivo: classe.AnoLectivo,
+        totalTurmas: classe._count.Turma,
       }
     : classe;
 }
