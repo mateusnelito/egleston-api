@@ -25,3 +25,6 @@ GET http://localhost:8000/api/turmas/1
 
 ### Get Turma Professores
 GET http://localhost:8000/api/turmas/4/professores
+
+### Get Turma Alunos
+GET http://localhost:8000/api/turmas/4/alunos?pageSize=5&cursor=200

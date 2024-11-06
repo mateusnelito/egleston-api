@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { simpleBadRequestSchema } from './globalSchema';
+import {
+  getResourcesDefaultQueriesSchema,
+  simpleBadRequestSchema,
+} from './globalSchema';
 
 export const turmaBodySchema = z.object({
   id: z
@@ -121,6 +124,28 @@ export const getTurmaProfessoresSchema = {
           ),
         })
       ),
+    }),
+    404: simpleBadRequestSchema,
+  },
+};
+
+export const getTurmaAlunosSchema = {
+  summary: 'Retorna todos os alunos da turma',
+  tags: ['turmas'],
+  params: turmaParamsSchema,
+  querystring: getResourcesDefaultQueriesSchema,
+  response: {
+    200: z.object({
+      data: z.array(
+        z.object({
+          id: z.number().positive(),
+          nomeCompleto: z.string(),
+          numeroBi: z.string(),
+          dataNascimento: z.string().date(),
+          genero: z.enum(['M', 'F']),
+        })
+      ),
+      next_cursor: z.number().optional(),
     }),
     404: simpleBadRequestSchema,
   },

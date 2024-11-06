@@ -1,6 +1,9 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { getResourcesDefaultQueriesType } from '../schemas/globalSchema';
 import { turmaBodyType, turmaParamsType } from '../schemas/turmaSchemas';
 import { getClasseId } from '../services/classeServices';
+import { getAlunosByTurma } from '../services/matriculaServices';
+import { getTurmaProfessores } from '../services/professorDisciplinaClasseServices';
 import { getSalaId } from '../services/salaServices';
 import {
   createTurma,
@@ -18,7 +21,6 @@ import {
 } from '../utils/controllers/turmaControllerUtils';
 import { throwNotFoundTurnoIdFieldError } from '../utils/controllers/turnoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import { getTurmaProfessores } from '../services/professorDisciplinaClasseServices';
 
 export async function createTurmaController(
   request: FastifyRequest<{ Body: turmaBodyType }>,
@@ -100,4 +102,25 @@ export async function getTurmaProfessoresController(
 
   const professores = await getTurmaProfessores(turmaId);
   return reply.send(professores);
+}
+
+export async function getTurmaAlunosController(
+  request: FastifyRequest<{
+    Params: turmaParamsType;
+    Querystring: getResourcesDefaultQueriesType;
+  }>,
+  reply: FastifyReply
+) {
+  const { turmaId } = request.params;
+  const { query } = request;
+
+  const turma = await getTurmaId(turmaId);
+  if (!turma) throwNotFoundTurmaIdError();
+
+  const alunos = await getAlunosByTurma(turmaId, query);
+
+  let next_cursor =
+    alunos.length === query.pageSize ? alunos[alunos.length - 1].id : undefined;
+
+  return reply.send({ data: alunos, next_cursor });
 }

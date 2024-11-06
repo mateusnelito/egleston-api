@@ -2,12 +2,14 @@ import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
   createTurmaController,
+  getTurmaAlunosController,
   getTurmaController,
   getTurmaProfessoresController,
   updateTurmaController,
 } from '../controllers/turmaControllers';
 import {
   createTurmaSchema,
+  getTurmaAlunosSchema,
   getTurmaProfessoresSchema,
   getTurmaSchema,
   updateTurmaSchema,
@@ -38,5 +40,11 @@ export const turmaRoutes: FastifyPluginAsync = async (
   server.withTypeProvider<ZodTypeProvider>().get('/:turmaId/professores', {
     schema: getTurmaProfessoresSchema,
     handler: getTurmaProfessoresController,
+  });
+
+  // GET Turma Alunos
+  server.withTypeProvider<ZodTypeProvider>().get('/:turmaId/alunos', {
+    schema: getTurmaAlunosSchema,
+    handler: getTurmaAlunosController,
   });
 };

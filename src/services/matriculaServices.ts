@@ -1,6 +1,7 @@
 import { prisma } from '../lib/prisma';
 import { createMatriculaToAlunoBodyType } from '../schemas/alunoSchemas';
 import { getClasseAlunosQueryStringType } from '../schemas/classeSchemas';
+import { getResourcesDefaultQueriesType } from '../schemas/globalSchema';
 import { formatDate } from '../utils/utilsFunctions';
 
 export async function getMatriculasByAlunoId(alunoId: number) {
@@ -209,6 +210,49 @@ export async function getAlunosMatriculaByClasse(
       nomeCompleto: aluno.nomeCompleto,
     };
   });
+}
+
+export async function getAlunosByTurma(
+  turmaId: number,
+  params: getResourcesDefaultQueriesType
+) {
+  const { pageSize, cursor } = params;
+
+  const whereClause = cursor
+    ? {
+        turmaId,
+        id: {
+          lt: cursor,
+        },
+      }
+    : { turmaId };
+
+  const alunoMatriculas = await prisma.matricula.findMany({
+    where: whereClause,
+    select: {
+      Aluno: {
+        select: {
+          id: true,
+          nomeCompleto: true,
+          numeroBi: true,
+          dataNascimento: true,
+          genero: true,
+        },
+      },
+    },
+    take: pageSize,
+    orderBy: { Aluno: { id: 'desc' } },
+  });
+
+  return alunoMatriculas.map(
+    ({ Aluno: { id, nomeCompleto, numeroBi, dataNascimento, genero } }) => ({
+      id,
+      nomeCompleto,
+      numeroBi,
+      dataNascimento: formatDate(dataNascimento),
+      genero,
+    })
+  );
 }
 
 export async function getTotalMatriculas(classeId: number, turmaId: number) {

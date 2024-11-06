@@ -36,6 +36,10 @@ export const getResourcesDefaultQueriesSchema = z.object({
     .nullish(),
 });
 
+export type getResourcesDefaultQueriesType = z.infer<
+  typeof getResourcesDefaultQueriesSchema
+>;
+
 export type simpleBadRequestResponseType = z.infer<
   typeof simpleBadRequestSchema
 >;
