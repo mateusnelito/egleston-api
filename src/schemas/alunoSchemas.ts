@@ -156,7 +156,7 @@ export const getAlunoSchema = {
       dataNascimento: z.string().date(),
       endereco: enderecoSchema.extend({ numeroCasa: z.string() }),
       contacto: contactoSchema.omit({ outros: true }),
-      responsaveis: z.number().int(),
+      totalResponsaveis: z.number().int(),
     }),
     404: simpleBadRequestSchema,
   },

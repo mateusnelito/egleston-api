@@ -52,7 +52,7 @@ export async function getAluno(id: number) {
         telefone: aluno.Contacto?.telefone,
         email: aluno.Contacto?.email,
       },
-      responsaveis: aluno._count.Responsaveis,
+      totalResponsaveis: aluno._count.Responsaveis,
     };
   } else {
     return aluno;
