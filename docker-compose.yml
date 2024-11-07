@@ -2,17 +2,17 @@ version: '3.8' # Compose version
 
 services:
   postgres:
-    image: bitnami/postgresql:latest # Bitnami PostgreSQL image
-    container_name: egleston_db # Container name
+    image: bitnami/postgresql:16.4.0 # Bitnami PostgreSQL image
+    container_name: sge_rest_api_db # Container name
     environment:
-      - POSTGRESQL_USERNAME=user # PostgreSQL username
-      - POSTGRESQL_PASSWORD=password # PostgreSQL user password
-      - POSTGRESQL_DATABASE=egleston # Database name
+      - POSTGRESQL_USERNAME=docker # PostgreSQL username
+      - POSTGRESQL_PASSWORD=docker # PostgreSQL user password
+      - POSTGRESQL_DATABASE=sge_rest # Database name
       - ALLOW_EMPTY_PASSWORD=no # Don't allow empty password
     ports:
       - '5432:5432' # Ports mapping (host:container)
     volumes:
-      - egleston_data:/bitnami/postgresql # Data persistence
+      - sge_rest_api_data:/bitnami/postgresql # Data persistence
 
 volumes:
-  egleston_data: # Volume for data persistence
+  sge_rest_api_data: # Volume for data persistence
