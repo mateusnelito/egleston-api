@@ -14,13 +14,9 @@ import {
   getResponsavelId,
   updateResponsavel,
 } from '../services/responsavelServices';
-import HttpStatusCodes from '../utils/HttpStatusCodes';
-import { throwNotFoundParentescoIdFieldError } from '../utils/controllers/parentescoControllerUtils';
-import {
-  throwDuplicatedEmailError,
-  throwDuplicatedTelefoneError,
-} from '../utils/utilsFunctions';
 import BadRequest from '../utils/BadRequest';
+import HttpStatusCodes from '../utils/HttpStatusCodes';
+import { throwValidationError } from '../utils/utilsFunctions';
 
 function throwNotFoundResponsavelId() {
   throw new BadRequest({
@@ -58,16 +54,27 @@ export async function updateResponsavelController(
   // TODO: Verify if already exist a father or mother in db for the current aluno
   // 'Cause nobody has 2 fathers or mothers
   // TODO: search for better way to validate parentesco and avoid duplication
-  if (!isParentescoId) throwNotFoundParentescoIdFieldError();
+  if (!isParentescoId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Parentesco inválido.', {
+      parentescoId: ['Parentesco não encontrado.'],
+    });
 
   if (
     responsavelTelefone &&
     responsavelTelefone.responsavelId !== responsavelId
   )
-    throwDuplicatedTelefoneError();
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Responsavel inválido.', {
+      contacto: {
+        telefone: ['Telefone já existe.'],
+      },
+    });
 
   if (responsavelEmail && responsavelEmail.responsavelId !== responsavelId)
-    throwDuplicatedEmailError();
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Responsavel inválido.', {
+      contacto: {
+        email: ['Email já existe.'],
+      },
+    });
 
   const responsavel = await updateResponsavel(responsavelId, data);
   return reply.send(responsavel);

@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import BadRequest from './BadRequest';
 import HttpStatusCodes from './HttpStatusCodes';
+import { ErrorsFormat } from './interfaces';
 
 // Formate date to yyyy-mm-dd
 export function formatDate(date: Date): String {
@@ -33,34 +34,6 @@ export function calculateTimeBetweenDates(
 // Not with objects
 export function arrayHasDuplicatedItems(array: Array<any>) {
   return new Set(array).size !== array.length;
-}
-
-export function throwDuplicatedEmailError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Endereço de email inválido.',
-    errors: {
-      contacto: { email: ['Endereço de email existe.'] },
-    },
-  });
-}
-
-export function throwDuplicatedTelefoneError() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Número de telefone inválido.',
-    errors: {
-      contacto: { telefone: ['Número de telefone já existe.'] },
-    },
-  });
-}
-
-export function throwInvalidDataNascimentoError(message: string) {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: 'Data de nascimento inválida.',
-    errors: { dataNascimento: [message] },
-  });
 }
 
 // Agrupa elementos de um array com base em uma chave extraída de cada item.
@@ -96,4 +69,16 @@ export function groupBy<ItemType, KeyType, ValueType>(
 
   // 7. Converte o mapa de agrupamentos de volta em um array e o retorna.
   return Array.from(map.values());
+}
+
+export function throwValidationError(
+  httpStatusCodes: number,
+  message: string,
+  errors?: ErrorsFormat
+) {
+  throw new BadRequest({
+    statusCode: httpStatusCodes,
+    message,
+    errors: errors || undefined,
+  });
 }

@@ -43,3 +43,7 @@ export interface notaIdDataType {
   disciplinaId: number;
   trimestreId: number;
 }
+
+export interface ErrorsFormat {
+  [fieldKey: string]: string[] | { [index: string]: string[] };
+}

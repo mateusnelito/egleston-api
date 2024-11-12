@@ -6,17 +6,14 @@ import {
 } from '../schemas/parentescoSchema';
 import {
   createParentesco,
-  getParentescos,
   getParentesco,
   getParentescoByNome,
   getParentescoId,
+  getParentescos,
   updateParentesco,
 } from '../services/parentescoServices';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import {
-  throwDuplicatedParentescoNomeError,
-  throwNotFoundParentescoIdError,
-} from '../utils/controllers/parentescoControllerUtils';
+import { throwValidationError } from '../utils/utilsFunctions';
 
 export async function createParentescoController(
   request: FastifyRequest<{ Body: createParentescoBodyType }>,
@@ -25,7 +22,10 @@ export async function createParentescoController(
   const { nome } = request.body;
   const isParentescoNome = await getParentescoByNome(nome);
 
-  if (isParentescoNome) throwDuplicatedParentescoNomeError();
+  if (isParentescoNome)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Parentesco inválido.', {
+      nome: ['Nome de parentesco já existe.'],
+    });
 
   const parentesco = await createParentesco(request.body);
   return reply.status(HttpStatusCodes.CREATED).send(parentesco);
@@ -46,9 +46,16 @@ export async function updateParentescoController(
     getParentescoByNome(nome),
   ]);
 
-  if (!isParentescoId) throwNotFoundParentescoIdError();
+  if (!isParentescoId)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Parentesco não encontrado.'
+    );
+
   if (parentesco && parentesco.id !== parentescoId)
-    throwDuplicatedParentescoNomeError();
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Parentesco inválido.', {
+      nome: ['Nome de parentesco já existe.'],
+    });
 
   const updatedParentesco = await updateParentesco(parentescoId, request.body);
   return reply.send(updatedParentesco);
@@ -71,7 +78,11 @@ export async function getParentescoController(
   const { parentescoId } = request.params;
   const parentesco = await getParentesco(parentescoId);
 
-  if (!parentesco) throwNotFoundParentescoIdError();
+  if (!parentesco)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Parentesco não encontrado.'
+    );
 
   return reply.send(parentesco);
 }

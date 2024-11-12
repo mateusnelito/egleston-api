@@ -20,13 +20,11 @@ import {
   updateDisciplina,
 } from '../services/disciplinaServices';
 import BadRequest from '../utils/BadRequest';
-import { throwInvalidCursoIdInArrayError } from '../utils/controllers/cursoControllerUtils';
-import {
-  throwDuplicatedDisciplinaNomeError,
-  throwNotFoundDisciplinaIdError,
-} from '../utils/controllers/disciplinaControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import { arrayHasDuplicatedItems } from '../utils/utilsFunctions';
+import {
+  arrayHasDuplicatedItems,
+  throwValidationError,
+} from '../utils/utilsFunctions';
 
 export async function createDisciplinaController(
   request: FastifyRequest<{ Body: createDisciplinaBodyType }>,
@@ -35,7 +33,10 @@ export async function createDisciplinaController(
   const { nome } = request.body;
 
   const isDisciplinaNome = await getDisciplinaNome(nome);
-  if (isDisciplinaNome) throwDuplicatedDisciplinaNomeError();
+  if (isDisciplinaNome)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Disciplina inválida.', {
+      nome: ['Nome da disciplina já existe.'],
+    });
 
   const disciplina = await createDisciplina(request.body);
   return reply.status(HttpStatusCodes.CREATED).send(disciplina);
@@ -56,9 +57,16 @@ export async function updateDisciplinaController(
     getDisciplinaNome(nome),
   ]);
 
-  if (!isDisciplinaId) throwNotFoundDisciplinaIdError();
+  if (!isDisciplinaId)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Disciplina não encontrada.'
+    );
+
   if (disciplina && disciplina.id !== disciplinaId)
-    throwDuplicatedDisciplinaNomeError();
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Disciplina inválida.', {
+      nome: ['Nome da disciplina já existe.'],
+    });
 
   const disciplinaUpdated = await updateDisciplina(disciplinaId, request.body);
   return reply.send(disciplinaUpdated);
@@ -73,7 +81,12 @@ export async function getDisciplinaController(
   const { disciplinaId } = request.params;
   const isDisciplinaId = await getDisciplina(disciplinaId);
 
-  if (!isDisciplinaId) throwNotFoundDisciplinaIdError();
+  if (!isDisciplinaId)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Disciplina não encontrada.'
+    );
+
   return reply.send(isDisciplinaId);
 }
 
@@ -116,7 +129,11 @@ export async function createMultiplesCursoDisciplinaByDisciplinaController(
   }
 
   const isDisciplinaId = await getDisciplinaId(disciplinaId);
-  if (!isDisciplinaId) throwNotFoundDisciplinaIdError();
+  if (!isDisciplinaId)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Disciplina não encontrada.'
+    );
 
   for (let i = 0; i < cursos.length; i++) {
     const cursoId = cursos[i];
@@ -126,11 +143,15 @@ export async function createMultiplesCursoDisciplinaByDisciplinaController(
       getCursoDisciplina(cursoId, disciplinaId),
     ]);
 
-    // TODO: Finish the verification before send the errors, to send all invalids cursos
-    if (!isCursoId) throwInvalidCursoIdInArrayError(i, 'Curso não existe.');
+    if (!isCursoId)
+      throwValidationError(HttpStatusCodes.CONFLICT, 'Curso inválido.', {
+        disciplinas: { [i]: ['Curso não encontrado.'] },
+      });
 
     if (isCursoDisciplina)
-      throwInvalidCursoIdInArrayError(i, 'Disciplina já associada ao curso.');
+      throwValidationError(HttpStatusCodes.CONFLICT, 'Curso inválido.', {
+        disciplinas: { [i]: ['Disciplina já associada ao curso.'] },
+      });
   }
 
   const cursoDisciplinas = await createMultiplesCursoDisciplinaByDisciplina(

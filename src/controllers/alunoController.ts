@@ -29,6 +29,7 @@ import {
   getMatriculaByUniqueKey,
   getMatriculasByAlunoId,
 } from '../services/matriculaServices';
+import { validateTurmaAlunosLimit } from '../services/matriculaValidationService';
 import { getMetodoPagamentoById } from '../services/metodoPagamentoServices';
 import {
   getAlunoNotas,
@@ -45,37 +46,19 @@ import {
   createResponsavel,
   getTotalAlunoResponsaveis,
 } from '../services/responsavelServices';
-import { getTurmaId, isTurmaInClasse } from '../services/turmaServices';
+import { isTurmaInClasse } from '../services/turmaServices';
 import BadRequest from '../utils/BadRequest';
 import {
   MINIMUM_ALUNO_AGE,
   MINIMUM_ALUNO_RESPONSAVEIS,
-  throwNotFoundAlunoIdError,
-} from '../utils/controllers/alunoControllerUtils';
-import {
-  throwActiveAnoLectivoNotFoundError,
-  throwMatriculaClosedForAnoLectivo,
-} from '../utils/controllers/anoLectivoControllerUtils';
-import {
-  throwInvalidNextClasseError,
-  throwNotFoundClasseIdFieldError,
-  throwNotFoundPreviousClasseError,
-} from '../utils/controllers/classeControllerUtils';
-import { throwDuplicatedMatriculaError } from '../utils/controllers/matriculaControllerUtils';
-import { throwNotFoundMetodoPagamentoIdFieldError } from '../utils/controllers/metodoPagamentoControllerUtils';
-import { throwNotFoundNotaIdError } from '../utils/controllers/notaControllerUtil';
-import { throwNotFoundParentescoIdFieldError } from '../utils/controllers/parentescoControllerUtils';
-import { throwNotFoundTurmaIdFieldError } from '../utils/controllers/turmaControllerUtils';
+} from '../utils/constants';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
 import {
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
-  throwDuplicatedEmailError,
-  throwDuplicatedTelefoneError,
-  throwInvalidDataNascimentoError,
+  throwValidationError,
 } from '../utils/utilsFunctions';
-import { validateTurmaAlunosLimit } from '../services/matriculaValidationService';
 
 export async function updateAlunoController(
   request: FastifyRequest<{
@@ -90,15 +73,16 @@ export async function updateAlunoController(
   const { telefone, email } = data.contacto;
 
   if (isBeginDateAfterEndDate(dataNascimento, new Date()))
-    throwInvalidDataNascimentoError(
-      'Data de nascimento não pôde estar no futuro.'
-    );
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Aluno inválido.', {
+      dataNascimento: ['Data de nascimento não pôde estar no futuro.'],
+    });
 
   const alunoAge = calculateTimeBetweenDates(dataNascimento, new Date(), 'y');
+
   if (alunoAge < MINIMUM_ALUNO_AGE) {
-    throwInvalidDataNascimentoError(
-      `Idade inferior a ${MINIMUM_ALUNO_AGE} anos.`
-    );
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Aluno inválido.', {
+      dataNascimento: [`Idade inferior a ${MINIMUM_ALUNO_AGE} anos.`],
+    });
   }
 
   const [isAlunoId, alunoTelefone, alunoEmail] = await Promise.all([
@@ -107,11 +91,22 @@ export async function updateAlunoController(
     email ? getAlunoEmail(email) : null,
   ]);
 
-  if (!isAlunoId) throwNotFoundAlunoIdError();
-  if (alunoTelefone && alunoTelefone.alunoId !== alunoId)
-    throwDuplicatedTelefoneError();
+  if (!isAlunoId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Aluno não encontrado.');
 
-  if (alunoEmail && alunoEmail.alunoId !== alunoId) throwDuplicatedEmailError();
+  if (alunoTelefone && alunoTelefone.alunoId !== alunoId)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Aluno inválido.', {
+      contacto: {
+        telefone: ['Telefone já existe.'],
+      },
+    });
+
+  if (alunoEmail && alunoEmail.alunoId !== alunoId)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Aluno inválido.', {
+      contacto: {
+        email: ['Endereço de email existe.'],
+      },
+    });
 
   const aluno = await updateAluno(alunoId, data);
   return reply.send(aluno);
@@ -143,7 +138,9 @@ export async function getAlunoController(
   const { alunoId } = request.params;
 
   const aluno = await getAluno(alunoId);
-  if (!aluno) throwNotFoundAlunoIdError();
+
+  if (!aluno)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Aluno não encontrado.');
 
   return reply.send(aluno);
 }
@@ -157,7 +154,8 @@ export async function getAlunoResponsaveisController(
   const { alunoId } = request.params;
   const isAlunoId = await getAlunoId(alunoId);
 
-  if (!isAlunoId) throwNotFoundAlunoIdError();
+  if (!isAlunoId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Aluno não encontrado.');
 
   const responsaveis = await getAlunoResponsaveis(alunoId);
   return reply.send(responsaveis);
@@ -189,7 +187,8 @@ export async function createAlunoResponsavelController(
     email ? getResponsavelEmail(email) : null,
   ]);
 
-  if (!isAlunoId) throwNotFoundAlunoIdError();
+  if (!isAlunoId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Aluno não encontrado.');
 
   if (alunoTotalResponsaveis >= MINIMUM_ALUNO_RESPONSAVEIS) {
     throw new BadRequest({
@@ -202,9 +201,23 @@ export async function createAlunoResponsavelController(
   // 'Cause nobody has 2 fathers or mothers
 
   // TODO: search for better way to validate parentesco and avoid duplication
-  if (!isParentescoId) throwNotFoundParentescoIdFieldError();
-  if (isResponsavelTelefone) throwDuplicatedTelefoneError();
-  if (isResponsavelEmail) throwDuplicatedEmailError();
+  if (!isParentescoId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Parentesco inválido.', {
+      parentescoId: ['Parentesco não encontrado.'],
+    });
+
+  if (isResponsavelTelefone)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Aluno inválido.', {
+      contacto: {
+        telefone: ['Telefone já existe.'],
+      },
+    });
+  if (isResponsavelEmail)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Aluno inválido.', {
+      contacto: {
+        email: ['Endereço de email existe.'],
+      },
+    });
 
   const responsavel = await createResponsavel(alunoId, request.body);
   return reply.status(HttpStatusCodes.CREATED).send(responsavel);
@@ -217,7 +230,8 @@ export async function getAlunoMatriculasController(
   const { alunoId } = request.params;
   const isAlunoId = await getAlunoId(alunoId);
 
-  if (!isAlunoId) throwNotFoundAlunoIdError();
+  if (!isAlunoId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Aluno não encontrado.');
 
   const alunoMatriculas = await getMatriculasByAlunoId(alunoId);
   return reply.send(alunoMatriculas);
@@ -239,30 +253,47 @@ export async function confirmAlunoMatriculaController(
     getAnoLectivoActivo(),
   ]);
 
-  if (!aluno) throwNotFoundAlunoIdError();
-  if (!anoLectivo) throwActiveAnoLectivoNotFoundError();
-  if (!anoLectivo!.matriculaAberta) throwMatriculaClosedForAnoLectivo();
+  if (!aluno)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Aluno não encontrado.');
+
+  if (!anoLectivo)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Nenhum ano lectivo activo encontrado.'
+    );
+
+  if (!anoLectivo!.matriculaAberta)
+    throwValidationError(HttpStatusCodes.FORBIDDEN, 'Matriculas fechadas.');
 
   const [nextClasse, metodoPagamento] = await Promise.all([
     getClasseCursoWithOrdem(classeId),
     getMetodoPagamentoById(metodoPagamentoId),
   ]);
 
-  if (!nextClasse) throwNotFoundClasseIdFieldError();
-  if (!metodoPagamento) throwNotFoundMetodoPagamentoIdFieldError();
+  if (!nextClasse)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Classe inválida.', {
+      classeId: ['Classe não encontrada'],
+    });
+
+  if (!metodoPagamento)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Metodo de pagamento inválido.',
+      { metodoPagamentoId: ['Metodo de pagamento não encontrado.'] }
+    );
 
   const [turma, uniqueSavedMatricula] = await Promise.all([
     isTurmaInClasse(turmaId, classeId),
     getMatriculaByUniqueKey(alunoId, classeId, anoLectivo!.id),
   ]);
 
-  if (uniqueSavedMatricula) throwDuplicatedMatriculaError();
+  if (uniqueSavedMatricula)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Matricula já existe.');
 
   if (!turma)
-    throwNotFoundTurmaIdFieldError(
-      'Turma não associada a classe',
-      HttpStatusCodes.BAD_REQUEST
-    );
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Turma inválida.', {
+      turmaId: ['Turma não associada a classe'],
+    });
 
   // Check sala capacity limit
   await validateTurmaAlunosLimit(classeId, turmaId);
@@ -273,14 +304,20 @@ export async function confirmAlunoMatriculaController(
 
   const previousClasse = await getActualAlunoClasse(alunoId);
 
-  if (!previousClasse) throwNotFoundPreviousClasseError();
+  if (!previousClasse)
+    throwValidationError(
+      HttpStatusCodes.PRECONDITION_FAILED,
+      'Classe anterior não encontrada.'
+    );
 
   // Check if next classe are in the same curso and if is a sequency of previous classe
   if (
     nextClasseCursoId !== previousClasse!.curso.id ||
     ++previousClasse!.ordem !== nextClasse!.ordem
   )
-    throwInvalidNextClasseError();
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Classe inválida.', {
+      classeId: ['Esta não é uma sequência da classe anterior'],
+    });
 
   const matricula = await confirmAlunoMatricula(
     anoLectivo!.id,
@@ -315,7 +352,8 @@ export async function updateAlunoNotaController(
   const { classeId, disciplinaId, trimestreId, nota } = request.body;
   const isAlunoId = await getAlunoId(alunoId);
 
-  if (!isAlunoId) throwNotFoundAlunoIdError();
+  if (!isAlunoId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Aluno não encontrado.');
 
   await validateNotaData({ classeId, disciplinaId, trimestreId });
 
@@ -326,7 +364,8 @@ export async function updateAlunoNotaController(
     trimestreId,
   });
 
-  if (!storedNota) throwNotFoundNotaIdError();
+  if (!storedNota)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Nota não encontrada.');
 
   const newNota = await updateNota({
     alunoId,
@@ -351,7 +390,8 @@ export async function getAlunoNotasController(
 
   const aluno = await getAlunoId(alunoId);
 
-  if (!aluno) throwNotFoundAlunoIdError();
+  if (!aluno)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Aluno não encontrado.');
 
   return reply.send(await getAlunoNotas(alunoId, query));
 }
@@ -366,7 +406,8 @@ export async function getAlunoClassesController(
 
   const aluno = await getAlunoId(alunoId);
 
-  if (!aluno) throwNotFoundAlunoIdError();
+  if (!aluno)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Aluno não encontrado.');
 
   const classes = await getAlunoClasses(alunoId);
   return reply.send(classes);
@@ -382,7 +423,8 @@ export async function getActualAlunoClasseController(
 
   const aluno = await getAlunoId(alunoId);
 
-  if (!aluno) throwNotFoundAlunoIdError();
+  if (!aluno)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Aluno não encontrado.');
 
   const classe = await getActualAlunoClasse(alunoId);
   return reply.send(classe);

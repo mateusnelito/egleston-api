@@ -13,14 +13,8 @@ import {
   updateTurma,
 } from '../services/turmaServices';
 import { getTurnoId } from '../services/turnoServices';
-import { throwNotFoundClasseIdFieldError } from '../utils/controllers/classeControllerUtils';
-import { throwNotFoundSalaIdFieldError } from '../utils/controllers/salaControllerUtils';
-import {
-  throwDuplicatedTurmaError,
-  throwNotFoundTurmaIdError,
-} from '../utils/controllers/turmaControllerUtils';
-import { throwNotFoundTurnoIdFieldError } from '../utils/controllers/turnoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
+import { throwValidationError } from '../utils/utilsFunctions';
 
 export async function createTurmaController(
   request: FastifyRequest<{ Body: turmaBodyType }>,
@@ -34,10 +28,23 @@ export async function createTurmaController(
     getTurmaByUniqueKey(nome, classeId, salaId, turnoId),
   ]);
 
-  if (!isClasseId) throwNotFoundClasseIdFieldError();
-  if (!isSalaId) throwNotFoundSalaIdFieldError();
-  if (!isTurnoId) throwNotFoundTurnoIdFieldError();
-  if (isTurmaId) throwDuplicatedTurmaError();
+  if (!isClasseId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Classe inválida.', {
+      classeId: ['Classe não encontrada'],
+    });
+
+  if (!isSalaId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Sala inválida.', {
+      salaId: ['Sala não encontrada.'],
+    });
+
+  if (!isTurnoId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Turno inválido.', {
+      turnoId: ['Turno não encontrado'],
+    });
+
+  if (isTurmaId)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Turma já existe.');
 
   // TODO: SEND A BETTER RESPONSE
   const turma = await createTurma({ nome, classeId, salaId, turnoId });
@@ -61,11 +68,25 @@ export async function updateTurmaController(
     ]
   );
 
-  if (!isTurmaId) throwNotFoundTurmaIdError();
-  if (!isClasseId) throwNotFoundClasseIdFieldError();
-  if (!isSalaId) throwNotFoundSalaIdFieldError();
-  if (!isTurnoId) throwNotFoundTurnoIdFieldError();
-  if (turma && turma.id !== turmaId) throwDuplicatedTurmaError();
+  if (!isTurmaId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Turma não encontrada.');
+
+  if (!isClasseId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Classe inválida.', {
+      classeId: ['Classe não encontrada'],
+    });
+
+  if (!isSalaId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Sala inválida.', {
+      salaId: ['Sala não encontrada.'],
+    });
+
+  if (!isTurnoId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Turno inválido.', {
+      turnoId: ['Turno não encontrado'],
+    });
+  if (turma && turma.id !== turmaId)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Turma já existe.');
 
   const turmaUpdated = await updateTurma(turmaId, {
     nome,
@@ -85,7 +106,8 @@ export async function getTurmaController(
   const { turmaId } = request.params;
   const turma = await getTurma(turmaId);
 
-  if (!turma) throwNotFoundTurmaIdError();
+  if (!turma)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Turma não encontrada.');
 
   // TODO: SEND A BETTER RESPONSE
   return reply.send(turma);
@@ -98,7 +120,8 @@ export async function getTurmaProfessoresController(
   const { turmaId } = request.params;
   const turma = await getTurmaId(turmaId);
 
-  if (!turma) throwNotFoundTurmaIdError();
+  if (!turma)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Turma não encontrada.');
 
   const professores = await getTurmaProfessores(turmaId);
   return reply.send(professores);
@@ -115,7 +138,8 @@ export async function getTurmaAlunosController(
   const { query } = request;
 
   const turma = await getTurmaId(turmaId);
-  if (!turma) throwNotFoundTurmaIdError();
+  if (!turma)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Turma não encontrada.');
 
   const alunos = await getAlunosByTurma(turmaId, query);
 

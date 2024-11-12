@@ -9,8 +9,8 @@ import {
   getNotaById,
   validateNotaData,
 } from '../services/notaServices';
-import { throwDuplicatedNotaError } from '../utils/controllers/notaControllerUtil';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
+import { throwValidationError } from '../utils/utilsFunctions';
 
 export async function createNotaController(
   request: FastifyRequest<{ Body: notaDataType }>,
@@ -26,7 +26,7 @@ export async function createNotaController(
     trimestreId,
   });
 
-  if (nota) throwDuplicatedNotaError();
+  if (nota) throwValidationError(HttpStatusCodes.CONFLICT, 'Nota já existe.');
 
   return reply
     .status(HttpStatusCodes.CREATED)

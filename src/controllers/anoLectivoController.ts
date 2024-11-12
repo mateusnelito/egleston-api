@@ -22,24 +22,14 @@ import {
 } from '../services/classeServices';
 import { getCursoId } from '../services/cursoServices';
 import { getTrimestreByAnoLectivo } from '../services/trimestreServices';
-import {
-  ANO_LECTIVO_MONTH_LENGTH,
-  throwDuplicatedAnoLectivoError,
-  throwEnableMatriculaOnInactiveAnoLectivoError,
-  throwInvalidAnoLectivoInicioError,
-  throwInvalidAnoLectivoYearLengthError,
-  throwNotFoundAnoLectivoIdError,
-  throwUniqueActiveAnoLectivoClauseError,
-} from '../utils/controllers/anoLectivoControllerUtils';
-import { throwDuplicatedClasseError } from '../utils/controllers/classeControllerUtils';
-import { throwNotFoundCursoIdFieldError } from '../utils/controllers/cursoControllerUtils';
+import { ANO_LECTIVO_MONTH_LENGTH } from '../utils/constants';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import {
   calculateTimeBetweenDates,
   formatDate,
   isBeginDateAfterEndDate,
+  throwValidationError,
 } from '../utils/utilsFunctions';
-import BadRequest from '../utils/BadRequest';
 
 export async function createAnoLectivoController(
   request: FastifyRequest<{ Body: createAnoLectivoBodyType }>,
@@ -51,18 +41,24 @@ export async function createAnoLectivoController(
 
   // Validating dates
   if (isBeginDateAfterEndDate(inicio, termino))
-    throwInvalidAnoLectivoInicioError();
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Inicio inválido', {
+      inicio: ['Início não pode ser após o término.'],
+    });
 
   // FIXME: O dia de inicio do mês não começa em 01 caso for dado com 01.
   // e.g: 2024-09-01 -> 2024-08-31
   const yearMonthLength = calculateTimeBetweenDates(inicio, termino, 'M');
+
   if (yearMonthLength !== ANO_LECTIVO_MONTH_LENGTH)
-    throwInvalidAnoLectivoYearLengthError();
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Termino inválido', {
+      termino: ['A duração do ano lectivo deve ser de 11 meses.'],
+    });
 
   const nome = `${inicio.getFullYear()}-${termino.getFullYear()}`;
   const isAnoLectivoNome = await getAnoLectivoByNome(nome);
 
-  if (isAnoLectivoNome) throwDuplicatedAnoLectivoError();
+  if (isAnoLectivoNome)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Ano lectivo já existe.');
 
   const anoLectivo = await createAnoLectivo({ nome, inicio, termino });
   return reply.status(HttpStatusCodes.CREATED).send({
@@ -87,11 +83,16 @@ export async function updateAnoLectivoController(
   const termino = new Date(terminoString);
 
   if (isBeginDateAfterEndDate(inicio, termino))
-    throwInvalidAnoLectivoInicioError();
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Inicio inválido', {
+      inicio: ['Início não pode ser após o término.'],
+    });
 
   const yearMonthLength = calculateTimeBetweenDates(inicio, termino, 'M');
+
   if (yearMonthLength !== ANO_LECTIVO_MONTH_LENGTH)
-    throwInvalidAnoLectivoYearLengthError();
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Termino inválido', {
+      termino: ['A duração do ano lectivo deve ser de 11 meses.'],
+    });
 
   const nome = `${inicio.getFullYear()}-${termino.getFullYear()}`;
   const [isAnoLectivo, anoLectivo] = await Promise.all([
@@ -99,9 +100,14 @@ export async function updateAnoLectivoController(
     getAnoLectivoByNome(nome),
   ]);
 
-  if (!isAnoLectivo) throwNotFoundAnoLectivoIdError();
+  if (!isAnoLectivo)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Ano lectivo não encontrado.'
+    );
+
   if (anoLectivo && anoLectivo.id !== anoLectivoId)
-    throwDuplicatedAnoLectivoError();
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Ano lectivo já existe.');
 
   const anoLectivoUpdated = await updateAnoLectivo(anoLectivoId, {
     nome,
@@ -132,7 +138,11 @@ export async function getAnoLectivoController(
   const { anoLectivoId } = request.params;
   const anoLectivo = await getAnoLectivo(anoLectivoId);
 
-  if (!anoLectivo) throwNotFoundAnoLectivoIdError();
+  if (!anoLectivo)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Ano lectivo não encontrado.'
+    );
 
   return reply.send({
     id: anoLectivo!.id,
@@ -150,7 +160,11 @@ export async function getAnoLectivoClassesController(
   const { anoLectivoId } = request.params;
   const anoLectivo = await getAnoLectivoId(anoLectivoId);
 
-  if (!anoLectivo) throwNotFoundAnoLectivoIdError();
+  if (!anoLectivo)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Ano lectivo não encontrado.'
+    );
 
   const classes = await getClassesByAnoLectivo(anoLectivoId);
   return reply.send(classes);
@@ -171,12 +185,21 @@ export async function createClasseToAnoLectivoController(
     getCursoId(cursoId),
   ]);
 
-  if (!isAnoLectivo) throwNotFoundAnoLectivoIdError();
-  if (!isCursoId) throwNotFoundCursoIdFieldError();
+  if (!isAnoLectivo)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Ano lectivo não encontrado.'
+    );
+
+  if (!isCursoId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Curso inválido.', {
+      cursoId: ['Curso não encontrado'],
+    });
 
   const isClasse = await getClasseByUniqueKey(nome, anoLectivoId, cursoId);
 
-  if (isClasse) throwDuplicatedClasseError();
+  if (isClasse)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Classe já existe.');
 
   // TODO: REFACTOR THIS
   const classe = await createClasse({
@@ -203,15 +226,29 @@ export async function changeAnoLectivoStatusController(
 
   const anoLectivo = await getAnoLectivoId(anoLectivoId);
 
-  if (!anoLectivo) throwNotFoundAnoLectivoIdError();
+  if (!anoLectivo)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Ano lectivo não encontrado.'
+    );
 
   const anoLectivoActivo = await getAnoLectivoActivo();
 
   if (activo && anoLectivoId !== anoLectivoActivo.id)
-    throwUniqueActiveAnoLectivoClauseError();
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Status activo inválido.', {
+      activo: ['Apenas um ano letivo pode estar ativo no sistema de cada vez.'],
+    });
 
   if (matriculaAberta && anoLectivoId !== anoLectivoActivo.id)
-    throwEnableMatriculaOnInactiveAnoLectivoError();
+    throwValidationError(
+      HttpStatusCodes.CONFLICT,
+      'Status matriculaAberta inválido.',
+      {
+        matriculaAberta: [
+          'Apenas ano letivo activo pode ter matriculas abertas',
+        ],
+      }
+    );
 
   return reply.send(
     await changeAnoLectivoStatus(anoLectivoId, activo, matriculaAberta)
@@ -225,7 +262,11 @@ export async function getAnoLectivoTrimestresController(
   const { anoLectivoId } = request.params;
   const anoLectivo = await getAnoLectivoId(anoLectivoId);
 
-  if (!anoLectivo) throwNotFoundAnoLectivoIdError();
+  if (!anoLectivo)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Ano lectivo não encontrado.'
+    );
 
   return reply.send(await getTrimestreByAnoLectivo(anoLectivoId));
 }

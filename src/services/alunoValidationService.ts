@@ -4,7 +4,7 @@ import HttpStatusCodes from '../utils/HttpStatusCodes';
 import {
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
-  throwInvalidDataNascimentoError,
+  throwValidationError,
 } from '../utils/utilsFunctions';
 import { getAlunoEmail, getAlunoTelefone } from './alunoContactoServices';
 import { getAlunoNumeroBi } from './alunoServices';
@@ -15,18 +15,17 @@ export async function validateAlunoData(alunoData: createAlunoBodyType) {
   const { dataNascimento, numeroBi } = alunoData;
   const { telefone, email } = alunoData.contacto;
 
-  if (isBeginDateAfterEndDate(dataNascimento, new Date())) {
-    throwInvalidDataNascimentoError(
-      'Data de nascimento não pode estar no futuro.'
-    );
-  }
+  if (isBeginDateAfterEndDate(dataNascimento, new Date()))
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Aluno inválido.', {
+      dataNascimento: ['Data de nascimento não pôde estar no futuro.'],
+    });
 
   const alunoAge = calculateTimeBetweenDates(dataNascimento, new Date(), 'y');
-  if (alunoAge < MINIMUM_ALUNO_AGE) {
-    throwInvalidDataNascimentoError(
-      `Idade inferior a ${MINIMUM_ALUNO_AGE} anos.`
-    );
-  }
+
+  if (alunoAge < MINIMUM_ALUNO_AGE)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Aluno inválido.', {
+      dataNascimento: [`Idade inferior a ${MINIMUM_ALUNO_AGE} anos.`],
+    });
 
   const [isAlunoNumeroBi, isAlunoTelefone, isAlunoEmail] = await Promise.all([
     getAlunoNumeroBi(numeroBi),

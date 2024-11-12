@@ -7,13 +7,12 @@ import { getAnoLectivoActivo } from '../services/anoLectivoServices';
 import { validateMatriculaData } from '../services/matriculaValidationService';
 import { validateResponsavelData } from '../services/responsaveisValidationServices';
 import BadRequest from '../utils/BadRequest';
-import {
-  throwActiveAnoLectivoNotFoundError,
-  throwMatriculaClosedForAnoLectivo,
-} from '../utils/controllers/anoLectivoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
-import { arrayHasDuplicatedItems } from '../utils/utilsFunctions';
+import {
+  arrayHasDuplicatedItems,
+  throwValidationError,
+} from '../utils/utilsFunctions';
 
 export async function createMatriculaController(
   request: FastifyRequest<{ Body: createMatriculaBodyType }>,
@@ -50,8 +49,14 @@ export async function createMatriculaController(
 
   const activeAnoLectivo = await getAnoLectivoActivo();
 
-  if (!activeAnoLectivo) throwActiveAnoLectivoNotFoundError();
-  if (!activeAnoLectivo?.matriculaAberta) throwMatriculaClosedForAnoLectivo();
+  if (!activeAnoLectivo)
+    throwValidationError(
+      HttpStatusCodes.PRECONDITION_FAILED,
+      'Nenhum ano lectivo activo encontrado.'
+    );
+
+  if (!activeAnoLectivo?.matriculaAberta)
+    throwValidationError(HttpStatusCodes.FORBIDDEN, 'Matriculas fechadas.');
 
   await validateAlunoData(alunoData);
 

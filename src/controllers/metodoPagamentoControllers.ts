@@ -11,10 +11,7 @@ import {
   updateMetodoPagamento,
 } from '../services/metodoPagamentoServices';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import {
-  throwInvalidMetodoPagamentoNomeError,
-  throwNotFoundMetodoPagamentoIdError,
-} from '../utils/controllers/metodoPagamentoControllerUtils';
+import { throwValidationError } from '../utils/utilsFunctions';
 
 export async function createMetodoPagamentoController(
   request: FastifyRequest<{ Body: createMetodoPagamentoBodyType }>,
@@ -23,7 +20,12 @@ export async function createMetodoPagamentoController(
   const { nome } = request.body;
 
   const isMetodoPagamentoNome = await getMetodoPagamentoByNome(nome);
-  if (isMetodoPagamentoNome) throwInvalidMetodoPagamentoNomeError();
+  if (isMetodoPagamentoNome)
+    throwValidationError(
+      HttpStatusCodes.CONFLICT,
+      'Metodo de pagamento inválido.',
+      { nome: ['Nome de metodo de pagamento já existe.'] }
+    );
 
   const metodoPagamento = await createMetodoPagamento({ nome });
   return reply.status(HttpStatusCodes.CREATED).send(metodoPagamento);
@@ -44,9 +46,18 @@ export async function updateMetodoPagamentoController(
     getMetodoPagamentoByNome(nome),
   ]);
 
-  if (!isMetodoPagamentoId) throwNotFoundMetodoPagamentoIdError();
+  if (!isMetodoPagamentoId)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Metodo de pagamento não encontrado.'
+    );
+
   if (metodoPagamento && metodoPagamento.id !== metodoPagamentoId)
-    throwInvalidMetodoPagamentoNomeError();
+    throwValidationError(
+      HttpStatusCodes.CONFLICT,
+      'Metodo de pagamento inválido.',
+      { nome: ['nome de metodo de pagamento já existe.'] }
+    );
 
   const metodoPagamentoUpdated = await updateMetodoPagamento(
     metodoPagamentoId,
@@ -64,7 +75,11 @@ export async function getMetodoPagamentoController(
   const { metodoPagamentoId } = request.params;
   const metodoPagamento = await getMetodoPagamentoById(metodoPagamentoId);
 
-  if (!metodoPagamento) throwNotFoundMetodoPagamentoIdError();
+  if (!metodoPagamento)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Metodo de pagamento não encontrado.'
+    );
   return reply.send(metodoPagamento);
 }
 

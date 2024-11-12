@@ -1,11 +1,9 @@
 import { prisma } from '../lib/prisma';
 import { getAlunoNotasQueryStringType } from '../schemas/alunoSchemas';
 import { notaDataType } from '../schemas/notaSchema';
-import { throwInvalidAlunoIdFieldError } from '../utils/controllers/alunoControllerUtils';
-import { throwNotFoundClasseIdFieldError } from '../utils/controllers/classeControllerUtils';
-import { throwInvalidDisciplinaIdFieldError } from '../utils/controllers/disciplinaControllerUtils';
-import { throwInvalidTrimestreIdFieldError } from '../utils/controllers/trimestreControllerUtils';
+import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { notaIdDataType, validateNotaDataType } from '../utils/interfaces';
+import { throwValidationError } from '../utils/utilsFunctions';
 import { getAlunoId } from './alunoServices';
 import { getClasseId } from './classeServices';
 import { getDisciplinaId } from './disciplinaServices';
@@ -21,13 +19,25 @@ export async function validateNotaData(data: validateNotaDataType) {
     getTrimestreId(trimestreId),
   ]);
 
-  if (alunoId && !aluno) throwInvalidAlunoIdFieldError();
+  if (alunoId && !aluno)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Aluno inválido.', {
+      alunoId: ['Aluno não encontrado'],
+    });
 
-  if (!classe) throwNotFoundClasseIdFieldError();
+  if (!classe)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Classe inválida.', {
+      classeId: ['Classe não encontrada'],
+    });
 
-  if (!disciplina) throwInvalidDisciplinaIdFieldError('Disciplina não existe');
+  if (!disciplina)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Disciplina inválida.', {
+      disciplinaId: ['Disciplina não encontrada'],
+    });
 
-  if (!trimestre) throwInvalidTrimestreIdFieldError();
+  if (!trimestre)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Trimestre inválido.', {
+      trimestreId: ['Trimestre não encontrado'],
+    });
 }
 
 export async function getNotaById(data: notaIdDataType) {

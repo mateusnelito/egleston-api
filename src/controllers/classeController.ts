@@ -31,17 +31,8 @@ import {
   getTurmasByClasse,
 } from '../services/turmaServices';
 import { getTurnoId } from '../services/turnoServices';
-import { throwActiveAnoLectivoNotFoundError } from '../utils/controllers/anoLectivoControllerUtils';
-import {
-  throwDuplicatedClasseCursoOrdemError,
-  throwDuplicatedClasseError,
-  throwNotFoundClasseIdError,
-} from '../utils/controllers/classeControllerUtils';
-import { throwNotFoundCursoIdFieldError } from '../utils/controllers/cursoControllerUtils';
-import { throwNotFoundSalaIdFieldError } from '../utils/controllers/salaControllerUtils';
-import { throwDuplicatedTurmaError } from '../utils/controllers/turmaControllerUtils';
-import { throwNotFoundTurnoIdFieldError } from '../utils/controllers/turnoControllerUtils';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
+import { throwValidationError } from '../utils/utilsFunctions';
 
 export async function createClasseController(
   request: FastifyRequest<{ Body: createClasseBodyType }>,
@@ -54,8 +45,16 @@ export async function createClasseController(
     getCursoId(cursoId),
   ]);
 
-  if (!anoLectivo) throwActiveAnoLectivoNotFoundError();
-  if (!curso) throwNotFoundCursoIdFieldError();
+  if (!anoLectivo)
+    throwValidationError(
+      HttpStatusCodes.PRECONDITION_FAILED,
+      'Nenhum ano lectivo activo encontrado.'
+    );
+
+  if (!curso)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Curso inválido.', {
+      cursoId: ['Curso não encontrado'],
+    });
 
   const { id: anoLectivoId } = anoLectivo!;
 
@@ -64,8 +63,13 @@ export async function createClasseController(
     getClasseCursoOrdem(cursoId, ordem),
   ]);
 
-  if (uniqueSavedClasse) throwDuplicatedClasseError();
-  if (uniqueSaveClasseCursoOrdem) throwDuplicatedClasseCursoOrdemError();
+  if (uniqueSavedClasse)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Classe já existe.');
+
+  if (uniqueSaveClasseCursoOrdem)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Ordem inválida.', {
+      ordem: ['Já existe uma classe com a mesma ordem.'],
+    });
 
   const newClasse = await createClasse({
     ...request.body,
@@ -91,9 +95,19 @@ export async function updateClasseController(
     getCursoId(cursoId),
   ]);
 
-  if (!classe) throwNotFoundClasseIdError();
-  if (!anoLectivo) throwActiveAnoLectivoNotFoundError();
-  if (!curso) throwNotFoundCursoIdFieldError();
+  if (!classe)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Classe não encontrada.');
+
+  if (!anoLectivo)
+    throwValidationError(
+      HttpStatusCodes.PRECONDITION_FAILED,
+      'Nenhum ano lectivo activo encontrado.'
+    );
+
+  if (!curso)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Curso inválido.', {
+      cursoId: ['Curso não encontrado'],
+    });
 
   const { id: anoLectivoId } = anoLectivo!;
 
@@ -103,10 +117,12 @@ export async function updateClasseController(
   ]);
 
   if (uniqueSavedClasse && uniqueSavedClasse.id !== classeId)
-    throwDuplicatedClasseError();
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Classe já existe.');
 
   if (uniqueSaveClasseCursoOrdem && uniqueSaveClasseCursoOrdem.id !== classeId)
-    throwDuplicatedClasseCursoOrdemError();
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Ordem inválida.', {
+      ordem: ['Já existe uma classe com a mesma ordem.'],
+    });
 
   const updatedClasse = await updateClasse(classeId, {
     nome,
@@ -133,7 +149,8 @@ export async function getClasseController(
   const { classeId } = request.params;
   const classe = await getClasse(classeId);
 
-  if (!classe) throwNotFoundClasseIdError();
+  if (!classe)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Classe não encontrada.');
 
   return reply.send(classe);
 }
@@ -145,7 +162,8 @@ export async function getNextClasseController(
   const { classeId } = request.params;
   const classe = await getClasseCursoWithOrdem(classeId);
 
-  if (!classe) throwNotFoundClasseIdError();
+  if (!classe)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Classe não encontrada.');
 
   const {
     ordem,
@@ -166,7 +184,8 @@ export async function getClasseTurmasController(
   const { classeId } = request.params;
   const isClasseId = await getClasseId(classeId);
 
-  if (!isClasseId) throwNotFoundClasseIdError();
+  if (!isClasseId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Classe não encontrada.');
 
   const turmas = await getTurmasByClasse(classeId);
   return reply.send(turmas);
@@ -184,7 +203,8 @@ export async function getClasseAlunosController(
 
   const isClasseId = await getClasseId(classeId);
 
-  if (!isClasseId) throwNotFoundClasseIdError();
+  if (!isClasseId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Classe não encontrada.');
 
   const alunos = await getAlunosMatriculaByClasse(classeId, request.query);
 
@@ -204,7 +224,8 @@ export async function getClasseDisciplinasController(
 
   const isClasseId = await getClasseId(classeId);
 
-  if (!isClasseId) throwNotFoundClasseIdError();
+  if (!isClasseId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Classe não encontrada.');
 
   return reply.send(await getClasseDisciplinas(classeId));
 }
@@ -226,10 +247,21 @@ export async function createTurmaInClasseController(
     getTurmaByUniqueKey(nome, classeId, salaId, turnoId),
   ]);
 
-  if (!isClasseId) throwNotFoundClasseIdError();
-  if (!isSalaId) throwNotFoundSalaIdFieldError();
-  if (!isTurnoId) throwNotFoundTurnoIdFieldError();
-  if (isTurmaId) throwDuplicatedTurmaError();
+  if (!isClasseId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Classe não encontrada.');
+
+  if (!isSalaId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Sala inválida.', {
+      salaId: ['Sala não encontrada.'],
+    });
+
+  if (!isTurnoId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Turno inválido.', {
+      turnoId: ['Turno não encontrado'],
+    });
+
+  if (isTurmaId)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Turma já existe.');
 
   const turma = await createTurma({ nome, classeId, salaId, turnoId });
   return reply.status(HttpStatusCodes.CREATED).send(turma);
@@ -245,7 +277,8 @@ export async function getClasseDisciplinasAbsentProfessorController(
 
   const isClasseId = await getClasseId(classeId);
 
-  if (!isClasseId) throwNotFoundClasseIdError();
+  if (!isClasseId)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Classe não encontrada.');
 
   const disciplinas = await getAbsentProfessorDisciplinas(classeId, turmaId);
   return reply.send(disciplinas);

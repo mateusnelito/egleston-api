@@ -35,36 +35,23 @@ import {
 import {
   createProfessor,
   getProfessor,
-  getProfessorId,
   getProfessores,
+  getProfessorId,
   updateProfessor,
 } from '../services/professorServices';
 import { getTurmaByIdAndClasse } from '../services/turmaServices';
 import BadRequest from '../utils/BadRequest';
 import {
-  throwNotFoundClasseIdError,
-  throwNotFoundClasseIdFieldError,
-} from '../utils/controllers/classeControllerUtils';
-import {
-  throwInvalidDisciplinaIdFieldError,
-  throwInvalidDisciplinasArrayError,
-  throwNotFoundDisciplinaIdInArrayError,
-} from '../utils/controllers/disciplinaControllerUtils';
-import {
   MAXIMUM_PROFESSOR_AGE,
   MAXIMUM_PROFESSOR_DISCIPLINA_CLASSE,
-  throwNotFoundProfessorIdError,
-} from '../utils/controllers/professorControllerUtils';
-import { throwNotFoundTurmaIdFieldError } from '../utils/controllers/turmaControllerUtils';
+} from '../utils/constants';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import {
   arrayHasDuplicatedItems,
   calculateTimeBetweenDates,
   formatDate,
   isBeginDateAfterEndDate,
-  throwDuplicatedEmailError,
-  throwDuplicatedTelefoneError,
-  throwInvalidDataNascimentoError,
+  throwValidationError,
 } from '../utils/utilsFunctions';
 
 export async function createProfessorController(
@@ -76,9 +63,9 @@ export async function createProfessorController(
   const { telefone, email } = data.contacto;
 
   if (isBeginDateAfterEndDate(dataNascimento, new Date()))
-    throwInvalidDataNascimentoError(
-      'Data de nascimento não pôde estar no futuro.'
-    );
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Professor inválido.', {
+      dataNascimento: ['Data de nascimento não pôde estar no futuro.'],
+    });
 
   const professorAge = calculateTimeBetweenDates(
     dataNascimento,
@@ -87,28 +74,47 @@ export async function createProfessorController(
   );
 
   if (professorAge > MAXIMUM_PROFESSOR_AGE) {
-    throwInvalidDataNascimentoError(
-      `Idade maior que ${MAXIMUM_PROFESSOR_AGE} anos.`
-    );
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Professor inválido.', {
+      dataNascimento: [`Idade maior que ${MAXIMUM_PROFESSOR_AGE} anos.`],
+    });
   }
 
   if (disciplinas && arrayHasDuplicatedItems(disciplinas))
-    throwInvalidDisciplinasArrayError();
+    throwValidationError(
+      HttpStatusCodes.BAD_REQUEST,
+      'Disciplinas inválidas.',
+      { disciplinas: ['Disciplinas devem ser únicas.'] }
+    );
 
   const [isProfessorTelefone, isProfessorEmail] = await Promise.all([
     getTelefone(telefone),
     email ? getEmail(email) : null,
   ]);
 
-  if (isProfessorTelefone) throwDuplicatedTelefoneError();
-  if (isProfessorEmail) throwDuplicatedEmailError();
+  if (isProfessorTelefone)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Professor inválido.', {
+      contacto: {
+        telefone: ['Telefone já existe.'],
+      },
+    });
+
+  if (isProfessorEmail)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Professor inválido.', {
+      contacto: {
+        email: ['Email já existe.'],
+      },
+    });
 
   if (disciplinas) {
-    // TODO: Finish the verification before send the errors, to send all invalids disciplinas
     for (let index = 0; index < disciplinas.length; index++) {
       const disciplina = await getDisciplinaId(disciplinas[index]);
+
       if (!disciplina)
-        throwNotFoundDisciplinaIdInArrayError(index, 'Disciplina não existe.');
+        throwValidationError(
+          HttpStatusCodes.NOT_FOUND,
+          'Disciplina inválida.',
+          { disciplinas: { index: ['Disciplina não encontrada.'] } }
+        );
     }
   }
 
@@ -131,9 +137,9 @@ export async function updateProfessorController(
   const { telefone, email } = data.contacto;
 
   if (isBeginDateAfterEndDate(dataNascimento, new Date()))
-    throwInvalidDataNascimentoError(
-      'Data de nascimento não pôde estar no futuro.'
-    );
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Professor inválido.', {
+      dataNascimento: ['Data de nascimento não pôde estar no futuro.'],
+    });
 
   const professorAge = calculateTimeBetweenDates(
     dataNascimento,
@@ -142,9 +148,9 @@ export async function updateProfessorController(
   );
 
   if (professorAge > MAXIMUM_PROFESSOR_AGE) {
-    throwInvalidDataNascimentoError(
-      `Idade maior que ${MAXIMUM_PROFESSOR_AGE} anos.`
-    );
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Professor inválido.', {
+      dataNascimento: [`Idade maior que ${MAXIMUM_PROFESSOR_AGE} anos.`],
+    });
   }
 
   const [isProfessorId, professorTelefone, professorEmail] = await Promise.all([
@@ -153,12 +159,25 @@ export async function updateProfessorController(
     email ? getEmail(email) : null,
   ]);
 
-  if (!isProfessorId) throwNotFoundProfessorIdError();
+  if (!isProfessorId)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Professor não encontrado.'
+    );
+
   if (professorTelefone && professorTelefone.professorId !== professorId)
-    throwDuplicatedTelefoneError();
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Professor inválido.', {
+      contacto: {
+        telefone: ['Telefone já existe.'],
+      },
+    });
 
   if (professorEmail && professorEmail.professorId !== professorId)
-    throwDuplicatedEmailError();
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Professor inválido.', {
+      contacto: {
+        email: ['Email já existe.'],
+      },
+    });
 
   const professor = await updateProfessor(professorId, request.body);
   return reply.send(professor);
@@ -173,7 +192,11 @@ export async function getProfessorController(
   const { professorId } = request.params;
   const professor = await getProfessor(professorId);
 
-  if (!professor) throw throwNotFoundProfessorIdError();
+  if (!professor)
+    throw throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Professor não encontrado.'
+    );
 
   return reply.send(professor);
 }
@@ -213,7 +236,11 @@ export async function getProfessorDisciplinaAssociationsController(
   const { professorId } = request.params;
   const professor = await getProfessorId(professorId);
 
-  if (!professor) throw throwNotFoundProfessorIdError();
+  if (!professor)
+    throw throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Professor não encontrado.'
+    );
 
   return reply.send(await getProfessorDisciplinas(professorId));
 }
@@ -228,11 +255,20 @@ export async function createMultiplesProfessorDisciplinaAssociationController(
   const { professorId } = request.params;
   const { disciplinas } = request.body;
 
-  if (arrayHasDuplicatedItems(disciplinas)) throwInvalidDisciplinasArrayError();
+  if (arrayHasDuplicatedItems(disciplinas))
+    throwValidationError(
+      HttpStatusCodes.BAD_REQUEST,
+      'Disciplinas inválidas.',
+      { disciplinas: ['Disciplinas devem ser únicas.'] }
+    );
 
   const isProfessorId = await getProfessorId(professorId);
 
-  if (!isProfessorId) throwNotFoundProfessorIdError();
+  if (!isProfessorId)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Professor não encontrado.'
+    );
 
   for (let index = 0; index < disciplinas.length; index++) {
     const disciplinaId = disciplinas[index];
@@ -244,13 +280,14 @@ export async function createMultiplesProfessorDisciplinaAssociationController(
 
     // TODO: Finish the verification before send the errors, to send all invalids disciplinas
     if (!isDisciplinaId)
-      throwNotFoundDisciplinaIdInArrayError(index, 'Disciplina não existe.');
+      throwValidationError(HttpStatusCodes.NOT_FOUND, 'Disciplina inválida.', {
+        disciplinas: { [index]: ['Disciplina não encontrada.'] },
+      });
 
     if (isDisciplinaProfessor)
-      throwNotFoundDisciplinaIdInArrayError(
-        index,
-        'Disciplina já associada ao professor.'
-      );
+      throwValidationError(HttpStatusCodes.CONFLICT, 'Disciplina inválida.', {
+        disciplinas: { [index]: ['Disciplina já associada ao professor.'] },
+      });
   }
 
   const cursoDisciplinas = await createMultiplesDisciplinaProfessorByProfessor(
@@ -299,11 +336,20 @@ export async function deleteMultiplesProfessorDisciplinaAssociationController(
   const { professorId } = request.params;
   const { disciplinas } = request.body;
 
-  if (arrayHasDuplicatedItems(disciplinas)) throwInvalidDisciplinasArrayError();
+  if (arrayHasDuplicatedItems(disciplinas))
+    throwValidationError(
+      HttpStatusCodes.BAD_REQUEST,
+      'Disciplinas inválidas.',
+      { disciplinas: ['Disciplinas devem ser únicas.'] }
+    );
 
   const isProfessorId = await getProfessorId(professorId);
 
-  if (!isProfessorId) throwNotFoundProfessorIdError();
+  if (!isProfessorId)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Professor não encontrado.'
+    );
 
   // TODO: Finish the verification before send the errors, to send all invalids disciplinas
   for (let index = 0; index < disciplinas.length; index++) {
@@ -315,9 +361,12 @@ export async function deleteMultiplesProfessorDisciplinaAssociationController(
     );
 
     if (!isProfessorDisciplina)
-      throwNotFoundDisciplinaIdInArrayError(
-        index,
-        'Disciplina não associada ao professor.'
+      throwValidationError(
+        HttpStatusCodes.BAD_REQUEST,
+        'Disciplina inválida.',
+        {
+          disciplinas: { [index]: ['Disciplina não associada ao professor.'] },
+        }
       );
   }
 
@@ -343,7 +392,11 @@ export async function createProfessorDisciplinaClasseAssociationController(
 
   const professor = await getProfessorId(professorId);
 
-  if (!professor) throwNotFoundProfessorIdError();
+  if (!professor)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Professor não encontrado.'
+    );
 
   const [classe, disciplinaProfessor, turma] = await Promise.all([
     getClasseAnoLectivoAndCursoById(classeId),
@@ -351,19 +404,25 @@ export async function createProfessorDisciplinaClasseAssociationController(
     getTurmaByIdAndClasse(turmaId, classeId),
   ]);
 
-  if (!classe) throwNotFoundClasseIdFieldError();
+  if (!classe)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Classe inválida.', {
+      classeId: ['Classe não encontrada'],
+    });
 
   if (!classe!.AnoLectivo.activo)
-    throwNotFoundClasseIdFieldError(
-      'Classe não associada ao ano-lectivo activo.'
-    );
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Classe inválida.', {
+      classeId: ['Classe não associada ao ano-lectivo activo.'],
+    });
 
   if (!disciplinaProfessor)
-    throwInvalidDisciplinaIdFieldError(
-      'Disciplina não associada ao professor.'
-    );
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Disciplina inválida.', {
+      disciplinaId: ['Disciplina não associada ao professor.'],
+    });
 
-  if (!turma) throwNotFoundTurmaIdFieldError('Turma não associada a classe.');
+  if (!turma)
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Turma inválida.', {
+      turmaId: ['Turma não associada a classe'],
+    });
 
   const [
     disciplinaClasse,
@@ -383,10 +442,9 @@ export async function createProfessorDisciplinaClasseAssociationController(
   ]);
 
   if (disciplinaClasse)
-    throwInvalidDisciplinaIdFieldError(
-      'Disciplina já associada a outro professor.',
-      HttpStatusCodes.BAD_REQUEST
-    );
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Disciplina inválida.', {
+      disciplinaId: ['Disciplina já associada a outro professor.'],
+    });
 
   if (totalProfessorDisciplinaClasse >= MAXIMUM_PROFESSOR_DISCIPLINA_CLASSE) {
     throw new BadRequest({
@@ -397,9 +455,9 @@ export async function createProfessorDisciplinaClasseAssociationController(
   }
 
   if (!cursoDisciplina)
-    throwInvalidDisciplinaIdFieldError(
-      'Disciplina não associada ao curso associado a classe.'
-    );
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Disciplina inválida.', {
+      disciplinaId: ['Disciplina não associada ao curso associado a classe.'],
+    });
 
   if (professorDisciplinaClasse) {
     throw new BadRequest({
@@ -431,7 +489,11 @@ export async function getProfessorDisciplinaClassesController(
   const { anoLectivoId } = request.query;
   const professor = await getProfessorId(professorId);
 
-  if (!professor) throw throwNotFoundProfessorIdError();
+  if (!professor)
+    throw throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Professor não encontrado.'
+    );
 
   const professorClasses = await getProfessorClasses(professorId, anoLectivoId);
 
@@ -451,8 +513,14 @@ export async function getProfessorDisciplinaClasseTurmasController(
     getClasseId(classeId),
   ]);
 
-  if (!professor) throw throwNotFoundProfessorIdError();
-  if (!classe) throwNotFoundClasseIdError();
+  if (!professor)
+    throw throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Professor não encontrado.'
+    );
+
+  if (!classe)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Classe não encontrada.');
 
   const professorClasseTurmas = await getProfessorClasseTurmas(
     professorId,
