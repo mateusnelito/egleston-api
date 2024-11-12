@@ -179,7 +179,7 @@ export async function updateProfessorController(
       },
     });
 
-  const professor = await updateProfessor(professorId, request.body);
+  const professor = await updateProfessor(professorId, data);
   return reply.send(professor);
 }
 

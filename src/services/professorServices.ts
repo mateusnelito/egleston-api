@@ -91,6 +91,7 @@ export async function updateProfessor(
     where: { id },
     data: {
       nomeCompleto: data.nomeCompleto,
+      dataNascimento: data.dataNascimento,
       Contacto: {
         update: data.contacto,
       },
