@@ -1,12 +1,15 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
+  bulkNotaDataType,
   getAlunosWithoutNotaQueryStringDataType,
   notaDataType,
 } from '../schemas/notaSchema';
 import { getAlunosAbsentNotas } from '../services/alunoServices';
 import {
+  createBulkNota,
   createNota,
   getNotaById,
+  validateNotaBulkCreate,
   validateNotaData,
 } from '../services/notaServices';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
@@ -19,6 +22,7 @@ export async function createNotaController(
   const { alunoId, classeId, disciplinaId, trimestreId } = request.body;
 
   await validateNotaData({ alunoId, classeId, disciplinaId, trimestreId });
+
   const nota = await getNotaById({
     alunoId,
     classeId,
@@ -51,4 +55,15 @@ export async function getAlunosAbsentNotaController(
     data: alunos,
     next_cursor,
   });
+}
+
+export async function createBulkNotaController(
+  request: FastifyRequest<{ Body: bulkNotaDataType }>,
+  reply: FastifyReply
+) {
+  const { body: data } = request;
+
+  await validateNotaBulkCreate(data);
+
+  return reply.status(HttpStatusCodes.CREATED).send(await createBulkNota(data));
 }

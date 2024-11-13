@@ -45,5 +45,8 @@ export interface notaIdDataType {
 }
 
 export interface ErrorsFormat {
-  [fieldKey: string]: string[] | { [index: string]: string[] };
+  [fieldKey: string]:
+    | string[]
+    | { [i: string]: string[] }
+    | { [i: string]: unknown };
 }

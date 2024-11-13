@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { getAlunoNotasQueryStringType } from '../schemas/alunoSchemas';
-import { notaDataType } from '../schemas/notaSchema';
+import { bulkNotaDataType, notaDataType } from '../schemas/notaSchema';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { notaIdDataType, validateNotaDataType } from '../utils/interfaces';
 import { throwValidationError } from '../utils/utilsFunctions';
@@ -114,5 +114,69 @@ export async function getAlunoNotas(
       disciplina: nota.Disciplina.nome,
       nota: Number(nota.nota),
     })),
+  };
+}
+
+export async function validateNotaBulkCreate(data: bulkNotaDataType) {
+  const { classeId, disciplinaId, trimestreId, alunos } = data;
+
+  await validateNotaData({ classeId, disciplinaId, trimestreId });
+
+  for (let i = 0; i < alunos.length; i++) {
+    const { id: alunoId } = alunos[i];
+
+    const [aluno, nota] = await Promise.all([
+      getAlunoId(alunoId),
+      getNotaById({
+        alunoId,
+        classeId,
+        disciplinaId,
+        trimestreId,
+      }),
+    ]);
+
+    if (!aluno)
+      throwValidationError(HttpStatusCodes.NOT_FOUND, 'Aluno inválido', {
+        alunos: {
+          [i]: {
+            id: ['Aluno não encontrado.'],
+          },
+        },
+      });
+
+    if (nota)
+      throwValidationError(HttpStatusCodes.CONFLICT, 'Nota inválida', {
+        alunos: {
+          [i]: {
+            nota: ['Aluno já possui nota atribuída.'],
+          },
+        },
+      });
+  }
+}
+
+export async function createBulkNota(data: bulkNotaDataType) {
+  const { classeId, disciplinaId, trimestreId, alunos } = data;
+
+  const notas = alunos.map(({ id: alunoId, nota }) => ({
+    alunoId,
+    classeId,
+    disciplinaId,
+    trimestreId,
+    nota,
+  }));
+
+  await prisma.nota.createMany({ data: notas });
+
+  return {
+    data: {
+      classeId,
+      disciplinaId,
+      trimestreId,
+      notas: alunos.map(({ id: alunoId, nota }) => ({
+        alunoId,
+        nota: Number(nota),
+      })),
+    },
   };
 }
