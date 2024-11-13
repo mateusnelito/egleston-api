@@ -3,7 +3,10 @@ import { getAlunoNotasQueryStringType } from '../schemas/alunoSchemas';
 import { bulkNotaDataType, notaDataType } from '../schemas/notaSchema';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { notaIdDataType, validateNotaDataType } from '../utils/interfaces';
-import { throwValidationError } from '../utils/utilsFunctions';
+import {
+  arrayHasDuplicatedItems,
+  throwValidationError,
+} from '../utils/utilsFunctions';
 import { getAlunoId } from './alunoServices';
 import { getClasseId } from './classeServices';
 import { getDisciplinaId } from './disciplinaServices';
@@ -119,6 +122,11 @@ export async function getAlunoNotas(
 
 export async function validateNotaBulkCreate(data: bulkNotaDataType) {
   const { classeId, disciplinaId, trimestreId, alunos } = data;
+
+  if (arrayHasDuplicatedItems(alunos.map(({ id }) => id)))
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Alunos inválido.', {
+      alunos: ['Alunos não deve conter ids duplicados.'],
+    });
 
   await validateNotaData({ classeId, disciplinaId, trimestreId });
 
