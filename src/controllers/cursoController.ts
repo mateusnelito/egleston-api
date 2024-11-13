@@ -6,6 +6,7 @@ import {
   cursoParamsType,
   deleteCursoDisciplinaParamsType,
   getCursoClassesQueryType,
+  getCursoDisciplinasQueryDataType,
   updateCursoBodyType,
 } from '../schemas/cursoSchema';
 import { getAnoLectivoActivo } from '../services/anoLectivoServices';
@@ -28,6 +29,7 @@ import {
   deleteMultiplesCursoDisciplinasByCursoId,
   getCursoDisciplina,
   getDisciplinasByCurso,
+  getNoAssociatedDisciplinasByCurso,
 } from '../services/cursosDisciplinasServices';
 import { getDisciplinaId } from '../services/disciplinaServices';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
@@ -303,16 +305,21 @@ export async function createClasseToCursoController(
 export async function getCursoDisciplinasController(
   request: FastifyRequest<{
     Params: cursoParamsType;
+    Querystring: getCursoDisciplinasQueryDataType;
   }>,
   reply: FastifyReply
 ) {
   const { cursoId } = request.params;
+  const { excluirAssociadas } = request.query;
 
   const isCursoId = await getCursoId(cursoId);
 
   if (!isCursoId)
     throwValidationError(HttpStatusCodes.NOT_FOUND, 'Curso não encontrado.');
 
-  const disciplinas = await getDisciplinasByCurso(cursoId);
-  return reply.send(disciplinas);
+  const disciplinas = excluirAssociadas
+    ? getNoAssociatedDisciplinasByCurso(cursoId)
+    : getDisciplinasByCurso(cursoId);
+
+  return reply.send(await disciplinas);
 }

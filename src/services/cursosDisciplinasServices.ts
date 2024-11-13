@@ -107,6 +107,7 @@ export async function getDisciplinasByCurso(cursoId: number) {
         },
       },
     },
+    orderBy: { disciplinaId: 'desc' },
   });
 
   return {
@@ -115,4 +116,21 @@ export async function getDisciplinasByCurso(cursoId: number) {
       nome: disciplina.Disciplina.nome,
     })),
   };
+}
+
+export async function getNoAssociatedDisciplinasByCurso(cursoId: number) {
+  const disciplinas = await prisma.disciplina.findMany({
+    where: {
+      CursosDisciplinas: {
+        none: { cursoId },
+      },
+    },
+    select: {
+      id: true,
+      nome: true,
+    },
+    orderBy: { id: 'desc' },
+  });
+
+  return { data: disciplinas };
 }

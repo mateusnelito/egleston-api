@@ -236,6 +236,14 @@ export const getCursoDisciplinasSchema = {
   summary: 'Retorna todas as disciplinas do curso',
   tags: ['cursos'],
   params: cursoParamsSchema,
+  querystring: z.object({
+    excluirAssociadas: z.coerce
+      .boolean({
+        required_error: 'excluir associadas é obrigatório.',
+        invalid_type_error: 'excluir associadas deve ser boolean',
+      })
+      .default(false),
+  }),
   response: {
     200: z.object({
       data: z.array(
@@ -268,4 +276,8 @@ export type createClasseToCursoBodyType = z.infer<
 
 export type getCursoClassesQueryType = z.infer<
   typeof getCursoClassesSchema.querystring
+>;
+
+export type getCursoDisciplinasQueryDataType = z.infer<
+  typeof getCursoDisciplinasSchema.querystring
 >;
