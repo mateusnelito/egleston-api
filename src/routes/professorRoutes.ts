@@ -67,20 +67,20 @@ const professoresRoutes: FastifyPluginAsync = async (
   });
 
   // DELETE ASSOCIATION BETWEEN PROFESSOR AND DISCIPLINA
-  server
-    .withTypeProvider<ZodTypeProvider>()
-    .delete('/:professorId/disciplinas/:disciplinaId', {
-      schema: deleteProfessorDisciplinaSchema,
-      handler: deleteProfessorDisciplinaController,
-    });
+  // server
+  //   .withTypeProvider<ZodTypeProvider>()
+  //   .delete('/:professorId/disciplinas/:disciplinaId', {
+  //     schema: deleteProfessorDisciplinaSchema,
+  //     handler: deleteProfessorDisciplinaController,
+  //   });
 
   // DELETE ASSOCIATIONS BETWEEN MULTIPLES DISCIPLINAS AND ONE PROFESSOR
-  server
-    .withTypeProvider<ZodTypeProvider>()
-    .delete('/:professorId/disciplinas', {
-      schema: deleteMultiplesProfessorDisciplinaAssociationSchema,
-      handler: deleteMultiplesProfessorDisciplinaAssociationController,
-    });
+  // server
+  //   .withTypeProvider<ZodTypeProvider>()
+  //   .delete('/:professorId/disciplinas', {
+  //     schema: deleteMultiplesProfessorDisciplinaAssociationSchema,
+  //     handler: deleteMultiplesProfessorDisciplinaAssociationController,
+  //   });
 
   // POST
   server.withTypeProvider<ZodTypeProvider>().post('/:professorId/classes', {

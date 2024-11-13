@@ -57,18 +57,18 @@ const cursosRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
   });
 
   // DELETE ASSOCIATION BETWEEN CURSO AND DISCIPLINA
-  server
-    .withTypeProvider<ZodTypeProvider>()
-    .delete('/:cursoId/disciplinas/:disciplinaId', {
-      schema: deleteCursoDisciplinaSchema,
-      handler: deleteCursoDisciplinaController,
-    });
+  // server
+  //   .withTypeProvider<ZodTypeProvider>()
+  //   .delete('/:cursoId/disciplinas/:disciplinaId', {
+  //     schema: deleteCursoDisciplinaSchema,
+  //     handler: deleteCursoDisciplinaController,
+  //   });
 
   // DELETE ASSOCIATIONS BETWEEN MULTIPLES DISCIPLINAS AND ONE CURSO
-  server.withTypeProvider<ZodTypeProvider>().delete('/:cursoId/disciplinas', {
-    schema: deleteMultiplesCursoDisciplinaSchema,
-    handler: deleteMultiplesCursoDisciplinasController,
-  });
+  // server.withTypeProvider<ZodTypeProvider>().delete('/:cursoId/disciplinas', {
+  //   schema: deleteMultiplesCursoDisciplinaSchema,
+  //   handler: deleteMultiplesCursoDisciplinasController,
+  // });
 
   // GET All Classes
   server.withTypeProvider<ZodTypeProvider>().get('/:cursoId/classes', {
