@@ -9,3 +9,23 @@ Content-Type: application/json
   "trimestreId": 1,
   "nota": 20
 }
+
+### Create Bulk Nota
+POST http://localhost:8000/api/notas/bulk
+Content-Type: application/json
+
+{
+  "classeId": 1,
+  "disciplinaId": 1,
+  "trimestreId": 1,
+  "alunos": [
+    {
+      "id": 1,
+      "nota": 19.5
+    },
+    {
+      "id": 2,
+      "nota": 10
+    }
+  ]
+}
