@@ -14,16 +14,8 @@ import {
   getResponsavelId,
   updateResponsavel,
 } from '../services/responsavelServices';
-import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { throwValidationError } from '../utils/utilsFunctions';
-
-function throwNotFoundResponsavelId() {
-  throw new BadRequest({
-    statusCode: HttpStatusCodes.NOT_FOUND,
-    message: 'Responsavel não existe.',
-  });
-}
 
 export async function updateResponsavelController(
   request: FastifyRequest<{
@@ -49,7 +41,11 @@ export async function updateResponsavelController(
     email ? getResponsavelEmail(email) : null,
   ]);
 
-  if (!isResponsavelId) throwNotFoundResponsavelId();
+  if (!isResponsavelId)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Responsavel não encontrado.'
+    );
 
   // TODO: Verify if already exist a father or mother in db for the current aluno
   // 'Cause nobody has 2 fathers or mothers
@@ -89,7 +85,11 @@ export async function deleteResponsavelController(
   const { responsavelId } = request.params;
   const isResponsavelId = await getResponsavelId(responsavelId);
 
-  if (!isResponsavelId) throwNotFoundResponsavelId();
+  if (!isResponsavelId)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Responsavel não encontrado.'
+    );
 
   const responsavel = await deleteResponsavel(responsavelId);
   return reply.send(responsavel);
@@ -104,7 +104,11 @@ export async function getResponsavelController(
   const { responsavelId } = request.params;
   const responsavel = await getResponsavel(responsavelId);
 
-  if (!responsavel) throwNotFoundResponsavelId();
+  if (!responsavel)
+    throwValidationError(
+      HttpStatusCodes.NOT_FOUND,
+      'Responsavel não encontrado.'
+    );
 
   return reply.send(responsavel);
 }

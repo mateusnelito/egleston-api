@@ -6,7 +6,6 @@ import { validateAlunoData } from '../services/alunoValidationService';
 import { getAnoLectivoActivo } from '../services/anoLectivoServices';
 import { validateMatriculaData } from '../services/matriculaValidationService';
 import { validateResponsavelData } from '../services/responsaveisValidationServices';
-import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
 import {
@@ -35,17 +34,16 @@ export async function createMatriculaController(
   if (
     arrayHasDuplicatedItems(responsaveisTelefone) ||
     arrayHasDuplicatedItems(responsaveisEmails)
-  ) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Responsaveis inválidos.',
-      errors: {
+  )
+    throwValidationError(
+      HttpStatusCodes.BAD_REQUEST,
+      'Responsaveis inválido.',
+      {
         aluno: {
           responsaveis: ['responsaveis não podem conter contactos duplicados.'],
         },
-      },
-    });
-  }
+      }
+    );
 
   const activeAnoLectivo = await getAnoLectivoActivo();
 

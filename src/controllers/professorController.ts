@@ -40,7 +40,6 @@ import {
   updateProfessor,
 } from '../services/professorServices';
 import { getTurmaByIdAndClasse } from '../services/turmaServices';
-import BadRequest from '../utils/BadRequest';
 import {
   MAXIMUM_PROFESSOR_AGE,
   MAXIMUM_PROFESSOR_DISCIPLINA_CLASSE,
@@ -310,12 +309,11 @@ export async function deleteProfessorDisciplinaController(
     disciplinaId
   );
 
-  if (!isProfessorDisciplina) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Disciplina não associada ao professor.',
-    });
-  }
+  if (!isProfessorDisciplina)
+    throwValidationError(
+      HttpStatusCodes.BAD_REQUEST,
+      'Disciplina não associada ao professor.'
+    );
 
   const professorDisciplina = await deleteDisciplinaProfessor(
     professorId,
@@ -446,25 +444,22 @@ export async function createProfessorDisciplinaClasseAssociationController(
       disciplinaId: ['Disciplina já associada a outro professor.'],
     });
 
-  if (totalProfessorDisciplinaClasse >= MAXIMUM_PROFESSOR_DISCIPLINA_CLASSE) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message:
-        'Número máximo de disciplina que o professor pôde lecionar a classe atingido.',
-    });
-  }
+  if (totalProfessorDisciplinaClasse >= MAXIMUM_PROFESSOR_DISCIPLINA_CLASSE)
+    throwValidationError(
+      HttpStatusCodes.FORBIDDEN,
+      'Número máximo de disciplina que o professor pôde lecionar a classe atingido.'
+    );
 
   if (!cursoDisciplina)
     throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Disciplina inválida.', {
       disciplinaId: ['Disciplina não associada ao curso associado a classe.'],
     });
 
-  if (professorDisciplinaClasse) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Professor já associado a classe.',
-    });
-  }
+  if (professorDisciplinaClasse)
+    throwValidationError(
+      HttpStatusCodes.CONFLICT,
+      'Professor já associado a classe.'
+    );
 
   const newProfessorDisciplinaClasse = await createProfessorDisciplinaClasse({
     professorId,

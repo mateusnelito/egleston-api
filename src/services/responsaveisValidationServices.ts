@@ -1,6 +1,6 @@
 import { createResponsavelBodyType } from '../schemas/responsavelSchema';
-import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
+import { throwValidationError } from '../utils/utilsFunctions';
 import { getParentescoId } from './parentescoServices';
 import {
   getResponsavelEmail,
@@ -21,55 +21,40 @@ export async function validateResponsavelData(
       email ? getResponsavelEmail(email) : null,
     ]);
 
-  if (!isParentescoId) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Parentesco inválido.',
-      errors: {
-        aluno: {
-          responsaveis: {
-            [index]: {
-              parentescoId: ['parentescoId não existe.'],
-            },
+  if (!isParentescoId)
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Responsavel inválido', {
+      aluno: {
+        responsaveis: {
+          [index]: {
+            parentescoId: ['parentescoId não existe.'],
           },
         },
       },
     });
-  }
 
-  if (isResponsavelTelefone) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Número de telefone inválido.',
-      errors: {
-        aluno: {
-          responsaveis: {
-            [index]: {
-              contacto: {
-                telefone: ['O número de telefone já está sendo usado.'],
-              },
+  if (isResponsavelTelefone)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Responsavel inválido.', {
+      aluno: {
+        responsaveis: {
+          [index]: {
+            contacto: {
+              telefone: ['O número de telefone já está sendo usado.'],
             },
           },
         },
       },
     });
-  }
 
-  if (isResponsavelEmail) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Endereço de email inválido.',
-      errors: {
-        aluno: {
-          responsaveis: {
-            [index]: {
-              contacto: {
-                email: ['O endereço de email já está sendo usado.'],
-              },
+  if (isResponsavelEmail)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Responsavel inválido', {
+      aluno: {
+        responsaveis: {
+          [index]: {
+            contacto: {
+              email: ['O endereço de email já está sendo usado.'],
             },
           },
         },
       },
     });
-  }
 }

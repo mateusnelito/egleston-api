@@ -1,5 +1,4 @@
 import { createAlunoBodyType } from '../schemas/alunoSchemas';
-import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import {
   calculateTimeBetweenDates,
@@ -33,35 +32,22 @@ export async function validateAlunoData(alunoData: createAlunoBodyType) {
     email ? getAlunoEmail(email) : null,
   ]);
 
-  if (isAlunoNumeroBi) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Número de BI inválido.',
-      errors: { aluno: { numeroBi: ['Número de BI já existe.'] } },
+  if (isAlunoNumeroBi)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Aluno inválido', {
+      aluno: { numeroBi: ['Número de BI já existe.'] },
     });
-  }
 
-  if (isAlunoTelefone) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Número de telefone inválido.',
-      errors: {
-        aluno: {
-          contacto: { telefone: ['O número de telefone já está sendo usado.'] },
-        },
+  if (isAlunoTelefone)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Aluno inválido', {
+      aluno: {
+        contacto: { telefone: ['O número de telefone já está sendo usado.'] },
       },
     });
-  }
 
-  if (isAlunoEmail) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Endereço de email inválido.',
-      errors: {
-        aluno: {
-          contacto: { email: ['O endereço de email já está sendo usado.'] },
-        },
+  if (isAlunoEmail)
+    throwValidationError(HttpStatusCodes.CONFLICT, 'Aluno inválido', {
+      aluno: {
+        contacto: { email: ['O endereço de email já está sendo usado.'] },
       },
     });
-  }
 }

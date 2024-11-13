@@ -47,7 +47,6 @@ import {
   getTotalAlunoResponsaveis,
 } from '../services/responsavelServices';
 import { isTurmaInClasse } from '../services/turmaServices';
-import BadRequest from '../utils/BadRequest';
 import {
   MINIMUM_ALUNO_AGE,
   MINIMUM_ALUNO_RESPONSAVEIS,
@@ -190,12 +189,11 @@ export async function createAlunoResponsavelController(
   if (!isAlunoId)
     throwValidationError(HttpStatusCodes.NOT_FOUND, 'Aluno não encontrado.');
 
-  if (alunoTotalResponsaveis >= MINIMUM_ALUNO_RESPONSAVEIS) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Número máximo de responsaveis atingido.',
-    });
-  }
+  if (alunoTotalResponsaveis >= MINIMUM_ALUNO_RESPONSAVEIS)
+    throwValidationError(
+      HttpStatusCodes.BAD_REQUEST,
+      'Número máximo de responsaveis atingido.'
+    );
 
   // TODO: Verify if already exist a father or mother in db for the current aluno
   // 'Cause nobody has 2 fathers or mothers

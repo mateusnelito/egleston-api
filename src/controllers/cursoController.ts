@@ -30,7 +30,6 @@ import {
   getDisciplinasByCurso,
 } from '../services/cursosDisciplinasServices';
 import { getDisciplinaId } from '../services/disciplinaServices';
-import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import {
   arrayHasDuplicatedItems,
@@ -182,12 +181,12 @@ export async function deleteCursoDisciplinaController(
   const { cursoId, disciplinaId } = request.params;
   const isCursoDisciplina = await getCursoDisciplina(cursoId, disciplinaId);
 
-  if (!isCursoDisciplina) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.NOT_FOUND,
-      message: 'Disciplina não associada ao curso.',
-    });
-  }
+  if (!isCursoDisciplina)
+    throwValidationError(
+      HttpStatusCodes.BAD_REQUEST,
+      'Disciplina não associada ao curso.'
+    );
+
   const cursoDisciplina = await deleteCursoDisciplina(cursoId, disciplinaId);
 
   // TODO: SEND A BETTE RESPONSE

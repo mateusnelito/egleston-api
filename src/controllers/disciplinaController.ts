@@ -19,7 +19,6 @@ import {
   getDisciplinas,
   updateDisciplina,
 } from '../services/disciplinaServices';
-import BadRequest from '../utils/BadRequest';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
 import {
   arrayHasDuplicatedItems,
@@ -118,15 +117,10 @@ export async function createMultiplesCursoDisciplinaByDisciplinaController(
   const { disciplinaId } = request.params;
   const { cursos } = request.body;
 
-  if (arrayHasDuplicatedItems(cursos)) {
-    throw new BadRequest({
-      statusCode: HttpStatusCodes.BAD_REQUEST,
-      message: 'Cursos inválidos.',
-      errors: {
-        cursos: 'O array de cursos não pode conter items duplicados.',
-      },
+  if (arrayHasDuplicatedItems(cursos))
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Cursos inválidos', {
+      cursos: ['O array de cursos não pode conter items duplicados.'],
     });
-  }
 
   const isDisciplinaId = await getDisciplinaId(disciplinaId);
   if (!isDisciplinaId)
