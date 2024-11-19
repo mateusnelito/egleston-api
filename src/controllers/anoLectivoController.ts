@@ -150,6 +150,7 @@ export async function getAnoLectivoController(
     inicio: formatDate(anoLectivo!.inicio),
     termino: formatDate(anoLectivo!.termino),
     activo: anoLectivo!.activo,
+    matriculaAberta: anoLectivo!.matriculaAberta,
   });
 }
 
