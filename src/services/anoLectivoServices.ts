@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma';
+import { formatDate } from '../utils/utilsFunctions';
 
 interface anoLectivoInterface {
   nome: string;
@@ -44,7 +45,7 @@ export async function getAnoLectivo(id: number) {
   return await prisma.anoLectivo.findUnique({ where: { id } });
 }
 
-export async function getAnoLectivoActivo() {
+export async function getAnoLectivoActivo(throwRuntimeError = true) {
   const anoLectivo = await prisma.anoLectivo.findFirst({
     where: { activo: true },
     select: {
@@ -56,10 +57,10 @@ export async function getAnoLectivoActivo() {
     },
   });
 
-  if (!anoLectivo)
+  if (!anoLectivo && throwRuntimeError)
     throw new Error('Nenhum ano lectivo activo encontrado', {
       cause:
-        'Nenhum ano lectivo com status activo encontrado no banco de dados, buscando classe por ano lectivo',
+        'Nenhum ano lectivo com status activo encontrado no banco de dados.',
     });
 
   return anoLectivo;
@@ -70,10 +71,21 @@ export async function changeAnoLectivoStatus(
   activo: boolean | undefined,
   matriculaAberta: boolean | undefined
 ) {
-  return await prisma.anoLectivo.update({
-    where: { id },
-    data: { activo, matriculaAberta },
-  });
+  const data =
+    activo === false
+      ? { activo, matriculaAberta: false }
+      : { activo, matriculaAberta };
+
+  const anoLectivo = await prisma.anoLectivo.update({ where: { id }, data });
+
+  return {
+    id: anoLectivo.id,
+    nome: anoLectivo.nome,
+    inicio: formatDate(anoLectivo.inicio),
+    termino: formatDate(anoLectivo.termino),
+    activo: anoLectivo.activo,
+    matriculaAberta: anoLectivo.matriculaAberta,
+  };
 }
 
 export async function changeAnoLectivoMatriculaAbertaState(
@@ -84,4 +96,8 @@ export async function changeAnoLectivoMatriculaAbertaState(
     where: { id },
     data: { matriculaAberta },
   });
+}
+
+export async function getTotalAnoLectivoWithMatriculaAberta() {
+  return await prisma.anoLectivo.count({ where: { matriculaAberta: true } });
 }

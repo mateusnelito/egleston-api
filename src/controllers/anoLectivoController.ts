@@ -233,14 +233,19 @@ export async function changeAnoLectivoStatusController(
       'Ano lectivo não encontrado.'
     );
 
-  const anoLectivoActivo = await getAnoLectivoActivo();
+  const anoLectivoActivo = await getAnoLectivoActivo(false);
 
-  if (activo && anoLectivoId !== anoLectivoActivo.id)
+  if (!anoLectivoActivo)
+    return reply.send(
+      await changeAnoLectivoStatus(anoLectivoId, activo, matriculaAberta)
+    );
+
+  if (activo && anoLectivoId !== anoLectivoActivo!.id)
     throwValidationError(HttpStatusCodes.CONFLICT, 'Status activo inválido.', {
       activo: ['Apenas um ano letivo pode estar ativo no sistema de cada vez.'],
     });
 
-  if (matriculaAberta && anoLectivoId !== anoLectivoActivo.id)
+  if (matriculaAberta && anoLectivoId !== anoLectivoActivo!.id)
     throwValidationError(
       HttpStatusCodes.CONFLICT,
       'Status matriculaAberta inválido.',
