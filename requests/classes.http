@@ -4,8 +4,12 @@ Content-Type: application/json
 
 {
   "nome": "12ª",
+  "ordem": 3,
   "cursoId": 1,
-  "valorMatricula": 3000
+  "valorMatricula": 3000,
+  "disciplinas": [
+    1, 2
+  ]
 }
 
 ### Update
@@ -32,6 +36,16 @@ GET http://localhost:8000/api/classes/3/alunos
 
 ### Get Classe Disciplinas
 GET http://localhost:8000/api/classes/3/disciplinas
+
+### Post Classe Disciplinas
+POST http://localhost:8000/api/classes/3/disciplinas
+Content-Type: application/json
+
+{
+  "disciplinas": [
+    1, 2
+  ]
+}
 
 ### Create Turma in Classe
 POST http://localhost:8000/api/classes/1/turmas

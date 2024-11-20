@@ -24,32 +24,5 @@ Content-Type: application/json
     "duracao": 3
 }
 
-### Associate some curso to multiples disciplinas
-POST http://localhost:8000/api/cursos/17/disciplinas
-Content-Type: application/json
-
-{
-    "disciplinas": [3, 5]
-}
-
-### Delete a curso and disciplina association
-DELETE http://localhost:8000/api/cursos/1/disciplinas/1
-
-### Delete some disciplinas associated with especific curso
-DELETE http://localhost:8000/api/cursos/6/disciplinas
-Content-Type: application/json
-
-{
-    "disciplinas": [1, 2, 3]
-}
-
 ### GET curso classes
 GET http://localhost:8000/api/cursos/1/classes
-
-### Add classe to curso
-POST http://localhost:8000/api/cursos/1/classes
-Content-Type: application/json
-
-{
-    "nome": "13ª",
-}

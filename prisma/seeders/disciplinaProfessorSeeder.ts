@@ -36,7 +36,7 @@ export async function seedProfessorDisciplina() {
       }
     );
 
-    await prisma.disciplinasProfessores.createMany({
+    await prisma.professorDisciplina.createMany({
       data: professorDisciplina,
     });
   } catch (err) {

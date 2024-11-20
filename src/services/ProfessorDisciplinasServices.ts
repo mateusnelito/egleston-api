@@ -5,13 +5,13 @@ export async function getDisciplinaProfessor(
   professorId: number,
   disciplinaId: number
 ) {
-  return await prisma.disciplinasProfessores.findUnique({
+  return await prisma.professorDisciplina.findUnique({
     where: { disciplinaId_professorId: { professorId, disciplinaId } },
   });
 }
 
 export async function getProfessorDisciplinas(professorId: number) {
-  const professorDisciplinas = await prisma.disciplinasProfessores.findMany({
+  const professorDisciplinas = await prisma.professorDisciplina.findMany({
     where: { professorId },
     select: {
       Disciplina: {
@@ -37,7 +37,7 @@ export async function createMultiplesDisciplinaProfessorByProfessor(
   disciplinas: Array<number>
 ) {
   const createManyDisciplinaProfessorPromise =
-    prisma.disciplinasProfessores.createMany({
+    prisma.professorDisciplina.createMany({
       data: disciplinas.map((disciplinaId) => {
         return {
           professorId,
@@ -70,7 +70,7 @@ export async function deleteDisciplinaProfessor(
   professorId: number,
   disciplinaId: number
 ) {
-  return await prisma.disciplinasProfessores.delete({
+  return await prisma.professorDisciplina.delete({
     where: { disciplinaId_professorId: { professorId, disciplinaId } },
   });
 }
@@ -81,7 +81,7 @@ export async function deleteMultiplesDisciplinaProfessorByProfessor(
 ) {
   const deleteDisciplinaProfessorArrayPromises = disciplinas.map(
     (disciplinaId) => {
-      return prisma.disciplinasProfessores.delete({
+      return prisma.professorDisciplina.delete({
         where: {
           disciplinaId_professorId: {
             professorId,

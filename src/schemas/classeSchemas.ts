@@ -55,7 +55,20 @@ const classeParamsSchema = z.object({
 export const createClasseSchema = {
   summary: 'Adiciona uma nova classe',
   tags: ['classes'],
-  body: classeBodySchema.omit({ id: true }),
+  body: classeBodySchema.omit({ id: true }).extend({
+    disciplinas: z
+      .array(
+        z
+          .number({ message: 'disciplina deve ser um número.' })
+          .int({ message: 'disciplina deve ser inteiro' })
+          .positive({ message: 'disciplina deve ser positiva.' }),
+        {
+          required_error: 'disciplinas são obrigatórias.',
+          invalid_type_error: 'disciplinas deve ser um array.',
+        }
+      )
+      .nonempty({ message: 'disciplinas não deve estar vazio.' }),
+  }),
   response: {
     201: classeBodySchema.omit({ cursoId: true }).extend({
       valorMatricula: z.number(),
@@ -63,6 +76,40 @@ export const createClasseSchema = {
         id: z.number().int(),
         nome: z.string(),
       }),
+      totalDisciplinas: z.number().int().positive(),
+    }),
+    400: complexBadRequestSchema,
+    404: complexBadRequestSchema,
+  },
+};
+
+export const createClasseDisciplinaSchema = {
+  summary: 'Adiciona disciplinas a classe',
+  tags: ['classes'],
+  params: classeParamsSchema,
+  body: z.object({
+    disciplinas: z
+      .array(
+        z
+          .number({ message: 'disciplina deve ser um número.' })
+          .int({ message: 'disciplina deve ser inteiro' })
+          .positive({ message: 'disciplina deve ser positiva.' }),
+        {
+          required_error: 'disciplinas são obrigatórias.',
+          invalid_type_error: 'disciplinas deve ser um array.',
+        }
+      )
+      .nonempty({ message: 'disciplinas não deve estar vazio.' }),
+  }),
+  response: {
+    201: z.object({
+      classeId: z.number().int().positive(),
+      data: z.array(
+        z.object({
+          id: z.number().int().positive(),
+          nome: z.string(),
+        })
+      ),
     }),
     400: complexBadRequestSchema,
     404: complexBadRequestSchema,
@@ -218,6 +265,14 @@ export const getClasseDisciplinasSchema = {
   summary: 'Retorna todas as disciplinas da classe',
   tags: ['classes'],
   params: classeParamsSchema,
+  querystring: z.object({
+    excluirAssociadas: z.coerce
+      .boolean({
+        required_error: 'excluir associadas é obrigatório.',
+        invalid_type_error: 'excluir associadas deve ser boolean',
+      })
+      .default(false),
+  }),
   response: {
     200: z.object({
       data: z.array(z.object({ id: z.number(), nome: z.string() })),
@@ -248,7 +303,7 @@ export const getClasseDisciplinasAbsentProfessorSchema = {
   },
 };
 
-export type createClasseBodyType = z.infer<typeof createClasseSchema.body>;
+export type createClasseDataType = z.infer<typeof createClasseSchema.body>;
 export type updateClasseBodyType = z.infer<typeof updateClasseSchema.body>;
 export type classeParamsType = z.infer<typeof classeParamsSchema>;
 export type getClassesQueryStringType = z.infer<
@@ -264,4 +319,12 @@ export type getClasseAlunosQueryStringType = z.infer<
 
 export type getClasseAbsentDisciplinasParamsType = z.infer<
   typeof getClasseDisciplinasAbsentProfessorSchema.params
+>;
+
+export type createClasseDisciplinaDataType = z.infer<
+  typeof createClasseDisciplinaSchema.body
+>;
+
+export type getClasseDisciplinasQueryDataType = z.infer<
+  typeof getClasseDisciplinasSchema.querystring
 >;

@@ -14,7 +14,6 @@ import {
   getClasseAnoLectivoAndCursoById,
   getClasseId,
 } from '../services/classeServices';
-import { getCursoDisciplina } from '../services/cursosDisciplinasServices';
 import { getDisciplinaId } from '../services/disciplinaServices';
 import {
   createMultiplesDisciplinaProfessorByProfessor,
@@ -22,7 +21,7 @@ import {
   deleteMultiplesDisciplinaProfessorByProfessor,
   getDisciplinaProfessor,
   getProfessorDisciplinas,
-} from '../services/disciplinasProfessoresServices';
+} from '../services/ProfessorDisciplinasServices';
 import { getEmail, getTelefone } from '../services/professorContactoServices';
 import {
   createProfessorDisciplinaClasse,
@@ -422,22 +421,18 @@ export async function createProfessorDisciplinaClasseAssociationController(
       turmaId: ['Turma não associada a classe'],
     });
 
-  const [
-    disciplinaClasse,
-    totalProfessorDisciplinaClasse,
-    cursoDisciplina,
-    professorDisciplinaClasse,
-  ] = await Promise.all([
-    getDisciplinaClasse(disciplinaId, classeId, turmaId),
-    getTotalProfessorDisciplina(professorId, classeId, turmaId),
-    getCursoDisciplina(classe!.Curso.id, disciplinaId),
-    getProfessorDisciplinaClasseById(
-      professorId,
-      disciplinaId,
-      classeId,
-      turmaId
-    ),
-  ]);
+  const [disciplinaClasse, totalProfessorDisciplinaClasse, cursoDisciplina] =
+    await Promise.all([
+      getDisciplinaClasse(disciplinaId, classeId, turmaId),
+      getTotalProfessorDisciplina(professorId, classeId, turmaId),
+      // FIXME: Substituir essa validação buscando todos os cursos da classe diretamente e não do curso
+      getProfessorDisciplinaClasseById(
+        professorId,
+        disciplinaId,
+        classeId,
+        turmaId
+      ),
+    ]);
 
   if (disciplinaClasse)
     throwValidationError(HttpStatusCodes.CONFLICT, 'Disciplina inválida.', {
@@ -450,16 +445,11 @@ export async function createProfessorDisciplinaClasseAssociationController(
       'Número máximo de disciplina que o professor pôde lecionar a classe atingido.'
     );
 
-  if (!cursoDisciplina)
-    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Disciplina inválida.', {
-      disciplinaId: ['Disciplina não associada ao curso associado a classe.'],
-    });
-
-  if (professorDisciplinaClasse)
-    throwValidationError(
-      HttpStatusCodes.CONFLICT,
-      'Professor já associado a classe.'
-    );
+  // FIXME: Substituir essa validação buscando todos os cursos da classe diretamente e não do curso
+  // if (!cursoDisciplina)
+  //   throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Disciplina inválida.', {
+  //     disciplinaId: ['Disciplina não associada ao curso associado a classe.'],
+  //   });
 
   const newProfessorDisciplinaClasse = await createProfessorDisciplinaClasse({
     professorId,

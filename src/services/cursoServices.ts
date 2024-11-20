@@ -21,25 +21,6 @@ export async function getCurso(id: number) {
 }
 
 export async function createCurso(data: createCursoBodyType) {
-  const { disciplinas } = data;
-
-  if (disciplinas) {
-    return await prisma.curso.create({
-      data: {
-        nome: data.nome,
-        descricao: data.descricao,
-        duracao: data.duracao,
-        CursosDisciplinas: {
-          createMany: {
-            data: disciplinas.map((disciplinaId) => {
-              return { disciplinaId };
-            }),
-          },
-        },
-      },
-    });
-  }
-
   return await prisma.curso.create({ data });
 }
 

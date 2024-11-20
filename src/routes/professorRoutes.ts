@@ -54,7 +54,7 @@ const professoresRoutes: FastifyPluginAsync = async (
     handler: getProfessoresController,
   });
 
-  // GET ---
+  // GET
   server.withTypeProvider<ZodTypeProvider>().get('/:professorId/disciplinas', {
     schema: getProfessorDisciplinaAssociationsSchema,
     handler: getProfessorDisciplinaAssociationsController,
@@ -65,22 +65,6 @@ const professoresRoutes: FastifyPluginAsync = async (
     schema: createMultiplesProfessorDisciplinaAssociationSchema,
     handler: createMultiplesProfessorDisciplinaAssociationController,
   });
-
-  // DELETE ASSOCIATION BETWEEN PROFESSOR AND DISCIPLINA
-  // server
-  //   .withTypeProvider<ZodTypeProvider>()
-  //   .delete('/:professorId/disciplinas/:disciplinaId', {
-  //     schema: deleteProfessorDisciplinaSchema,
-  //     handler: deleteProfessorDisciplinaController,
-  //   });
-
-  // DELETE ASSOCIATIONS BETWEEN MULTIPLES DISCIPLINAS AND ONE PROFESSOR
-  // server
-  //   .withTypeProvider<ZodTypeProvider>()
-  //   .delete('/:professorId/disciplinas', {
-  //     schema: deleteMultiplesProfessorDisciplinaAssociationSchema,
-  //     handler: deleteMultiplesProfessorDisciplinaAssociationController,
-  //   });
 
   // POST
   server.withTypeProvider<ZodTypeProvider>().post('/:professorId/classes', {

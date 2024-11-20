@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { createDisciplinaBodyType } from '../schemas/disciplinaSchema';
+import { getClasseId } from './classeServices';
 import { isTurmaInClasse } from './turmaServices';
 
 export async function getDisciplinaNome(nome: string) {
@@ -49,21 +50,15 @@ export async function getDisciplinas(
   });
 }
 
-export async function getAbsentProfessorDisciplinas(
+export async function getNonAssociatedProfessorDisciplinas(
   classeId: number,
   turmaId: number
 ) {
-  // Execute both queries concurrently for better performance
-  const [turmaClasse, classeCurso] = await Promise.all([
-    isTurmaInClasse(turmaId, classeId), // Check if turma belongs to the classe
-    prisma.classe.findUnique({
-      where: { id: classeId },
-      select: { cursoId: true }, // Fetch the cursoId associated with the classe
-    }),
-  ]);
+  // Check if turma belongs to the classe
+  const turmaClasse = await isTurmaInClasse(turmaId, classeId);
 
-  // If turma is not linked to the classe or the classe doesn't exist, return an empty array
-  if (!(turmaClasse && classeCurso)) return { data: [] };
+  // If turma is not associated to the classe, return an empty array
+  if (!turmaClasse) return { data: [] };
 
   // Fetch all disciplinas that are not associated with the specified turma and classe
   const disciplinas = await prisma.disciplina.findMany({
@@ -71,8 +66,8 @@ export async function getAbsentProfessorDisciplinas(
       ProfessorDisciplinaClasse: {
         none: { classeId, turmaId }, // Exclude disciplinas linked to this turma and classe
       },
-      CursosDisciplinas: {
-        some: { cursoId: classeCurso.cursoId }, // Include only disciplinas from the same curso
+      ClasseDisciplinas: {
+        some: { classeId }, // Include only disciplinas associated with classe
       },
     },
     select: { id: true, nome: true }, // Return only the id and name of the disciplinas

@@ -17,19 +17,20 @@ enum Genero {
 }
 
 model Aluno {
-  id              Int            @id @default(autoincrement())
-  nomeCompleto    String         @map("nome_completo") @db.VarChar(100)
-  nomeCompletoPai String         @map("nome_completo_pai") @db.VarChar(100)
-  nomeCompletoMae String         @map("nome_completo_mae") @db.VarChar(100)
-  numeroBi        String         @unique @map("numero_bi") @db.VarChar(14)
-  dataNascimento  DateTime       @map("data_nascimento") @db.Date
+  id              Int      @id @default(autoincrement())
+  nomeCompleto    String   @map("nome_completo") @db.VarChar(100)
+  nomeCompletoPai String   @map("nome_completo_pai") @db.VarChar(100)
+  nomeCompletoMae String   @map("nome_completo_mae") @db.VarChar(100)
+  numeroBi        String   @unique @map("numero_bi") @db.VarChar(14)
+  dataNascimento  DateTime @map("data_nascimento") @db.Date
   genero          Genero
-  Endereco        AlunoEndereco?
-  Contacto        AlunoContacto?
-  Responsaveis    Responsavel[]
-  Matricula       Matricula[]
-  Pagamento       Pagamento[]
-  AlunoNota       Nota[]
+
+  Endereco     AlunoEndereco?
+  Contacto     AlunoContacto?
+  Responsaveis Responsavel[]
+  Matricula    Matricula[]
+  Pagamento    Pagamento[]
+  AlunoNota    Nota[]
 
   @@map("alunos")
   @@schema("cadastro")
@@ -41,7 +42,8 @@ model AlunoEndereco {
   bairro     String @db.VarChar(30)
   rua        String @db.VarChar(50)
   numeroCasa String @map("numero_casa") @db.VarChar(5)
-  Aluno      Aluno  @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+
+  Aluno Aluno @relation(fields: [alunoId], references: [id], onDelete: Cascade)
 
   @@index([bairro])
   @@map("alunos_enderecos")
@@ -53,21 +55,23 @@ model AlunoContacto {
   alunoId  Int     @unique @map("aluno_id")
   telefone String  @unique @db.VarChar(9)
   email    String? @unique @db.VarChar(255)
-  Aluno    Aluno   @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+
+  Aluno Aluno @relation(fields: [alunoId], references: [id], onDelete: Cascade)
 
   @@map("alunos_contactos")
   @@schema("cadastro")
 }
 
 model Responsavel {
-  id           Int                  @id @default(autoincrement())
-  Aluno        Aluno                @relation(fields: [alunoId], references: [id], onDelete: Cascade)
-  alunoId      Int                  @map("aluno_id")
-  nomeCompleto String               @map("nome_completo") @db.VarChar(100)
-  Parentesco   Parentesco           @relation(fields: [parentescoId], references: [id], onDelete: Cascade)
-  parentescoId Int                  @map("parentesco_id") @db.SmallInt
-  Endereco     ResponsavelEndereco?
-  Contacto     ResponsavelContacto?
+  id           Int    @id @default(autoincrement())
+  alunoId      Int    @map("aluno_id")
+  nomeCompleto String @map("nome_completo") @db.VarChar(100)
+  parentescoId Int    @map("parentesco_id") @db.SmallInt
+
+  Aluno      Aluno                @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  Parentesco Parentesco           @relation(fields: [parentescoId], references: [id], onDelete: Cascade)
+  Endereco   ResponsavelEndereco?
+  Contacto   ResponsavelContacto?
 
   @@index([alunoId, nomeCompleto])
   @@map("responsaveis")
@@ -84,12 +88,13 @@ model Parentesco {
 }
 
 model ResponsavelEndereco {
-  id            Int         @id @default(autoincrement())
-  Responsavel   Responsavel @relation(fields: [responsavelId], references: [id], onDelete: Cascade)
-  responsavelId Int         @unique @map("responsavel_id")
-  bairro        String      @db.VarChar(30)
-  rua           String      @db.VarChar(50)
-  numeroCasa    String      @map("numero_casa") @db.VarChar(5)
+  id            Int    @id @default(autoincrement())
+  responsavelId Int    @unique @map("responsavel_id")
+  bairro        String @db.VarChar(30)
+  rua           String @db.VarChar(50)
+  numeroCasa    String @map("numero_casa") @db.VarChar(5)
+
+  Responsavel Responsavel @relation(fields: [responsavelId], references: [id], onDelete: Cascade)
 
   @@index([bairro])
   @@map("responsaveis_enderecos")
@@ -97,24 +102,25 @@ model ResponsavelEndereco {
 }
 
 model ResponsavelContacto {
-  id            Int         @id @default(autoincrement())
-  Responsavel   Responsavel @relation(fields: [responsavelId], references: [id], onDelete: Cascade)
-  responsavelId Int         @unique @map("responsavel_id")
-  telefone      String      @unique @db.VarChar(9)
-  email         String?     @unique @db.VarChar(255)
-  outros        String?     @db.VarChar(255)
+  id            Int     @id @default(autoincrement())
+  responsavelId Int     @unique @map("responsavel_id")
+  telefone      String  @unique @db.VarChar(9)
+  email         String? @unique @db.VarChar(255)
+  outros        String? @db.VarChar(255)
+
+  Responsavel Responsavel @relation(fields: [responsavelId], references: [id], onDelete: Cascade)
 
   @@map("responsaveis_contactos")
   @@schema("cadastro")
 }
 
-// FIXME: add more details and unique field
 model Professor {
-  id                        Int                         @id @default(autoincrement())
-  nomeCompleto              String                      @map("nome_completo") @db.VarChar(100)
-  dataNascimento            DateTime                    @map("data_nascimento") @db.Date
+  id             Int      @id @default(autoincrement())
+  nomeCompleto   String   @map("nome_completo") @db.VarChar(100)
+  dataNascimento DateTime @map("data_nascimento") @db.Date
+
   Contacto                  ProfessorContacto?
-  DisciplinasProfessores    DisciplinasProfessores[]
+  DisciplinasProfessores    ProfessorDisciplina[]
   ProfessorDisciplinaClasse ProfessorDisciplinaClasse[]
 
   @@index([nomeCompleto])
@@ -123,90 +129,84 @@ model Professor {
 }
 
 model ProfessorContacto {
-  id          Int       @id @default(autoincrement())
-  Professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
-  professorId Int       @unique @map("professor_id")
-  telefone    String    @unique @db.VarChar(9)
-  email       String?   @unique @db.VarChar(255)
-  outros      String?   @db.VarChar(255)
+  id          Int     @id @default(autoincrement())
+  professorId Int     @unique @map("professor_id")
+  telefone    String  @unique @db.VarChar(9)
+  email       String? @unique @db.VarChar(255)
+  outros      String? @db.VarChar(255)
+
+  Professor Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
 
   @@map("professores_contactos")
   @@schema("cadastro")
 }
 
 model Curso {
-  id                Int                 @id @default(autoincrement()) @db.SmallInt
-  nome              String              @unique @db.VarChar(50)
-  descricao         String              @db.Text
-  duracao           Int                 @db.SmallInt
-  CursosDisciplinas CursosDisciplinas[]
-  Classe            Classe[]
+  id        Int    @id @default(autoincrement()) @db.SmallInt
+  nome      String @unique @db.VarChar(50)
+  descricao String @db.Text
+  duracao   Int    @db.SmallInt
+
+  Classe Classe[]
 
   @@map("cursos")
   @@schema("cadastro")
 }
 
 model Disciplina {
-  id                        Int                         @id @default(autoincrement())
-  nome                      String                      @unique @db.VarChar(50)
-  descricao                 String                      @db.Text
-  CursosDisciplinas         CursosDisciplinas[]
-  DisciplinasProfessores    DisciplinasProfessores[]
+  id        Int    @id @default(autoincrement())
+  nome      String @unique @db.VarChar(50)
+  descricao String @db.Text
+
+  DisciplinasProfessores    ProfessorDisciplina[]
   ProfessorDisciplinaClasse ProfessorDisciplinaClasse[]
   AlunoNota                 Nota[]
+  ClasseDisciplinas         ClasseDisciplinas[]
 
   @@map("disciplinas")
   @@schema("cadastro")
 }
 
-model CursosDisciplinas {
-  cursoId      Int        @map("curso_id") @db.SmallInt
-  disciplinaId Int        @map("disciplina_id")
-  Curso        Curso      @relation(fields: [cursoId], references: [id], onDelete: Cascade)
-  Disciplina   Disciplina @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+model ProfessorDisciplina {
+  disciplinaId Int @map("disciplina_id")
+  professorId  Int @map("professor_id")
 
-  @@id([cursoId, disciplinaId])
-  @@map("cursos_disciplinas")
-  @@schema("cadastro")
-}
-
-model DisciplinasProfessores {
-  disciplinaId Int        @map("disciplina_id")
-  professorId  Int        @map("professor_id")
-  Disciplina   Disciplina @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
-  Professor    Professor  @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  Disciplina Disciplina @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+  Professor  Professor  @relation(fields: [professorId], references: [id], onDelete: Cascade)
 
   @@id([disciplinaId, professorId])
-  @@map("disciplinas_professores")
+  @@map("professor_disciplinas")
   @@schema("cadastro")
 }
 
 model ProfessorDisciplinaClasse {
-  professorId  Int        @map("professor_id")
-  Professor    Professor  @relation(fields: [professorId], references: [id], onDelete: Cascade)
-  disciplinaId Int        @map("disciplina_id")
-  Disciplina   Disciplina @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
-  classeId     Int        @map("classe_id")
-  Classe       Classe     @relation(fields: [classeId], references: [id], onDelete: Cascade)
-  turmaId      Int        @map("turma_id")
-  Turma        Turma      @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+  professorId  Int @map("professor_id")
+  disciplinaId Int @map("disciplina_id")
+  classeId     Int @map("classe_id")
+  turmaId      Int @map("turma_id")
+
+  Professor  Professor  @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  Disciplina Disciplina @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+  Classe     Classe     @relation(fields: [classeId], references: [id], onDelete: Cascade)
+  Turma      Turma      @relation(fields: [turmaId], references: [id], onDelete: Cascade)
 
   @@id([professorId, disciplinaId, classeId, turmaId])
-  @@map("professores_disciplinas_classes")
+  @@map("professor_disciplina_classes")
   @@schema("academico")
 }
 
 model AnoLectivo {
-  id              Int         @id @default(autoincrement()) @db.SmallInt
-  nome            String      @unique @db.VarChar(9)
-  inicio          DateTime    @db.Date
-  termino         DateTime    @db.Date
-  activo          Boolean     @default(false)
-  matriculaAberta Boolean     @default(false) @map("matricula_aberta")
-  Classe          Classe[]
-  Matricula       Matricula[]
-  Pagamento       Pagamento[]
-  Trimestre       Trimestre[]
+  id              Int      @id @default(autoincrement()) @db.SmallInt
+  nome            String   @unique @db.VarChar(9)
+  inicio          DateTime @db.Date
+  termino         DateTime @db.Date
+  activo          Boolean  @default(false)
+  matriculaAberta Boolean  @default(false) @map("matricula_aberta")
+
+  Classe    Classe[]
+  Matricula Matricula[]
+  Pagamento Pagamento[]
+  Trimestre Trimestre[]
 
   @@index([activo])
   @@map("ano_lectivos")
@@ -214,13 +214,14 @@ model AnoLectivo {
 }
 
 model Trimestre {
-  id           Int        @id @default(autoincrement()) @db.SmallInt
-  anoLectivoId Int        @map("ano_lectivo_id")
-  AnoLectivo   AnoLectivo @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  numero       Int        @db.SmallInt
-  inicio       DateTime   @db.Date
-  termino      DateTime   @db.Date
-  AlunoNota    Nota[]
+  id           Int      @id @default(autoincrement()) @db.SmallInt
+  anoLectivoId Int      @map("ano_lectivo_id")
+  numero       Int      @db.SmallInt
+  inicio       DateTime @db.Date
+  termino      DateTime @db.Date
+
+  AnoLectivo AnoLectivo @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  AlunoNota  Nota[]
 
   @@unique([anoLectivoId, numero])
   @@map("trimestres")
@@ -235,13 +236,13 @@ model Classe {
   cursoId        Int     @map("curso_id") @db.SmallInt
   valorMatricula Decimal @map("valor_matricula") @db.Decimal(10, 2)
 
-  AnoLectivo AnoLectivo @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade)
-  Curso      Curso      @relation(fields: [cursoId], references: [id], onDelete: Cascade)
-
+  AnoLectivo                AnoLectivo                  @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade)
+  Curso                     Curso                       @relation(fields: [cursoId], references: [id], onDelete: Cascade)
   Turma                     Turma[]
   Matricula                 Matricula[]
   ProfessorDisciplinaClasse ProfessorDisciplinaClasse[]
   AlunoNota                 Nota[]
+  ClasseDisciplinas         ClasseDisciplinas[]
 
   @@unique([nome, anoLectivoId, cursoId])
   @@unique([cursoId, ordem])
@@ -249,23 +250,37 @@ model Classe {
   @@schema("cadastro")
 }
 
+model ClasseDisciplinas {
+  classeId     Int
+  disciplinaId Int @db.SmallInt
+
+  Classe     Classe     @relation(fields: [classeId], references: [id], onDelete: Cascade)
+  Disciplina Disciplina @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+
+  @@id([classeId, disciplinaId])
+  @@map("classe_disciplinas")
+  @@schema("cadastro")
+}
+
 model Sala {
-  id          Int     @id @default(autoincrement()) @db.SmallInt
-  nome        String  @unique @db.VarChar(30)
-  capacidade  Int     @db.SmallInt
-  localizacao String  @db.VarChar(255)
-  Turma       Turma[]
+  id          Int    @id @default(autoincrement()) @db.SmallInt
+  nome        String @unique @db.VarChar(30)
+  capacidade  Int    @db.SmallInt
+  localizacao String @db.VarChar(255)
+
+  Turma Turma[]
 
   @@map("salas")
   @@schema("cadastro")
 }
 
 model Turno {
-  id      Int     @id @default(autoincrement()) @db.SmallInt
-  nome    String  @unique @db.VarChar(30)
-  inicio  String  @db.VarChar(8)
-  termino String  @db.VarChar(8)
-  Turma   Turma[]
+  id      Int    @id @default(autoincrement()) @db.SmallInt
+  nome    String @unique @db.VarChar(30)
+  inicio  String @db.VarChar(8)
+  termino String @db.VarChar(8)
+
+  Turma Turma[]
 
   @@unique([inicio, termino])
   @@map("turnos")
@@ -273,13 +288,14 @@ model Turno {
 }
 
 model Turma {
-  id                        Int                         @id @default(autoincrement())
-  nome                      String                      @db.VarChar(30)
+  id       Int    @id @default(autoincrement())
+  nome     String @db.VarChar(30)
+  classeId Int    @map("classe_id")
+  salaId   Int    @map("sala_id") @db.SmallInt
+  turnoId  Int    @db.SmallInt
+
   Classe                    Classe                      @relation(fields: [classeId], references: [id], onDelete: Cascade)
-  classeId                  Int                         @map("classe_id")
   Sala                      Sala                        @relation(fields: [salaId], references: [id], onDelete: Cascade)
-  salaId                    Int                         @map("sala_id") @db.SmallInt
-  turnoId                   Int                         @db.SmallInt
   Turno                     Turno                       @relation(fields: [turnoId], references: [id], onDelete: Cascade)
   Matricula                 Matricula[]
   ProfessorDisciplinaClasse ProfessorDisciplinaClasse[]
@@ -317,25 +333,27 @@ enum TipoPagamento {
 }
 
 model Pagamento {
-  id                Int             @id @default(autoincrement())
-  alunoId           Int             @map("aluno_id")
-  Aluno             Aluno           @relation(fields: [alunoId], references: [id], onDelete: Cascade)
-  tipoPagamento     TipoPagamento   @map("tipo_pagamento")
-  valor             Decimal         @db.Decimal(10, 2)
-  descricao         String?         @db.VarChar(255)
-  metodoPagamentoId Int             @map("metodo_pagamento_id") @db.SmallInt
-  MetodoPagamento   MetodoPagamento @relation(fields: [metodoPagamentoId], references: [id], onDelete: Cascade)
-  anoLectivoId      Int             @map("ano_lectivo_id") @db.SmallInt
-  AnoLectivo        AnoLectivo      @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade)
-  createdAt         DateTime        @default(now()) @map("created_at")
+  id                Int           @id @default(autoincrement())
+  alunoId           Int           @map("aluno_id")
+  tipoPagamento     TipoPagamento @map("tipo_pagamento")
+  valor             Decimal       @db.Decimal(10, 2)
+  descricao         String?       @db.VarChar(255)
+  metodoPagamentoId Int           @map("metodo_pagamento_id") @db.SmallInt
+  anoLectivoId      Int           @map("ano_lectivo_id") @db.SmallInt
+  createdAt         DateTime      @default(now()) @map("created_at")
+
+  Aluno           Aluno           @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  MetodoPagamento MetodoPagamento @relation(fields: [metodoPagamentoId], references: [id], onDelete: Cascade)
+  AnoLectivo      AnoLectivo      @relation(fields: [anoLectivoId], references: [id], onDelete: Cascade)
 
   @@map("pagamentos")
   @@schema("financeiro")
 }
 
 model MetodoPagamento {
-  id        Int         @id @default(autoincrement()) @db.SmallInt
-  nome      String      @unique @db.VarChar(50)
+  id   Int    @id @default(autoincrement()) @db.SmallInt
+  nome String @unique @db.VarChar(50)
+
   Pagamento Pagamento[]
 
   @@map("metodos_pagamento")

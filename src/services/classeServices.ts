@@ -1,7 +1,13 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
+import { createClasseDataType } from '../schemas/classeSchemas';
+import HttpStatusCodes from '../utils/HttpStatusCodes';
+import {
+  arrayHasDuplicatedItems,
+  throwValidationError,
+} from '../utils/utilsFunctions';
 import { getAnoLectivoActivo, getAnoLectivoId } from './anoLectivoServices';
-import { getDisciplinasByCurso } from './cursosDisciplinasServices';
+import { getDisciplinaId } from './disciplinaServices';
 
 export async function getClasseByUniqueKey(
   nome: string,
@@ -23,15 +29,31 @@ export async function getClasseCursoOrdem(cursoId: number, ordem: number) {
   });
 }
 
-export async function createClasse(data: Prisma.ClasseUncheckedCreateInput) {
+type createClasseRawDataType = createClasseDataType & {
+  anoLectivoId: number;
+};
+
+export async function createClasse(data: createClasseRawDataType) {
   const classe = await prisma.classe.create({
-    data,
+    data: {
+      nome: data.nome,
+      ordem: data.ordem,
+      anoLectivoId: data.anoLectivoId,
+      cursoId: data.cursoId,
+      valorMatricula: data.valorMatricula,
+      ClasseDisciplinas: {
+        createMany: {
+          data: data.disciplinas.map((disciplinaId) => ({ disciplinaId })),
+        },
+      },
+    },
     select: {
       id: true,
       nome: true,
       ordem: true,
       valorMatricula: true,
       Curso: { select: { id: true, nome: true } },
+      _count: { select: { ClasseDisciplinas: {} } },
     },
   });
 
@@ -41,6 +63,7 @@ export async function createClasse(data: Prisma.ClasseUncheckedCreateInput) {
     ordem: classe.ordem,
     valorMatricula: Number(classe.valorMatricula.toFixed(2)),
     curso: classe.Curso,
+    totalDisciplinas: classe._count.ClasseDisciplinas,
   };
 }
 
@@ -82,6 +105,100 @@ export async function getClasses(
       valorMatricula: Number(valorMatricula),
     })),
   };
+}
+
+export async function getClasseDisciplinas(classeId: number) {
+  const classeDisciplinas = await prisma.classeDisciplinas.findMany({
+    where: { classeId },
+    select: {
+      Disciplina: {
+        select: {
+          id: true,
+          nome: true,
+        },
+      },
+    },
+  });
+
+  return {
+    data: classeDisciplinas.map(({ Disciplina: { id, nome } }) => ({
+      id,
+      nome,
+    })),
+  };
+}
+
+export async function getNonAssociatedClasseDisciplinas(classeId: number) {
+  const disciplinas = await prisma.disciplina.findMany({
+    where: {
+      ClasseDisciplinas: {
+        none: { classeId },
+      },
+    },
+    select: {
+      id: true,
+      nome: true,
+    },
+  });
+
+  return { data: disciplinas };
+}
+
+export async function validateCreateManyClasseDisciplina(
+  classeId: number,
+  disciplinas: number[]
+) {
+  if (arrayHasDuplicatedItems(disciplinas))
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Classe inválida.', {
+      disciplinas: ['disciplinas não podem ser duplicadas.'],
+    });
+
+  const classe = await getClasseId(classeId);
+
+  if (!classe)
+    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Classe não encontrada.');
+
+  for (let i = 0; i < disciplinas.length; i++) {
+    const disciplinaId = disciplinas[i];
+
+    const [disciplina, classeDisciplina] = await Promise.all([
+      getDisciplinaId(disciplinaId),
+      prisma.classeDisciplinas.findUnique({
+        where: { classeId_disciplinaId: { classeId, disciplinaId } },
+      }),
+    ]);
+
+    if (!disciplina)
+      throwValidationError(HttpStatusCodes.NOT_FOUND, 'Disciplinas inválidas', {
+        disciplinas: {
+          [i]: ['Disciplina não encontrada'],
+        },
+      });
+
+    if (classeDisciplina)
+      throwValidationError(HttpStatusCodes.CONFLICT, 'Disciplinas inválidas', {
+        disciplinas: {
+          [i]: ['Disciplina já associada a classe.'],
+        },
+      });
+  }
+}
+
+export async function createManyClasseDisciplinasByClasseId(
+  classeId: number,
+  disciplinas: number[]
+) {
+  await prisma.classeDisciplinas.createMany({
+    data: disciplinas.map((disciplinaId) => ({ classeId, disciplinaId })),
+    skipDuplicates: true,
+  });
+
+  const createdDisciplinas = await prisma.disciplina.findMany({
+    where: { id: { in: disciplinas } },
+    select: { id: true, nome: true },
+  });
+
+  return { classeId, data: createdDisciplinas };
 }
 
 export async function updateClasse(
@@ -255,13 +372,4 @@ export async function getClasseAnoLectivoAndCursoById(id: number) {
       Curso: { select: { id: true } },
     },
   });
-}
-
-export async function getClasseDisciplinas(classeId: number) {
-  const classe = await prisma.classe.findUnique({
-    where: { id: classeId },
-    select: { cursoId: true },
-  });
-
-  return getDisciplinasByCurso(classe!.cursoId);
 }

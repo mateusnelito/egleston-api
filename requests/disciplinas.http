@@ -21,11 +21,3 @@ GET http://localhost:8000/api/disciplinas/1
 
 ### GET disciplinas
 GET http://localhost:8000/api/disciplinas
-
-### Associate some disciplina to multiples cursos
-POST http://localhost:8000/api/disciplinas/1/cursos
-Content-Type: application/json
-
-{
-    "cursos": [1, 2]
-}

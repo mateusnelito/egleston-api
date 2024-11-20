@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { cursoNomeRegEx, descricaoRegEx } from '../utils/regexPatterns';
-import { classeBodySchema } from './classeSchemas';
 import {
   complexBadRequestSchema,
   simpleBadRequestSchema,
@@ -63,29 +62,7 @@ const cursoParamsSchema = z.object({
 export const createCursoSchema = {
   summary: 'Adiciona um novo curso',
   tags: ['cursos'],
-  body: cursoBodySchema.omit({ id: true }).extend({
-    disciplinas: z
-      .array(
-        z
-          .number({
-            message: 'O array de disciplinas deve conter apenas números.',
-          })
-          .int({
-            message:
-              'O array de disciplinas deve conter apenas números inteiros.',
-          })
-          .positive({
-            message:
-              'O array de disciplinas deve conter apenas números inteiros positivos.',
-          }),
-        {
-          invalid_type_error:
-            'As disciplinas devem ser  enviadas no formato de array.',
-        }
-      )
-      .nonempty({ message: 'O array de disciplinas não deve estar vazio.' })
-      .optional(),
-  }),
+  body: cursoBodySchema.omit({ id: true }),
   response: {
     201: cursoBodySchema,
     400: complexBadRequestSchema,
@@ -116,74 +93,13 @@ export const getCursosSchema = {
 };
 
 export const getCursoSchema = {
-  summary: 'Busca curso pelo id',
+  summary: 'Retorna um curso',
   tags: ['cursos'],
   params: cursoParamsSchema,
   response: {
     200: cursoBodySchema,
     404: simpleBadRequestSchema,
   },
-};
-
-export const cursoDisciplinasAssociationSchema = {
-  tags: ['cursos'],
-  params: cursoParamsSchema,
-  body: z.object({
-    disciplinas: z
-      .array(
-        z
-          .number({
-            message: 'O array de disciplinas deve conter apenas números.',
-          })
-          .int({
-            message:
-              'O array de disciplinas deve conter apenas números inteiros.',
-          })
-          .positive({
-            message:
-              'O array de disciplinas deve conter apenas números inteiros positivos.',
-          }),
-        {
-          invalid_type_error:
-            'As disciplinas devem ser  enviadas no formato de array.',
-        }
-      )
-      .nonempty({ message: 'O array de disciplinas não deve estar vazio.' }),
-  }),
-  response: {
-    200: cursoBodySchema.omit({ id: true }).extend({
-      disciplinas: z.array(z.number().int().positive()).optional(),
-    }),
-    400: complexBadRequestSchema,
-    404: complexBadRequestSchema,
-  },
-};
-
-export const createMultiplesCursoDisciplinaSchema = {
-  summary: 'Associa Múltiplas disciplinas à um curso',
-  ...cursoDisciplinasAssociationSchema,
-};
-
-export const deleteCursoDisciplinaSchema = {
-  summary: 'Remove associação entre curso e disciplina',
-  tags: ['cursos'],
-  params: cursoParamsSchema.extend({
-    disciplinaId: z.coerce
-      .number({
-        required_error: 'O id de disciplina é obrigatório.',
-        invalid_type_error: 'O id de disciplina deve ser número.',
-      })
-      .int({ message: 'O id de disciplina deve ser inteiro.' })
-      .positive({ message: 'O id de disciplina deve ser positivo.' }),
-  }),
-  response: {
-    404: simpleBadRequestSchema,
-  },
-};
-
-export const deleteMultiplesCursoDisciplinaSchema = {
-  summary: 'Deleta múltiplas disciplinas associadas à um curso',
-  ...cursoDisciplinasAssociationSchema,
 };
 
 export const getCursoClassesSchema = {
@@ -213,71 +129,10 @@ export const getCursoClassesSchema = {
   },
 };
 
-export const createClasseToCursoSchema = {
-  summary: 'Adiciona uma classe ao curso',
-  tags: ['cursos'],
-  params: cursoParamsSchema,
-  body: classeBodySchema.omit({ id: true, cursoId: true }),
-  response: {
-    201: classeBodySchema.extend({
-      valorMatricula: z.coerce.number(),
-    }),
-    400: simpleBadRequestSchema.or(
-      z.object({
-        statusCode: z.number().default(400),
-        message: z.string(),
-      })
-    ),
-    404: simpleBadRequestSchema,
-  },
-};
-
-export const getCursoDisciplinasSchema = {
-  summary: 'Retorna todas as disciplinas do curso',
-  tags: ['cursos'],
-  params: cursoParamsSchema,
-  querystring: z.object({
-    excluirAssociadas: z.coerce
-      .boolean({
-        required_error: 'excluir associadas é obrigatório.',
-        invalid_type_error: 'excluir associadas deve ser boolean',
-      })
-      .default(false),
-  }),
-  response: {
-    200: z.object({
-      data: z.array(
-        z.object({
-          id: z.number().int().positive(),
-          nome: z.string(),
-        })
-      ),
-    }),
-    404: simpleBadRequestSchema,
-  },
-};
-
 export type createCursoBodyType = z.infer<typeof createCursoSchema.body>;
 export type updateCursoBodyType = z.infer<typeof updateCursoSchema.body>;
-
 export type cursoParamsType = z.infer<typeof cursoParamsSchema>;
-
-export type cursoDisciplinaAssociationBodyType = z.infer<
-  typeof createMultiplesCursoDisciplinaSchema.body
->;
-
-export type deleteCursoDisciplinaParamsType = z.infer<
-  typeof deleteCursoDisciplinaSchema.params
->;
-
-export type createClasseToCursoBodyType = z.infer<
-  typeof createClasseToCursoSchema.body
->;
 
 export type getCursoClassesQueryType = z.infer<
   typeof getCursoClassesSchema.querystring
->;
-
-export type getCursoDisciplinasQueryDataType = z.infer<
-  typeof getCursoDisciplinasSchema.querystring
 >;

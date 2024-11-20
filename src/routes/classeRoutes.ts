@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
   createClasseController,
+  createClasseDisciplinaController,
   createTurmaInClasseController,
   getClasseAlunosController,
   getClasseController,
@@ -13,6 +14,7 @@ import {
   updateClasseController,
 } from '../controllers/classeController';
 import {
+  createClasseDisciplinaSchema,
   createClasseSchema,
   createTurmaToClasseSchema,
   getClasseAlunosSchema,
@@ -74,6 +76,12 @@ export const classeRoutes: FastifyPluginAsync = async (
   server.withTypeProvider<ZodTypeProvider>().get('/:classeId/disciplinas', {
     schema: getClasseDisciplinasSchema,
     handler: getClasseDisciplinasController,
+  });
+
+  // POST Classe Disciplinas
+  server.withTypeProvider<ZodTypeProvider>().post('/:classeId/disciplinas', {
+    schema: createClasseDisciplinaSchema,
+    handler: createClasseDisciplinaController,
   });
 
   // POST Turma

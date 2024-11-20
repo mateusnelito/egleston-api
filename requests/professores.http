@@ -41,17 +41,6 @@ Content-Type: application/json
     "disciplinas": [1]
 }
 
-### Delete a professor and disciplina association
-DELETE http://localhost:8000/api/professores/1/disciplinas/1
-
-### Delete some disciplinas associated with especific professor
-DELETE http://localhost:8000/api/cursos/1/disciplinas
-Content-Type: application/json
-
-{
-    "disciplinas": [1]
-}
-
 ### Create association between professor and classe
 POST http://localhost:8000/api/professores/2/classes
 Content-Type: application/json

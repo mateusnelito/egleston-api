@@ -3,7 +3,6 @@ import {
   anoLectivoParamsType,
   changeAnoLectivoStatusesBodyType,
   createAnoLectivoBodyType,
-  createClasseToAnoLectivoBodyType,
 } from '../schemas/anoLectivoSchema';
 import {
   changeAnoLectivoStatus,
@@ -15,12 +14,7 @@ import {
   getAnoLectivos,
   updateAnoLectivo,
 } from '../services/anoLectivoServices';
-import {
-  createClasse,
-  getClasseByUniqueKey,
-  getClassesByAnoLectivo,
-} from '../services/classeServices';
-import { getCursoId } from '../services/cursoServices';
+import { getClassesByAnoLectivo } from '../services/classeServices';
 import { getTrimestreByAnoLectivo } from '../services/trimestreServices';
 import { ANO_LECTIVO_MONTH_LENGTH } from '../utils/constants';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
@@ -169,50 +163,6 @@ export async function getAnoLectivoClassesController(
 
   const classes = await getClassesByAnoLectivo(anoLectivoId);
   return reply.send(classes);
-}
-
-export async function createClasseToAnoLectivoController(
-  request: FastifyRequest<{
-    Params: anoLectivoParamsType;
-    Body: createClasseToAnoLectivoBodyType;
-  }>,
-  reply: FastifyReply
-) {
-  const { anoLectivoId } = request.params;
-  const { nome, ordem, cursoId, valorMatricula } = request.body;
-
-  const [isAnoLectivo, isCursoId] = await Promise.all([
-    getAnoLectivoId(anoLectivoId),
-    getCursoId(cursoId),
-  ]);
-
-  if (!isAnoLectivo)
-    throwValidationError(
-      HttpStatusCodes.NOT_FOUND,
-      'Ano lectivo não encontrado.'
-    );
-
-  if (!isCursoId)
-    throwValidationError(HttpStatusCodes.NOT_FOUND, 'Curso inválido.', {
-      cursoId: ['Curso não encontrado'],
-    });
-
-  const isClasse = await getClasseByUniqueKey(nome, anoLectivoId, cursoId);
-
-  if (isClasse)
-    throwValidationError(HttpStatusCodes.CONFLICT, 'Classe já existe.');
-
-  // TODO: REFACTOR THIS
-  const classe = await createClasse({
-    nome,
-    ordem,
-    anoLectivoId,
-    cursoId,
-    valorMatricula: Number(valorMatricula.toFixed(2)),
-  });
-
-  // TODO: Send a appropriate response
-  return reply.status(HttpStatusCodes.CREATED).send(classe);
 }
 
 export async function changeAnoLectivoStatusController(

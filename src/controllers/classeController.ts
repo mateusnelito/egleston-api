@@ -1,29 +1,34 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   classeParamsType,
-  createClasseBodyType,
+  createClasseDataType,
+  createClasseDisciplinaDataType,
   createTurmaToClasseBodyType,
   getClasseAbsentDisciplinasParamsType,
   getClasseAlunosQueryStringType,
+  getClasseDisciplinasQueryDataType,
   getClassesQueryStringType,
   updateClasseBodyType,
 } from '../schemas/classeSchemas';
 import { getAnoLectivoActivo } from '../services/anoLectivoServices';
 import {
   createClasse,
+  createManyClasseDisciplinasByClasseId,
   getClasse,
   getClasseByUniqueKey,
   getClasseCursoOrdem,
   getClasseCursoWithOrdem,
+  getClasseDisciplinas,
   getClasseId,
   getClasses,
   getNextClasseByOrdem,
+  getNonAssociatedClasseDisciplinas,
   updateClasse,
+  validateCreateManyClasseDisciplina,
 } from '../services/classeServices';
 import { getCursoId } from '../services/cursoServices';
-import { getAbsentProfessorDisciplinas } from '../services/disciplinaServices';
+import { getNonAssociatedProfessorDisciplinas } from '../services/disciplinaServices';
 import { getAlunosMatriculaByClasse } from '../services/matriculaServices';
-import { getClasseDisciplinas } from '../services/professorDisciplinaClasseServices';
 import { getSalaId } from '../services/salaServices';
 import {
   createTurma,
@@ -32,16 +37,24 @@ import {
 } from '../services/turmaServices';
 import { getTurnoId } from '../services/turnoServices';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import { throwValidationError } from '../utils/utilsFunctions';
+import {
+  arrayHasDuplicatedItems,
+  throwValidationError,
+} from '../utils/utilsFunctions';
 
 export async function createClasseController(
-  request: FastifyRequest<{ Body: createClasseBodyType }>,
+  request: FastifyRequest<{ Body: createClasseDataType }>,
   reply: FastifyReply
 ) {
-  const { nome, ordem, cursoId } = request.body;
+  const { nome, ordem, cursoId, disciplinas } = request.body;
+
+  if (arrayHasDuplicatedItems(disciplinas))
+    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Classe inválida.', {
+      disciplinas: ['disciplinas não podem ser duplicadas.'],
+    });
 
   const [anoLectivo, curso] = await Promise.all([
-    getAnoLectivoActivo(),
+    getAnoLectivoActivo(false),
     getCursoId(cursoId),
   ]);
 
@@ -217,17 +230,43 @@ export async function getClasseAlunosController(
 export async function getClasseDisciplinasController(
   request: FastifyRequest<{
     Params: classeParamsType;
+    Querystring: getClasseDisciplinasQueryDataType;
   }>,
   reply: FastifyReply
 ) {
   const { classeId } = request.params;
+  const { excluirAssociadas } = request.query;
 
-  const isClasseId = await getClasseId(classeId);
+  const classe = await getClasseId(classeId);
 
-  if (!isClasseId)
+  if (!classe)
     throwValidationError(HttpStatusCodes.NOT_FOUND, 'Classe não encontrada.');
 
-  return reply.send(await getClasseDisciplinas(classeId));
+  const disciplinasPromise = excluirAssociadas
+    ? getNonAssociatedClasseDisciplinas(classeId)
+    : getClasseDisciplinas(classeId);
+
+  return reply.send(await disciplinasPromise);
+}
+
+export async function createClasseDisciplinaController(
+  request: FastifyRequest<{
+    Params: classeParamsType;
+    Body: createClasseDisciplinaDataType;
+  }>,
+  reply: FastifyReply
+) {
+  const { classeId } = request.params;
+  const { disciplinas } = request.body;
+
+  await validateCreateManyClasseDisciplina(classeId, disciplinas);
+
+  const classeDisciplinas = await createManyClasseDisciplinasByClasseId(
+    classeId,
+    disciplinas
+  );
+
+  return reply.status(HttpStatusCodes.CREATED).send(classeDisciplinas);
 }
 
 export async function createTurmaInClasseController(
@@ -275,11 +314,14 @@ export async function getClasseDisciplinasAbsentProfessorController(
 ) {
   const { classeId, turmaId } = request.params;
 
-  const isClasseId = await getClasseId(classeId);
+  const classe = await getClasseId(classeId);
 
-  if (!isClasseId)
+  if (!classe)
     throwValidationError(HttpStatusCodes.NOT_FOUND, 'Classe não encontrada.');
 
-  const disciplinas = await getAbsentProfessorDisciplinas(classeId, turmaId);
+  const disciplinas = await getNonAssociatedProfessorDisciplinas(
+    classeId,
+    turmaId
+  );
   return reply.send(disciplinas);
 }

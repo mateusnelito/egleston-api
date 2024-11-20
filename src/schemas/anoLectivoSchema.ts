@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { simpleBadRequestSchema } from './globalSchema';
-import { classeBodySchema } from './classeSchemas';
 import { trimestreBodySchema } from './trimestreSchemas';
 
 const anoLectivoBodySchema = z.object({
@@ -167,20 +166,6 @@ export const getAnoLectivoClassesSchema = {
   },
 };
 
-export const createClasseToAnoLectivoSchema = {
-  summary: 'Adiciona uma classe ao ano lectivo',
-  tags: ['ano-lectivo'],
-  params: anoLectivoParamsSchema,
-  body: classeBodySchema.omit({ id: true }),
-  response: {
-    201: classeBodySchema.extend({
-      valorMatricula: z.coerce.number(),
-    }),
-    400: simpleBadRequestSchema,
-    404: simpleBadRequestSchema,
-  },
-};
-
 export const getAnoLectivoTrimestresSchema = {
   summary: 'Retorna todos os trimestres do ano-lectivo',
   tags: ['ano-lectivo'],
@@ -207,9 +192,6 @@ export type createAnoLectivoBodyType = z.infer<
   typeof createAnoLectivoSchema.body
 >;
 export type anoLectivoParamsType = z.infer<typeof anoLectivoParamsSchema>;
-export type createClasseToAnoLectivoBodyType = z.infer<
-  typeof createClasseToAnoLectivoSchema.body
->;
 
 export type changeAnoLectivoStatusesBodyType = z.infer<
   typeof changeAnoLectivoStatusesSchema.body

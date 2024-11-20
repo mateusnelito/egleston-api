@@ -1,16 +1,10 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
-  createCursoDisciplinaBodyType,
   createDisciplinaBodyType,
   disciplinaParamsType,
   getDisciplinasQueryStringType,
   updateDisciplinaBodyType,
 } from '../schemas/disciplinaSchema';
-import {
-  createMultiplesCursoDisciplinaByDisciplina,
-  getCursoDisciplina,
-} from '../services/cursosDisciplinasServices';
-import { getCursoId } from '../services/cursoServices';
 import {
   createDisciplina,
   getDisciplina,
@@ -20,10 +14,7 @@ import {
   updateDisciplina,
 } from '../services/disciplinaServices';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import {
-  arrayHasDuplicatedItems,
-  throwValidationError,
-} from '../utils/utilsFunctions';
+import { throwValidationError } from '../utils/utilsFunctions';
 
 export async function createDisciplinaController(
   request: FastifyRequest<{ Body: createDisciplinaBodyType }>,
@@ -105,54 +96,4 @@ export async function getDisciplinasController(
     data: cursos,
     next_cursor,
   });
-}
-
-export async function createMultiplesCursoDisciplinaByDisciplinaController(
-  request: FastifyRequest<{
-    Body: createCursoDisciplinaBodyType;
-    Params: disciplinaParamsType;
-  }>,
-  reply: FastifyReply
-) {
-  const { disciplinaId } = request.params;
-  const { cursos } = request.body;
-
-  if (arrayHasDuplicatedItems(cursos))
-    throwValidationError(HttpStatusCodes.BAD_REQUEST, 'Cursos inválidos', {
-      cursos: ['O array de cursos não pode conter items duplicados.'],
-    });
-
-  const isDisciplinaId = await getDisciplinaId(disciplinaId);
-  if (!isDisciplinaId)
-    throwValidationError(
-      HttpStatusCodes.NOT_FOUND,
-      'Disciplina não encontrada.'
-    );
-
-  for (let i = 0; i < cursos.length; i++) {
-    const cursoId = cursos[i];
-
-    const [isCursoId, isCursoDisciplina] = await Promise.all([
-      getCursoId(cursoId),
-      getCursoDisciplina(cursoId, disciplinaId),
-    ]);
-
-    if (!isCursoId)
-      throwValidationError(HttpStatusCodes.CONFLICT, 'Curso inválido.', {
-        disciplinas: { [i]: ['Curso não encontrado.'] },
-      });
-
-    if (isCursoDisciplina)
-      throwValidationError(HttpStatusCodes.CONFLICT, 'Curso inválido.', {
-        disciplinas: { [i]: ['Disciplina já associada ao curso.'] },
-      });
-  }
-
-  const cursoDisciplinas = await createMultiplesCursoDisciplinaByDisciplina(
-    disciplinaId,
-    cursos
-  );
-
-  // TODO: Send an appropriate response
-  return reply.status(HttpStatusCodes.CREATED).send(cursoDisciplinas);
 }
