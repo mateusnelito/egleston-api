@@ -1,17 +1,22 @@
 import { z } from 'zod';
 import { fullNameRegEx, numeroBiRegEx } from '../utils/regexPatterns';
+import { anoLectivoBodySchema } from './anoLectivoSchema';
+import { classeBodySchema } from './classeSchemas';
 import { contactoSchema } from './contactoSchema';
+import { cursoBodySchema } from './cursoSchema';
 import { enderecoSchema } from './enderecoSchema';
 import {
   complexBadRequestSchema,
   getResourcesDefaultQueriesSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
+import { metodoPagamentoBodySchema } from './metodoPagamentoSchemas';
 import { notaSchema } from './notaSchema';
+import { pagamentoBodySchema } from './pagamentoSchemas';
 import { createResponsavelBodySchema } from './responsavelSchema';
-import { classeBodySchema } from './classeSchemas';
+import { turmaBodySchema } from './turmaSchemas';
 
-const alunoBodySchema = z.object({
+export const alunoBodySchema = z.object({
   id: z
     .number({
       required_error: 'O id do aluno é obrigatório.',
@@ -240,7 +245,43 @@ export const confirmAlunoMatriculaSchema = {
       .positive({ message: 'O id do metodo de pagamento deve ser positivo.' }),
   }),
   response: {
-    // 200: {},
+    // TODO: REFACTOR THIS DEFINITION, IS EQUAL TO THE DEFINITION ON matriculaSchema
+    201: z.object({
+      data: z.object({
+        id: z.number().int().positive(),
+        aluno: alunoBodySchema.extend({
+          endereco: enderecoSchema,
+          contacto: contactoSchema.omit({ outros: true }),
+        }),
+        classe: classeBodySchema.pick({
+          id: true,
+          nome: true,
+          valorMatricula: true,
+        }),
+        curso: cursoBodySchema.pick({ id: true, nome: true }),
+        turma: turmaBodySchema.pick({ id: true, nome: true }),
+        turno: turmaBodySchema.pick({ id: true, nome: true }),
+        anoLectivo: anoLectivoBodySchema.pick({ id: true, nome: true }),
+        pagamento: pagamentoBodySchema
+          .omit({
+            alunoId: true,
+            anoLectivoId: true,
+            metodoPagamentoId: true,
+          })
+          .extend({
+            metodoPagamento: metodoPagamentoBodySchema.pick({
+              id: true,
+              nome: true,
+            }),
+            anoLectivo: anoLectivoBodySchema.pick({ id: true, nome: true }),
+          }),
+        createdAt: z.date(),
+        createdBy: z.object({
+          id: z.number(),
+          nome: z.string(),
+        }),
+      }),
+    }),
     400: simpleBadRequestSchema,
     404: simpleBadRequestSchema,
   },

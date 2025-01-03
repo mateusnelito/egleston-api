@@ -1,5 +1,4 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import PdfPrinter from 'pdfmake';
 import { createMatriculaBodyType } from '../schemas/matriculaSchemas';
 import { createAlunoMatricula } from '../services/alunoServices';
 import { validateAlunoData } from '../services/alunoValidationService';
@@ -7,7 +6,6 @@ import { getAnoLectivoActivo } from '../services/anoLectivoServices';
 import { validateMatriculaData } from '../services/matriculaValidationService';
 import { validateResponsavelData } from '../services/responsaveisValidationServices';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
 import {
   arrayHasDuplicatedItems,
   throwValidationError,
@@ -70,23 +68,5 @@ export async function createMatriculaController(
   });
 
   const matricula = await createAlunoMatricula(activeAnoLectivo!.id, data);
-
-  // -> Making the PDF
-  const pdfPrinter = new PdfPrinter(pdfDefaultFonts);
-
-  const matriculaPdfDocument = pdfPrinter.createPdfKitDocument(
-    createMatriculaPdf(matricula)
-  );
-
-  reply.type('application/pdf');
-
-  // Making streaming of PDF to response
-  matriculaPdfDocument.pipe(reply.raw);
-
-  // Ending PDF creation
-  matriculaPdfDocument.end();
-
-  // TODO: SET THE PDF NAME BEFORE SEND
-
-  return reply;
+  return reply.status(HttpStatusCodes.CREATED).send(matricula);
 }

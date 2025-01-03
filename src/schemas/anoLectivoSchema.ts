@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { simpleBadRequestSchema } from './globalSchema';
 import { trimestreBodySchema } from './trimestreSchemas';
 
-const anoLectivoBodySchema = z.object({
+export const anoLectivoBodySchema = z.object({
   id: z
     .number({
       required_error: 'O id do ano lectivo é obrigatório.',

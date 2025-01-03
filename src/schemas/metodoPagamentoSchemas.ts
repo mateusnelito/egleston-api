@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { simpleBadRequestSchema } from './globalSchema';
-const metodoPagamentoBodySchema = z.object({
+export const metodoPagamentoBodySchema = z.object({
   id: z
     .number({
       required_error: 'O id do metodo de pagamento é obrigatório.',

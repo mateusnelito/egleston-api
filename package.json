@@ -1,6 +1,9 @@
 {
   "name": "egleston-api",
   "version": "1.0.0",
+  "engines": {
+    "node": "^20.18.0"
+  },
   "description": "A REST API TO MANAGE A SGE.",
   "main": "server.ts",
   "scripts": {
@@ -25,7 +28,6 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^20.12.9",
-    "@types/pdfmake": "^0.2.9",
     "prettier": "3.2.5",
     "prisma": "^5.13.0",
     "tsx": "^4.9.3",
@@ -40,7 +42,6 @@
     "fastify": "^4.26.2",
     "fastify-plugin": "^4.5.1",
     "fastify-type-provider-zod": "^1.1.9",
-    "pdfmake": "^0.2.12",
     "zod": "^3.23.8"
   },
   "bugs": {

@@ -200,15 +200,24 @@ export async function createAlunoMatricula(
             numeroCasa: true,
           },
         },
+        Contacto: {
+          select: {
+            telefone: true,
+            email: true,
+          },
+        },
         Matricula: {
           select: {
             id: true,
             createdAt: true,
             Classe: {
               select: {
+                id: true,
                 nome: true,
+                valorMatricula: true,
                 Curso: {
                   select: {
+                    id: true,
                     nome: true,
                   },
                 },
@@ -216,9 +225,11 @@ export async function createAlunoMatricula(
             },
             Turma: {
               select: {
+                id: true,
                 nome: true,
                 Turno: {
                   select: {
+                    id: true,
                     nome: true,
                   },
                 },
@@ -226,6 +237,7 @@ export async function createAlunoMatricula(
             },
             AnoLectivo: {
               select: {
+                id: true,
                 nome: true,
               },
             },
@@ -253,55 +265,90 @@ export async function createAlunoMatricula(
       });
     }
 
-    const classe = await transaction.classe.findUnique({
-      where: { id: classeId },
-      select: { valorMatricula: true },
-    });
+    const matricula = aluno.Matricula[0];
 
     const pagamento = await transaction.pagamento.create({
       data: {
         alunoId: aluno.id,
         tipoPagamento: 'Matricula',
-        valor: classe!.valorMatricula,
+        valor: matricula.Classe.valorMatricula,
         metodoPagamentoId,
         anoLectivoId,
       },
       include: {
         MetodoPagamento: {
           select: {
+            id: true,
+            nome: true,
+          },
+        },
+        AnoLectivo: {
+          select: {
+            id: true,
             nome: true,
           },
         },
       },
     });
 
-    const matricula = aluno.Matricula[0];
-
     return {
-      id: matricula.id,
-      aluno: {
-        nome: aluno.nomeCompleto,
-        numeroBi: aluno.numeroBi,
-        dataNascimento: formatDate(aluno.dataNascimento),
-        genero: aluno.genero,
-        endereco: {
-          bairro: aluno.Endereco!.bairro,
-          rua: aluno.Endereco!.rua,
-          numeroCasa: aluno.Endereco!.numeroCasa,
+      data: {
+        id: matricula.id,
+        aluno: {
+          id: aluno.id,
+          nomeCompleto: aluno.nomeCompleto,
+          nomeCompletoPai: aluno.nomeCompletoPai,
+          nomeCompletoMae: aluno.nomeCompletoMae,
+          numeroBi: aluno.numeroBi,
+          dataNascimento: formatDate(aluno.dataNascimento),
+          genero: aluno.genero,
+          endereco: {
+            bairro: aluno.Endereco!.bairro,
+            rua: aluno.Endereco!.rua,
+            numeroCasa: Number(aluno.Endereco!.numeroCasa),
+          },
+          contacto: {
+            telefone: aluno.Contacto!.telefone,
+            email: aluno.Contacto?.email,
+          },
         },
+        classe: {
+          id: matricula.Classe.id,
+          nome: matricula.Classe.nome,
+          valorMatricula: Number(matricula.Classe.valorMatricula),
+        },
+        curso: {
+          id: matricula.Classe.Curso.id,
+          nome: matricula.Classe.Curso.nome,
+        },
+        turma: { id: matricula.Turma.id, nome: matricula.Turma.nome },
+        turno: {
+          id: matricula.Turma.Turno.id,
+          nome: matricula.Turma.Turno.nome,
+        },
+        anoLectivo: {
+          id: matricula.AnoLectivo.id,
+          nome: matricula.AnoLectivo.nome,
+        },
+        pagamento: {
+          id: pagamento.id,
+          tipoPagamento: pagamento.tipoPagamento,
+          valor: Number(pagamento.valor),
+          metodoPagamento: {
+            id: pagamento.MetodoPagamento.id,
+            nome: pagamento.MetodoPagamento.nome,
+          },
+          anoLectivo: {
+            id: pagamento.AnoLectivo.id,
+            nome: pagamento.AnoLectivo.nome,
+          },
+          descricao: pagamento.descricao,
+          createdAt: pagamento.createdAt,
+        },
+        createdAt: matricula.createdAt,
+        // TODO: MAKE THIS DYNAMIC
+        createdBy: { id: 1901, nome: 'Usuário 1019' },
       },
-      classe: matricula.Classe.nome,
-      curso: matricula.Classe.Curso.nome,
-      turma: matricula.Turma.nome,
-      turno: matricula.Turma.Turno.nome,
-      anoLectivo: matricula.AnoLectivo.nome,
-      data: formatDate(matricula.createdAt),
-      pagamento: {
-        valor: Number(pagamento.valor),
-        metodoPagamento: pagamento.MetodoPagamento.nome,
-      },
-      // TODO: MAKE THIS DYNAMIC
-      funcionario: 'Usuário 1019',
     };
   });
 }

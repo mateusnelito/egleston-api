@@ -1,9 +1,17 @@
 import { z } from 'zod';
-import { createAlunoBodySchema } from './alunoSchemas';
+import { alunoBodySchema, createAlunoBodySchema } from './alunoSchemas';
+import { anoLectivoBodySchema } from './anoLectivoSchema';
+import { classeBodySchema } from './classeSchemas';
+import { contactoSchema } from './contactoSchema';
+import { cursoBodySchema } from './cursoSchema';
+import { enderecoSchema } from './enderecoSchema';
 import {
   complexBadRequestSchema,
   simpleBadRequestSchema,
 } from './globalSchema';
+import { metodoPagamentoBodySchema } from './metodoPagamentoSchemas';
+import { pagamentoBodySchema } from './pagamentoSchemas';
+import { turmaBodySchema } from './turmaSchemas';
 
 const matriculaBodySchema = z.object({
   id: z
@@ -63,7 +71,42 @@ export const createMatriculaSchema = {
     })
     .omit({ id: true, alunoId: true, createdAt: true }),
   response: {
-    // 201: matriculaBodySchema,
+    201: z.object({
+      data: z.object({
+        id: z.number().int().positive(),
+        aluno: alunoBodySchema.extend({
+          endereco: enderecoSchema,
+          contacto: contactoSchema.omit({ outros: true }),
+        }),
+        classe: classeBodySchema.pick({
+          id: true,
+          nome: true,
+          valorMatricula: true,
+        }),
+        curso: cursoBodySchema.pick({ id: true, nome: true }),
+        turma: turmaBodySchema.pick({ id: true, nome: true }),
+        turno: turmaBodySchema.pick({ id: true, nome: true }),
+        anoLectivo: anoLectivoBodySchema.pick({ id: true, nome: true }),
+        pagamento: pagamentoBodySchema
+          .omit({
+            alunoId: true,
+            anoLectivoId: true,
+            metodoPagamentoId: true,
+          })
+          .extend({
+            metodoPagamento: metodoPagamentoBodySchema.pick({
+              id: true,
+              nome: true,
+            }),
+            anoLectivo: anoLectivoBodySchema.pick({ id: true, nome: true }),
+          }),
+        createdAt: z.date(),
+        createdBy: z.object({
+          id: z.number(),
+          nome: z.string(),
+        }),
+      }),
+    }),
     400: complexBadRequestSchema,
     404: complexBadRequestSchema,
   },

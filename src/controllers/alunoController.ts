@@ -1,5 +1,4 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import PdfPrinter from 'pdfmake';
 import {
   alunoParamsType,
   createMatriculaToAlunoBodyType,
@@ -52,7 +51,6 @@ import {
   MINIMUM_ALUNO_RESPONSAVEIS,
 } from '../utils/constants';
 import HttpStatusCodes from '../utils/HttpStatusCodes';
-import { createMatriculaPdf, pdfDefaultFonts } from '../utils/pdfUtils';
 import {
   calculateTimeBetweenDates,
   isBeginDateAfterEndDate,
@@ -320,23 +318,10 @@ export async function confirmAlunoMatriculaController(
   const matricula = await confirmAlunoMatricula(
     anoLectivo!.id,
     alunoId,
-    nextClasseCursoId,
     request.body
   );
 
-  // Criando o PDF
-  const pdfPrinter = new PdfPrinter(pdfDefaultFonts);
-
-  const matriculaPdfDocument = pdfPrinter.createPdfKitDocument(
-    createMatriculaPdf(matricula)
-  );
-
-  reply.type('application/pdf');
-  matriculaPdfDocument.pipe(reply.raw);
-  matriculaPdfDocument.end();
-
-  // TODO: SET THE FILE NAME BEFORE SEND
-  return reply;
+  return reply.status(HttpStatusCodes.CREATED).send(matricula);
 }
 
 export async function updateAlunoNotaController(

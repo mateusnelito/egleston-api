@@ -5,7 +5,7 @@ import {
   simpleBadRequestSchema,
 } from './globalSchema';
 
-const cursoBodySchema = z.object({
+export const cursoBodySchema = z.object({
   id: z
     .number({
       required_error: 'O id do curso é obrigatório.',

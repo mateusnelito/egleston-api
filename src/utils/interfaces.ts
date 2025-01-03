@@ -1,35 +1,3 @@
-export interface matriculaPdfPrintDataInterface {
-  id: number;
-  aluno: {
-    nome: string;
-    numeroBi: string;
-    dataNascimento: String; // FIXME: CHANGE THE TYPE TO string
-    genero: string;
-    endereco: {
-      rua: string;
-      bairro: string;
-      numeroCasa: string;
-    };
-  };
-  classe: string;
-  curso: string;
-  turma: string;
-  turno: string;
-  anoLectivo: string;
-  pagamento: {
-    valor: number;
-    metodoPagamento: string;
-  };
-  funcionario: string;
-  data: String; // FIXME: CHANGE THE TYPE TO string
-}
-
-export interface matriculaCreateDataInterface {
-  classeId: number;
-  turmaId: number;
-  metodoPagamentoId: number;
-}
-
 export interface validateNotaDataType {
   alunoId?: number;
   classeId: number;

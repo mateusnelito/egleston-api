@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { descricaoRegEx } from '../utils/regexPatterns';
 import { complexBadRequestSchema } from './globalSchema';
 
-const pagamentoBodySchema = z.object({
+export const pagamentoBodySchema = z.object({
   id: z
     .number({
       required_error: 'O id do pagamento é obrigatório.',
